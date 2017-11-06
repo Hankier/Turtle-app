@@ -26,8 +26,10 @@ type Crypto struct{
 	sessionCommonKey         *pbc.Element //K
 }
 
-func (c *Crypto) initPairing(){
-	params := pbc.GenerateA(160, 512)
+func (c *Crypto) init(){
+	f, _ := os.Open("ss512.param")
+	defer f.Close()
+	params, _ := pbc.NewParams(f)
 	c.pairing = pbc.NewPairing(params)
 	fmt.Println("-----PAIRING-----")
 	fmt.Print(params.String())
@@ -36,21 +38,17 @@ func (c *Crypto) initPairing(){
 }
 
 func (c *Crypto) initGenerator(){
-	c.gen = c.pairing.NewG1().Rand()
-}
-
-func (c *Crypto) setPairing(pairing *pbc.Pairing){
-	c.pairing = pairing
+	c.gen = c.pairing.NewUncheckedElement(pbc.G1).Rand()
 }
 
 func (c *Crypto) setGenerator(gen *pbc.Element){
-	c.gen = gen
+	c.gen = c.pairing.NewUncheckedElement(pbc.G1).SetBytes(gen.Bytes())
 }
 
 func (c *Crypto) generateKeys(){
-	c.secretKey = c.pairing.NewZr()
+	c.secretKey = c.pairing.NewUncheckedElement(pbc.Zr)
 	c.secretKey.Rand()
-	c.publicKey = c.pairing.NewG1().PowZn(c.gen, c.secretKey)
+	c.publicKey = c.pairing.NewUncheckedElement(pbc.G1).PowZn(c.gen, c.secretKey)
 	fmt.Println("-----KEYS-----")
 	fmt.Println("public: " + c.publicKey.String())
 	fmt.Println("secret: " + c.secretKey.String())
@@ -59,9 +57,9 @@ func (c *Crypto) generateKeys(){
 }
 
 func (c *Crypto) generateSessionGenKeys(){
-	c.sessionGenSecretKey = c.pairing.NewZr()
+	c.sessionGenSecretKey = c.pairing.NewUncheckedElement(pbc.Zr)
 	c.sessionGenSecretKey.Rand()
-	c.sessionGenPublicKey = c.pairing.NewG1().PowZn(c.gen, c.sessionGenSecretKey)
+	c.sessionGenPublicKey = c.pairing.NewUncheckedElement(pbc.G1).PowZn(c.gen, c.sessionGenSecretKey)
 	fmt.Println("-----SESSION_GEN_KEYS-----")
 	fmt.Println("public: " + c.sessionGenPublicKey.String())
 	fmt.Println("secret: " + c.sessionGenSecretKey.String())
@@ -70,7 +68,7 @@ func (c *Crypto) generateSessionGenKeys(){
 }
 
 func (c *Crypto) generateSessionMultiplier(){
-	c.sessionMultiplier = c.pairing.NewZr()
+	c.sessionMultiplier = c.pairing.NewUncheckedElement(pbc.Zr)
 	c.sessionMultiplier.Rand()
 	fmt.Println("-----SESSION_MULTIPLIER-----")
 	fmt.Println("multiplier: " + c.sessionMultiplier.String())
@@ -79,7 +77,7 @@ func (c *Crypto) generateSessionMultiplier(){
 }
 
 func (c *Crypto) generateSessionGen(invert bool){
-	c.sessionGen = c.pairing.NewG2()
+	c.sessionGen = c.pairing.NewUncheckedElement(pbc.G2)
 	bytes1 := c.sessionGenPublicKey.Bytes()
 	bytes2 := c.otherSessionGenPublicKey.Bytes()
 	var hash []byte
@@ -101,8 +99,8 @@ func (c *Crypto) generateSessionGen(invert bool){
 }
 
 func (c *Crypto) generateSessionPublicKey(){
-	c.sessionPublicKey = c.pairing.NewG2()
-	exp := c.pairing.NewZr().Set0().ThenAdd(c.secretKey).ThenMulZn(c.otherSessionMultiplier).ThenAdd(c.sessionGenSecretKey)
+	c.sessionPublicKey = c.pairing.NewUncheckedElement(pbc.G2)
+	exp := c.pairing.NewUncheckedElement(pbc.Zr).Set0().ThenAdd(c.secretKey).ThenMulZn(c.otherSessionMultiplier).ThenAdd(c.sessionGenSecretKey)
 	c.sessionPublicKey.PowZn(c.sessionGen, exp)
 	fmt.Println("-----SESSION_PUBLIC_KEY-----")
 	fmt.Print("exp: ")
@@ -114,11 +112,11 @@ func (c *Crypto) generateSessionPublicKey(){
 }
 
 func (c *Crypto) checkKeys(){
-	pairing1 := c.pairing.NewGT()
+	pairing1 := c.pairing.NewUncheckedElement(pbc.GT)
 	pairing1.Pair(c.otherSessionPublicKey, c.gen)
 
-	temp1 := c.pairing.NewG1().Set(c.otherPublicKey).ThenPowZn(c.sessionMultiplier).ThenMul(c.otherSessionGenPublicKey)
-	pairing2 := c.pairing.NewGT()
+	temp1 := c.pairing.NewUncheckedElement(pbc.G1).Set(c.otherPublicKey).ThenPowZn(c.sessionMultiplier).ThenMul(c.otherSessionGenPublicKey)
+	pairing2 := c.pairing.NewUncheckedElement(pbc.GT)
 	pairing2.Pair(c.sessionGen, temp1)
 
 	fmt.Print("pairing1: ")
@@ -135,9 +133,9 @@ func (c *Crypto) checkKeys(){
 }
 
 func (c *Crypto) generateCommonKey(){
-	exp := c.pairing.NewZr()
+	exp := c.pairing.NewUncheckedElement(pbc.Zr)
 	exp.Set0().ThenAdd(c.secretKey).ThenMulZn(c.otherSessionMultiplier).ThenAdd(c.sessionGenSecretKey)
-	c.sessionCommonKey = c.pairing.NewG2()
+	c.sessionCommonKey = c.pairing.NewUncheckedElement(pbc.G2)
 	c.sessionCommonKey.PowZn(c.otherSessionPublicKey, exp)
 	fmt.Println("-----SESSION_COMMON_KEY-----")
 	fmt.Print("exp: ")
@@ -163,13 +161,12 @@ func listen(conn net.Conn){
 
 func main(){
 	crypto := new(Crypto)
-	crypto.initPairing()
+	crypto.init()
 	crypto.initGenerator()
 	crypto.generateKeys()
 
-
 	crypto2 := new(Crypto)
-	crypto2.setPairing(crypto.pairing)
+	crypto2.init()
 	crypto2.setGenerator(crypto.gen)
 	crypto2.generateKeys()
 
