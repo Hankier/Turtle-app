@@ -29,15 +29,19 @@ type Crypto struct{
 	sessionCommonKey         *pbc.Element //K
 }
 
+var debug = false
+
 func (c *Crypto) init(){
 	f, _ := os.Open("ss512.param")
 	defer f.Close()
 	params, _ := pbc.NewParams(f)
 	c.pairing = pbc.NewPairing(params)
-	fmt.Println("-----PAIRING-----")
-	fmt.Print(params.String())
-	fmt.Println("-----END_PAIRING-----")
-	fmt.Println()
+	if debug {
+		fmt.Println("-----PAIRING-----")
+		fmt.Print(params.String())
+		fmt.Println("-----END_PAIRING-----")
+		fmt.Println()
+	}
 	c.gen = c.pairing.NewUncheckedElement(pbc.G1)
 	c.otherPublicKey = c.pairing.NewUncheckedElement(pbc.G1)
 	c.otherSessionGenPublicKey = c.pairing.NewUncheckedElement(pbc.G1)
@@ -54,79 +58,97 @@ func (c *Crypto) init(){
 
 func (c *Crypto) initGenerator(){
 	c.gen.Rand()
-	fmt.Println("-----GEN-----")
-	fmt.Println("gen: ", c.gen.Bytes())
-	fmt.Println("-----END_GEN-----")
-	fmt.Println()
+	if debug{
+		fmt.Println("-----GEN-----")
+		fmt.Println("gen: ", c.gen.Bytes())
+		fmt.Println("-----END_GEN-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) setGenerator(bytes []byte){
 	c.gen.SetBytes(bytes)
-	fmt.Println("-----SET_GEN-----")
-	fmt.Println("gen: ", c.gen.Bytes())
-	fmt.Println("-----END_SET_GEN-----")
-	fmt.Println()
+	if debug {
+		fmt.Println("-----SET_GEN-----")
+		fmt.Println("gen: ", c.gen.Bytes())
+		fmt.Println("-----END_SET_GEN-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) setOtherPublicKey(bytes []byte){
 	c.otherPublicKey.SetBytes(bytes)
-	fmt.Println("-----OTHER_KEYS-----")
-	fmt.Println("public: " + c.otherPublicKey.String())
-	fmt.Println("-----END_OTHERS_KEYS-----")
-	fmt.Println()
+	if debug {
+		fmt.Println("-----OTHER_KEYS-----")
+		fmt.Println("public: " + c.otherPublicKey.String())
+		fmt.Println("-----END_OTHERS_KEYS-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) setOtherSessionGenPublicKey(bytes []byte){
 	c.otherSessionGenPublicKey.SetBytes(bytes)
-	fmt.Println("-----OTHER_SESSION_GEN_KEYS-----")
-	fmt.Println("public: " + c.otherSessionGenPublicKey.String())
-	fmt.Println("-----END_OTHER_SESSION_GEN_KEYS-----")
-	fmt.Println()
+	if debug {
+		fmt.Println("-----OTHER_SESSION_GEN_KEYS-----")
+		fmt.Println("public: " + c.otherSessionGenPublicKey.String())
+		fmt.Println("-----END_OTHER_SESSION_GEN_KEYS-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) setOtherSessionMultiplier(bytes []byte){
 	c.otherSessionMultiplier.SetBytes(bytes)
-	fmt.Println("-----OTHER_SESSION_MULTIPLIER-----")
-	fmt.Println("multiplier: " + c.otherSessionMultiplier.String())
-	fmt.Println("-----END_OTHER_SESSION_MULTIPLIER-----")
-	fmt.Println()
+	if debug{
+		fmt.Println("-----OTHER_SESSION_MULTIPLIER-----")
+		fmt.Println("multiplier: " + c.otherSessionMultiplier.String())
+		fmt.Println("-----END_OTHER_SESSION_MULTIPLIER-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) setOtherSessionPublicKey(bytes []byte){
 	c.otherSessionPublicKey.SetBytes(bytes)
-	fmt.Println("-----OTHER_SESSION_PUBLIC_KEY-----")
-	fmt.Print("session public key: ")
-	fmt.Println(c.otherSessionPublicKey)
-	fmt.Println("-----END_OTHER_SESSION_PUBLIC_KEY-----")
-	fmt.Println()
+	if debug{
+		fmt.Println("-----OTHER_SESSION_PUBLIC_KEY-----")
+		fmt.Print("session public key: ")
+		fmt.Println(c.otherSessionPublicKey)
+		fmt.Println("-----END_OTHER_SESSION_PUBLIC_KEY-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) generateKeys(){
 	c.secretKey.Rand()
 	c.publicKey.PowZn(c.gen, c.secretKey)
-	fmt.Println("-----KEYS-----")
-	fmt.Println("public: " + c.publicKey.String())
-	fmt.Println("secret: " + c.secretKey.String())
-	fmt.Println("-----END_KEYS-----")
-	fmt.Println()
+	if debug{
+		fmt.Println("-----KEYS-----")
+		fmt.Println("public: " + c.publicKey.String())
+		fmt.Println("secret: " + c.secretKey.String())
+		fmt.Println("-----END_KEYS-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) generateSessionGenKeys(){
 	c.sessionGenSecretKey.Rand()
 	c.sessionGenPublicKey.PowZn(c.gen, c.sessionGenSecretKey)
-	fmt.Println("-----SESSION_GEN_KEYS-----")
-	fmt.Println("public: " + c.sessionGenPublicKey.String())
-	fmt.Println("secret: " + c.sessionGenSecretKey.String())
-	fmt.Println("-----END_SESSION_GEN_KEYS-----")
-	fmt.Println()
+	if debug{
+		fmt.Println("-----SESSION_GEN_KEYS-----")
+		fmt.Println("public: " + c.sessionGenPublicKey.String())
+		fmt.Println("secret: " + c.sessionGenSecretKey.String())
+		fmt.Println("-----END_SESSION_GEN_KEYS-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) generateSessionMultiplier(){
 	c.sessionMultiplier.Rand()
-	fmt.Println("-----SESSION_MULTIPLIER-----")
-	fmt.Println("multiplier: " + c.sessionMultiplier.String())
-	fmt.Println("-----END_SESSION_MULTIPLIER-----")
-	fmt.Println()
+	if debug{
+		fmt.Println("-----SESSION_MULTIPLIER-----")
+		fmt.Println("multiplier: " + c.sessionMultiplier.String())
+		fmt.Println("-----END_SESSION_MULTIPLIER-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) generateSessionGen(invert bool){
@@ -139,25 +161,29 @@ func (c *Crypto) generateSessionGen(invert bool){
 		hash = append(bytes2, bytes1...)
 	}
 	c.sessionGen.SetFromHash(hash)
-	fmt.Println("-----SESSION_GEN-----")
-	fmt.Println("gen: ", c.sessionGen.Bytes())
-	fmt.Println("-----END_SESSION_GEN-----")
-	fmt.Println()
+	if debug{
+		fmt.Println("-----SESSION_GEN-----")
+		fmt.Println("gen: ", c.sessionGen.Bytes())
+		fmt.Println("-----END_SESSION_GEN-----")
+		fmt.Println()
+	}
 }
 
 func (c *Crypto) generateSessionPublicKey(){
 	exp := c.pairing.NewUncheckedElement(pbc.Zr).Set0().ThenAdd(c.secretKey).ThenMulZn(c.otherSessionMultiplier).ThenAdd(c.sessionGenSecretKey)
 	c.sessionPublicKey.PowZn(c.sessionGen, exp)
-	fmt.Println("-----SESSION_PUBLIC_KEY-----")
-	fmt.Print("exp: ")
-	fmt.Println(exp)
-	fmt.Print("session public key: ")
-	fmt.Println(c.sessionPublicKey)
-	fmt.Println("-----END_SESSION_PUBLIC_KEY-----")
-	fmt.Println()
+	if debug{
+		fmt.Println("-----SESSION_PUBLIC_KEY-----")
+		fmt.Print("exp: ")
+		fmt.Println(exp)
+		fmt.Print("session public key: ")
+		fmt.Println(c.sessionPublicKey)
+		fmt.Println("-----END_SESSION_PUBLIC_KEY-----")
+		fmt.Println()
+	}
 }
 
-func (c *Crypto) checkKeys(){
+func (c *Crypto) checkKeys() bool{
 	pairing1 := c.pairing.NewUncheckedElement(pbc.GT)
 	pairing1.Pair(c.otherSessionPublicKey, c.gen)
 
@@ -165,17 +191,14 @@ func (c *Crypto) checkKeys(){
 	pairing2 := c.pairing.NewUncheckedElement(pbc.GT)
 	pairing2.Pair(c.sessionGen, temp1)
 
-	fmt.Print("pairing1: ")
-	fmt.Println(pairing1)
-	fmt.Print("pairing2: ")
-	fmt.Println(pairing2)
-
-	if pairing1.Equals(pairing2){
-		fmt.Println("Pairing check PASSED!!!")
-	} else {
-		fmt.Println("Pairing check FAILED!!!")
+	if debug{
+		fmt.Print("pairing1: ")
+		fmt.Println(pairing1)
+		fmt.Print("pairing2: ")
+		fmt.Println(pairing2)
 	}
-	fmt.Println()
+
+	return pairing1.Equals(pairing2)
 }
 
 func (c *Crypto) generateCommonKey(){
@@ -183,12 +206,14 @@ func (c *Crypto) generateCommonKey(){
 	exp.Set0().ThenAdd(c.secretKey).ThenMulZn(c.otherSessionMultiplier).ThenAdd(c.sessionGenSecretKey)
 	c.sessionCommonKey = c.pairing.NewUncheckedElement(pbc.G2)
 	c.sessionCommonKey.PowZn(c.otherSessionPublicKey, exp)
-	fmt.Println("-----SESSION_COMMON_KEY-----")
-	fmt.Print("exp: ")
-	fmt.Println(exp)
-	fmt.Print("session common key: ")
-	fmt.Println(c.sessionCommonKey)
-	fmt.Println("-----END_SESSION_COMMON_KEY-----")
+	if debug{
+		fmt.Println("-----SESSION_COMMON_KEY-----")
+		fmt.Print("exp: ")
+		fmt.Println(exp)
+		fmt.Print("session common key: ")
+		fmt.Println(c.sessionCommonKey)
+		fmt.Println("-----END_SESSION_COMMON_KEY-----")
+	}
 }
 
 func listen(crypto *Crypto, conn net.Conn){
@@ -199,54 +224,80 @@ func listen(crypto *Crypto, conn net.Conn){
 		cmd, data, err := readCmd(reader)
 		if err != nil { fmt.Println(err); break}
 
-		fmt.Println("Cmd recv:" + cmd)
+		//fmt.Println("Cmd recv:" + cmd)
 
 		switch cmd {
 		case "part1":
-			crypto.setGenerator(data[0])
-			crypto.setOtherPublicKey(data[1])
-			crypto.setOtherSessionGenPublicKey(data[2])
+			crypto.setOtherPublicKey(data[0])
+			crypto.setOtherSessionGenPublicKey(data[1])
+			fmt.Println("-> A, X\n")
 
-			crypto.generateKeys()
 			crypto.generateSessionGenKeys()
 			crypto.generateSessionMultiplier()
+			fmt.Println("gen y, Y=g^y, cb\n")
 
 			writeCmd(writer, "part2",
 				crypto.publicKey.Bytes(),
 				crypto.sessionGenPublicKey.Bytes(),
 				crypto.sessionMultiplier.Bytes())
+			fmt.Println("B, Y, cb ->\n")
 			break
 		case "part2":
 			crypto.setOtherPublicKey(data[0])
 			crypto.setOtherSessionGenPublicKey(data[1])
 			crypto.setOtherSessionMultiplier(data[2])
+			fmt.Println("-> B, Y, cb\n")
 
 			crypto.generateSessionGen(false)
 			crypto.generateSessionPublicKey()
 			crypto.generateSessionMultiplier()
+			fmt.Println("gen ĝ=𝓗(X,Y), Sa=ĝ^(x+a*cb), ca\n")
 
 			writeCmd(writer, "part3",
 				crypto.sessionMultiplier.Bytes(),
 				crypto.sessionPublicKey.Bytes())
 			break
+			fmt.Println("Sa, ca ->\n")
 		case "part3":
 			crypto.setOtherSessionMultiplier(data[0])
 			crypto.setOtherSessionPublicKey(data[1])
+			fmt.Println("-> Sa, ca\n")
 
 			crypto.generateSessionGen(true)
 			crypto.generateSessionPublicKey()
-			crypto.checkKeys()
+			fmt.Println("gen ĝ=𝓗(X,Y), Sb=ĝ^(y+b*ca)\n")
+
+			fmt.Print("ê(Sa,g) = ê(ĝ, X*A^cb) ")
+			if crypto.checkKeys(){
+				fmt.Println("passed\n")
+			} else {
+				fmt.Println("failed\n")
+			}
+
 			crypto.generateCommonKey()
+			fmt.Println("gen K=Sa^(y+b*ca)\n")
 
 			writeCmd(writer, "part4", crypto.sessionPublicKey.Bytes())
+			fmt.Println("Sb ->\n")
+
+			fmt.Println("K=", crypto.sessionCommonKey)
 			break;
 		case "part4":
 			crypto.setOtherSessionPublicKey(data[0])
+			fmt.Println("-> Sb\n")
 
-			crypto.checkKeys()
+			fmt.Println("ê(Sb,g) = ê(ĝ, Y*B^ca) ")
+			if crypto.checkKeys(){
+				fmt.Println("passed\n")
+			} else {
+				fmt.Println("failed\n")
+			}
+
 			crypto.generateCommonKey()
+			fmt.Println("gen K=Sb^(x+a*cb)\n")
 
-			//saveCryptoToFile(crypto, "crypto")
+			fmt.Println("K=", crypto.sessionCommonKey)
+
 			break
 		}
 	}
@@ -297,7 +348,11 @@ func readCmd(reader *bufio.Reader) (string, [][]byte, error){
 func main(){
 	crypto := new(Crypto)
 	crypto.init()
-	crypto.initGenerator()
+	loadGen(crypto)
+	crypto.generateKeys()
+	fmt.Println("public: " + crypto.publicKey.String())
+	fmt.Println("secret: " + crypto.secretKey.String())
+	fmt.Println()
 
 	conn, err := net.Dial("tcp", "127.0.0.1:8081")
 	for err != nil{
@@ -312,120 +367,25 @@ func main(){
 	writer := bufio.NewWriter(conn)
 
 	for{
-		fmt.Print("Cmd:")
+		//fmt.Print("Cmd:")
 		text, _ := reader.ReadString('\n')
 
 		if text == "start\n"{
-			crypto.generateKeys()
+			fmt.Println("gen x, X=g^x\n")
 			crypto.generateSessionGenKeys()
 
-			writeCmd(writer, "part1", crypto.gen.Bytes(), crypto.publicKey.Bytes(), crypto.sessionGenPublicKey.Bytes())
+			fmt.Println("A, X ->\n")
+			writeCmd(writer, "part1", crypto.publicKey.Bytes(), crypto.sessionGenPublicKey.Bytes())
 		}
 	}
 }
 
-func test1(){
-	crypto := new(Crypto)
-	crypto.init()
-	crypto.initGenerator()
-	crypto.generateKeys()
-	crypto.generateSessionGenKeys()
-
-	crypto2 := new(Crypto)
-	crypto2.init()
-	crypto2.setGenerator(crypto.gen.Bytes())
-	crypto2.generateKeys()
-	crypto2.setOtherPublicKey(crypto.publicKey.Bytes())
-	crypto2.setOtherSessionGenPublicKey(crypto.sessionGenPublicKey.Bytes())
-	crypto2.generateSessionGenKeys()
-	crypto2.generateSessionMultiplier()
-
-
-	crypto.setOtherPublicKey(crypto2.publicKey.Bytes())
-	crypto.setOtherSessionGenPublicKey(crypto2.sessionGenPublicKey.Bytes())
-	crypto.setOtherSessionMultiplier(crypto2.sessionMultiplier.Bytes())
-	crypto.generateSessionGen(false)
-	crypto.generateSessionPublicKey()
-	crypto.generateSessionMultiplier()
-
-
-	crypto2.setOtherSessionMultiplier(crypto.sessionMultiplier.Bytes())
-	crypto2.setOtherSessionPublicKey(crypto.sessionPublicKey.Bytes())
-	crypto2.generateSessionGen(true)
-	crypto2.generateSessionPublicKey()
-	crypto2.checkKeys()
-
-	crypto.setOtherSessionPublicKey(crypto2.sessionPublicKey.Bytes())
-	crypto.checkKeys()
-
-	crypto.generateCommonKey()
-	crypto2.generateCommonKey()
-
-	saveCryptoToFile(crypto, "crypto")
-	saveCryptoToFile(crypto2, "crypto2")
+func loadGen(c *Crypto){
+	var bytes = make([]byte, 128)
+	bytes, _ = ioutil.ReadFile("gen.bin")
+	c.setGenerator(bytes)
 }
 
-func saveCryptoToFile(c *Crypto, name string){
-	ioutil.WriteFile(name + "_gen", c.gen.Bytes(), 0664);
-	ioutil.WriteFile(name + "_secretKey", c.secretKey.Bytes(), 0664);
-	ioutil.WriteFile(name + "_publicKey", c.publicKey.Bytes(), 0664);
-	ioutil.WriteFile(name + "_sessionGen", c.sessionGen.Bytes(), 0664);
-	ioutil.WriteFile(name + "_sessionGenSecretKey", c.sessionGenSecretKey.Bytes(), 0664);
-	ioutil.WriteFile(name + "_sessionGenPublicKey", c.sessionGenPublicKey.Bytes(), 0664);
-	ioutil.WriteFile(name + "_sessionMultiplier", c.sessionMultiplier.Bytes(), 0664);
-	ioutil.WriteFile(name + "_sessionPublicKey", c.sessionPublicKey.Bytes(), 0664);
-}
-
-func loadCryptoFromFile(c *Crypto, name string){
-	var bytes = make([]byte, 1024)
-	bytes, err := ioutil.ReadFile(name + "_gen")
-	fmt.Println(err)
-	c.gen.SetBytes(bytes[:])
-	fmt.Println("-----GEN-----")
-	fmt.Println("gen: ", c.gen.Bytes())
-	fmt.Println("-----END_GEN-----")
-	fmt.Println()
-
-	bytes, _ = ioutil.ReadFile(name + "_secretKey")
-	c.secretKey.SetBytes(bytes[:])
-	bytes, _ = ioutil.ReadFile(name + "_publicKey")
-	c.publicKey.SetBytes(bytes[:])
-	fmt.Println("-----KEYS-----")
-	fmt.Println("public: " + c.publicKey.String())
-	fmt.Println("secret: " + c.secretKey.String())
-	fmt.Println("-----END_KEYS-----")
-	fmt.Println()
-
-	bytes, _ = ioutil.ReadFile(name + "_sessionGen")
-	c.sessionGen.SetBytes(bytes[:])
-	fmt.Println("-----SESSION_GEN-----")
-	fmt.Print("session gen: ")
-	fmt.Println(c.sessionGen.Bytes())
-	fmt.Println("-----END_SESSION_GEN-----")
-	fmt.Println()
-
-	bytes, _ = ioutil.ReadFile(name + "_sessionGenSecretKey")
-	c.sessionGenSecretKey.SetBytes(bytes[:])
-	bytes, _ = ioutil.ReadFile(name + "_sessionGenPublicKey")
-	c.sessionGenPublicKey.SetBytes(bytes[:])
-	fmt.Println("-----SESSION_GEN_KEYS-----")
-	fmt.Println("public: " + c.sessionGenPublicKey.String())
-	fmt.Println("secret: " + c.sessionGenSecretKey.String())
-	fmt.Println("-----END_SESSION_GEN_KEYS-----")
-	fmt.Println()
-
-	bytes, _ = ioutil.ReadFile(name + "_sessionMultiplier")
-	c.sessionMultiplier.SetBytes(bytes[:])
-	fmt.Println("-----SESSION_MULTIPLIER-----")
-	fmt.Println("multiplier: " + c.sessionMultiplier.String())
-	fmt.Println("-----END_SESSION_MULTIPLIER-----")
-	fmt.Println()
-
-	bytes, _ = ioutil.ReadFile(name + "_sessionPublicKey")
-	c.sessionPublicKey.SetBytes(bytes[:])
-	fmt.Println("-----SESSION_PUBLIC_KEY-----")
-	fmt.Print("session public key: ")
-	fmt.Println(c.sessionPublicKey)
-	fmt.Println("-----END_SESSION_PUBLIC_KEY-----")
-	fmt.Println()
+func saveGen(c *Crypto){
+	ioutil.WriteFile("gen.bin", c.gen.Bytes(), 0664);
 }

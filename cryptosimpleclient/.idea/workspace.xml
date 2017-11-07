@@ -4,22 +4,6 @@
     <list default="true" id="5ba3c661-5cb1-4065-8514-9dd293c246ef" name="Default" comment="">
       <change beforePath="" afterPath="$PROJECT_DIR$/src/main/test.go" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto2_gen" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto2_publicKey" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto2_secretKey" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto2_sessionGen" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto2_sessionGenPublicKey" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto2_sessionGenSecretKey" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto2_sessionMultiplier" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto2_sessionPublicKey" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto_gen" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto_publicKey" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto_secretKey" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto_sessionGen" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto_sessionGenPublicKey" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto_sessionGenSecretKey" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto_sessionMultiplier" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/bin/crypto_sessionPublicKey" afterPath="" />
       <change beforePath="$PROJECT_DIR$/bin/main_go" afterPath="$PROJECT_DIR$/bin/main_go" />
       <change beforePath="$PROJECT_DIR$/src/main/main.go" afterPath="$PROJECT_DIR$/src/main/main.go" />
       <change beforePath="$PROJECT_DIR$/../cryptosimpleserver/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../cryptosimpleserver/.idea/workspace.xml" />
@@ -301,7 +285,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="works on 2 different pairings objects" />
-    <option name="LAST_COMMIT_MESSAGE" value="works on 2 different pairings objects" />
+    <MESSAGE value="cleanup" />
+    <option name="LAST_COMMIT_MESSAGE" value="cleanup" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
