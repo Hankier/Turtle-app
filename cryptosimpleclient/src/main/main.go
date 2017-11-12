@@ -256,8 +256,8 @@ func listen(crypto *Crypto, conn net.Conn){
 			writeCmd(writer, "part3",
 				crypto.sessionMultiplier.Bytes(),
 				crypto.sessionPublicKey.Bytes())
-			break
 			fmt.Println("Sa, ca ->\n")
+			break
 		case "part3":
 			crypto.setOtherSessionMultiplier(data[0])
 			crypto.setOtherSessionPublicKey(data[1])
@@ -286,7 +286,7 @@ func listen(crypto *Crypto, conn net.Conn){
 			crypto.setOtherSessionPublicKey(data[0])
 			fmt.Println("-> Sb\n")
 
-			fmt.Println("ê(Sb,g) = ê(ĝ, Y*B^ca) ")
+			fmt.Print("ê(Sb,g) = ê(ĝ, Y*B^ca) ")
 			if crypto.checkKeys(){
 				fmt.Println("passed\n")
 			} else {
