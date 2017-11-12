@@ -77,4 +77,11 @@ func handleConn(conn net.Conn) {
 		sendToConns(conn, data)
 	}
 	conn.Close()
+	for i := 0; i < len(conns); i++{
+		if conns[i] == conn {
+			conns[i] = conns[len(conns) - 1]
+			conns[len(conns) - 1] = nil
+			conns = conns[:len(conns) - 1]
+		}
+	}
 }
