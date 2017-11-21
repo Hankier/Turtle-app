@@ -7,27 +7,21 @@ import (
 	"encoding/binary"
 	"regexp"
 	"sync"
+	"sessionHandlerInterface"
 )
-
-type SessionHandler interface{
-	createSession(conn net.IPConn)
-	removeSession(ip net.IP)
-}
 
 
 type ConnectionListener struct{
 	socket net.Listener
-	sessionsHandler SessionHandler
-	wg sync.WaitGroup
+	sessionsHandler sessionHandlerInterface.SessionHandler
 }
 
-func NewConnectionListener(port string, handler SessionHandler) (*ConnectionListener, error) {
+func NewConnectionListener(port string, handler sessionHandlerInterface.SessionHandler) (*ConnectionListener, error) {
 	cln := new(ConnectionListener)
 	port = ":"+port
 	var err error
 	cln.socket, err = net.Listen("tcp", port)
 	cln.sessionsHandler = handler
-	cln.wg.Add(1)
 	return cln, err
 }
 
@@ -68,8 +62,8 @@ func (cln *ConnectionListener)handleConnection(c net.Conn) {
 	log.Printf("Connection from %v closed.", c.RemoteAddr())
 }
 
-func (cln *ConnectionListener)Loop() error{
-	defer cln.wg.Done()
+func (cln *ConnectionListener)Loop(wg sync.WaitGroup) error{
+	defer wg.Done()
 	for{
 		fmt.Println("Server up and listening on port 12345")
 
@@ -82,10 +76,6 @@ func (cln *ConnectionListener)Loop() error{
 		}
 	}
 	return nil
-}
-
-func (cln *ConnectionListener)Join(){
-	cln.wg.Wait()
 }
 
 func getIp(message string) (ipAddress string, newMessage []byte)  {
