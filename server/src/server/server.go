@@ -58,8 +58,8 @@ func (srv *Server)Start()error{
 	if err == nil{
 		go srv.clientListener.Loop(srv.wg)
 		go srv.serverListener.Loop(srv.wg)
+		srv.wg.Wait()
 	}
-	srv.wg.Wait()
 
 	return err
 }
