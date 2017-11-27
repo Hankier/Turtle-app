@@ -19,7 +19,7 @@ type Server struct{
 	wg sync.WaitGroup
 }
 
-func MakeServer()(*Server){
+func NewServer()(*Server){
 	srv := new(Server)
 
 	srv.wg.Add(2)
