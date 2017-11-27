@@ -5,6 +5,8 @@ import (
 	"sync"
 	"log"
 	"sender"
+	"receiver"
+	"messageHandler"
 )
 
 type Session struct{
@@ -12,7 +14,7 @@ type Session struct{
 	socket *net.Conn
 	sender *sender.SenderImpl
 	receiver *receiver.Receiver
-	wg sync.WaitGroup
+	wg *sync.WaitGroup
 }
 
 func NewSession(socket *net.Conn, name string, messageHandler *messageHandler.MessageHandler)(*Session){
@@ -22,7 +24,8 @@ func NewSession(socket *net.Conn, name string, messageHandler *messageHandler.Me
 	session.socket = socket
 	session.sender = sender.NewSenderImpl(socket)
 	session.receiver = receiver.NewReceiver(socket, messageHandler)
-	session.wg.Add(2)
+	session.wg = &sync.WaitGroup{}
+	session.wg.Add(1)
 
 	return session
 }
@@ -35,15 +38,19 @@ func (session *Session)Start(){
 
 	session.wg.Wait()
 
+	session.DeleteSession()
+
 	log.Print("Session ended " + session.name)
 }
 
 func (session *Session)DeleteSession(){
-	session.socket.Close()
+	session.sender.Stop()
+	(*session.socket).Close()
 }
 
 func (session *Session)Send(bytes []byte){
-	session.sender.send(bytes)
+	bytes = append(([]byte)(session.name), bytes...)
+	session.sender.Send(bytes)
 }
 
 func (session *Session)UnlockSending(){
