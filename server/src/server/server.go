@@ -80,11 +80,11 @@ func (srv *Server)connectToServer(name string)bool{
 		return false
 	}
 	socket.Write([]byte(srv.myName))
-	srv.CreateSession(name, socket)
+	srv.CreateSession(name, &socket)
 	return true
 }
 
-func (srv *Server)CreateSession(name string, socket net.Conn){
+func (srv *Server)CreateSession(name string, socket *net.Conn){
 	//TODO
 }
 
