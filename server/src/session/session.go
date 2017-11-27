@@ -49,6 +49,7 @@ func (session *Session)DeleteSession(){
 }
 
 func (session *Session)Send(bytes []byte){
+	bytes = append(([]byte)(session.name), bytes...)
 	session.sender.Send(bytes)
 }
 
