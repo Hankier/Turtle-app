@@ -16,7 +16,7 @@ type ConnectionListener struct{
 	sessionsHandler sessionHandler.SessionHandler
 }
 
-func NewConnectionListener(port string, handler *sessionHandler.SessionHandler) (*ConnectionListener, error) {
+func NewConnectionListener(port string, handler sessionHandler.SessionHandler) (*ConnectionListener, error) {
 	cln := new(ConnectionListener)
 	port = ":"+port
 	var err error
