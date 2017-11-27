@@ -5,5 +5,9 @@ type ServerCrypto struct{
 }
 
 func NewServerCrypto()(*ServerCrypto){
-	return nil;
+	return new(ServerCrypto);
+}
+
+func (crypto *ServerCrypto)Decrypt(bytes []byte)[]byte{
+	return bytes
 }
