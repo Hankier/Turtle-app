@@ -8,13 +8,14 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"serverEntry"
 )
 
 type Server struct{
-	sessions map[[256]byte]string
+	sessions map[string][256]byte
 	clientListener *connectionListener.ConnectionListener
 	serverListener *connectionListener.ConnectionListener
-	serverList map[string][256]byte
+	serverList map[string]serverEntry.ServerEntry
 	serverCrypto *serverCrypto.ServerCrypto
 	wg sync.WaitGroup
 }
@@ -46,11 +47,11 @@ func getPort(ip string)string{
 
 func (srv *Server)Start()error{
 	var err error
-	srv.clientListener, err = connectionListener.NewConnectionListener("4000", nil)//TODO handler
+	srv.clientListener, err = connectionListener.NewConnectionListener("4000", srv)
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv.serverListener, err = connectionListener.NewConnectionListener("4001", nil)//TODO handler
+	srv.serverListener, err = connectionListener.NewConnectionListener("4001", srv)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,4 +62,12 @@ func (srv *Server)Start()error{
 	srv.wg.Wait()
 
 	return err
+}
+
+func (srv *Server)CreateSession(name string, socket net.Conn){
+	//TODO
+}
+
+func (srv *Server)RemoveSession(name string){
+	//TODO
 }

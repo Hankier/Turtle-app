@@ -4,6 +4,6 @@ package sessionHandler
 import "net"
 
 type SessionHandler interface{
-	createSession(conn net.IPConn)
-	removeSession(ip net.IP)
+	CreateSession(name string, socket net.Conn)
+	RemoveSession(name string)
 }
