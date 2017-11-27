@@ -65,6 +65,7 @@ func (srv *Server)Start(clientPort, serverPort string)error{
 	if err == nil{
 		go srv.clientListener.Loop(srv.wg)
 		go srv.serverListener.Loop(srv.wg)
+		log.Print("Server started")
 		srv.wg.Wait()
 	}
 
