@@ -27,7 +27,7 @@ func MakeServer()(*Server){
 	return srv
 }
 
-func (srv Server)sendTo(ip string,  message []byte) {
+func (srv *Server)sendTo(ip string,  message []byte) {
 
 	fmt.Println(ip)
 
@@ -44,7 +44,7 @@ func getPort(ip string)string{
 	return strings.Split(ip, ":")[1]
 }
 
-func (srv Server)Start()error{
+func (srv *Server)Start()error{
 	var err error
 	srv.clientListener, err = connectionListener.NewConnectionListener("4000", nil)//TODO handler
 	if err != nil {
