@@ -1,4 +1,4 @@
-package decrypterInterface
+package decrypter
 
 type Decrypter interface{
 	Decrypt([]byte)([]byte)

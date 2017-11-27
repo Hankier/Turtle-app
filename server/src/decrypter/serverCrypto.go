@@ -1,4 +1,4 @@
-package serverCrypto
+package decrypter
 
 type ServerCrypto struct{
 
