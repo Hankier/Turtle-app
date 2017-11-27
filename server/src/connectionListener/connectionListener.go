@@ -7,16 +7,16 @@ import (
 	"encoding/binary"
 	"regexp"
 	"sync"
-	"sessionHandlerInterface"
+	"sessionHandler"
 )
 
 
 type ConnectionListener struct{
-	socket net.Listener
-	sessionsHandler sessionHandlerInterface.SessionHandler
+	socket          net.Listener
+	sessionsHandler sessionHandler.SessionHandler
 }
 
-func NewConnectionListener(port string, handler sessionHandlerInterface.SessionHandler) (*ConnectionListener, error) {
+func NewConnectionListener(port string, handler sessionHandler.SessionHandler) (*ConnectionListener, error) {
 	cln := new(ConnectionListener)
 	port = ":"+port
 	var err error
