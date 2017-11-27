@@ -1,9 +1,6 @@
 package messageHandler
 
-type MessageHandler struct{
-
+type MessageHandler interface{
+	HandleBytes(bytes []byte)
 }
 
-func (messageHandler *MessageHandler)HandleBytes(bytes []byte){
-
-}
