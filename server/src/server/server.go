@@ -3,55 +3,62 @@ package server
 import (
 	"connectionListener"
 	"sync"
-	"serverCrypto"
+	"decrypter"
 	"log"
-	"fmt"
 	"net"
-	"strings"
 	"serverEntry"
+	"sender"
 )
 
 type Server struct{
-	sessions map[string][256]byte
+	sessions map[string]sender.Sender
 	clientListener *connectionListener.ConnectionListener
 	serverListener *connectionListener.ConnectionListener
 	serverList map[string]serverEntry.ServerEntry
-	serverCrypto *serverCrypto.ServerCrypto
+	serverCrypto *decrypter.ServerCrypto
 	wg sync.WaitGroup
+	myName string
 }
 
-func NewServer()(*Server){
+func NewServer(name string)(*Server){
 	srv := new(Server)
 
+	srv.sessions = make(map[string]sender.Sender)
+
+	srv.myName = name
+
+	//TODO Downloading server list from hardcoded DA
+
 	srv.wg.Add(2)
-	srv.serverCrypto = serverCrypto.NewServerCrypto();
+	srv.serverCrypto = decrypter.NewServerCrypto();
 	return srv
 }
 
-func (srv *Server)sendTo(ip string,  message []byte) {
+func checkIfNameIsServer(name string)bool{
+	//TODO
+	return true;
+}
 
-	fmt.Println(ip)
-
-
-
-	connection, err := net.Dial("tcp", ip )
-	if err != nil {
-		log.Fatal(err)
+func (srv *Server)SendTo(name string, bytes []byte){
+	if session, ok := srv.sessions[name]; ok {
+		session.Send(bytes)
+	}else{
+		if checkIfNameIsServer(name) {
+			if srv.connectToServer(name){
+				srv.SendTo(name, bytes)
+			}
+		}
 	}
-	connection.Write(message)
 }
 
-func getPort(ip string)string{
-	return strings.Split(ip, ":")[1]
-}
 
-func (srv *Server)Start()error{
+func (srv *Server)Start(clientPort, serverPort string)error{
 	var err error
-	srv.clientListener, err = connectionListener.NewConnectionListener("4000", srv)
+	srv.clientListener, err = connectionListener.NewConnectionListener(clientPort, srv)
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv.serverListener, err = connectionListener.NewConnectionListener("4001", srv)
+	srv.serverListener, err = connectionListener.NewConnectionListener(serverPort, srv)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,6 +69,18 @@ func (srv *Server)Start()error{
 	}
 
 	return err
+}
+
+func (srv *Server)connectToServer(name string)bool{
+	server := srv.serverList[name]
+	socket, err := net.Dial("tcp", server.Ip_port)
+	if err != nil {
+		log.Fatalln("Error connecting to server" + name)
+		return false
+	}
+	socket.Write([]byte(srv.myName))
+	srv.CreateSession(name, socket)
+	return true
 }
 
 func (srv *Server)CreateSession(name string, socket net.Conn){

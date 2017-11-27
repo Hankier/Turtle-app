@@ -1,15 +1,15 @@
 package serverEntry
 
 type ServerEntry struct{
-	name string
-	ip_port string
-	publicKey [256]byte
+	Name string
+	Ip_port string
+	PublicKey [256]byte
 }
 
 func NewServerEntry(name string, ip_port string, publicKey [256]byte)(*ServerEntry){
 	srvEntry := new(ServerEntry)
-	srvEntry.ip_port = ip_port
-	srvEntry.name = name
-	srvEntry.publicKey = publicKey
+	srvEntry.Ip_port = ip_port
+	srvEntry.Name = name
+	srvEntry.PublicKey = publicKey
 	return srvEntry
 }
