@@ -30,8 +30,8 @@ func NewSession(socket *net.Conn, name string, messageHandler *messageHandler.Me
 func (session *Session)Start(){
 	log.Print("Starting session " + session.name)
 
-	go sender.Loop(session.wg)
-	go receiver.Loop(session.wg)
+	go session.sender.Loop(session.wg)
+	go session.receiver.Loop(session.wg)
 
 	session.wg.Wait()
 
