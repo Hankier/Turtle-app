@@ -31,7 +31,7 @@ func NewSenderImpl(socket *net.Conn)(*SenderImpl){
 	return sender
 }
 
-func (sender *SenderImpl)Loop(wg sync.WaitGroup){
+func (sender *SenderImpl)Loop(wg *sync.WaitGroup){
 	defer wg.Done()
 
 	for !sender.stopped{
