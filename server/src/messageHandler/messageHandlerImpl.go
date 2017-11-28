@@ -4,6 +4,7 @@ import (
 	"sessionsSender"
 	"decrypter"
 	"log"
+	"time"
 )
 
 type MessageHandlerImpl struct{
@@ -22,5 +23,8 @@ func (handler *MessageHandlerImpl)HandleBytes(bytes []byte){
 	log.Print("Handling bytes " + string(bytes))
 
 	msg := FromBytes(bytes)
+
+	//TODO remove debug delay
+	time.Sleep(time.Second)
 	msg.Handle(handler.sessSender, handler.decrypter)
 }
