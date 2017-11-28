@@ -7,11 +7,13 @@ import (
 	"log"
 	"net"
 	"serverEntry"
-	"sender"
+	"sessionHandler"
+	"session"
+	"messageHandler"
 )
 
 type Server struct{
-	sessions map[string]sender.Sender
+	sessions map[string]*session.Session
 	clientListener *connectionListener.ConnectionListener
 	serverListener *connectionListener.ConnectionListener
 	serverList map[string]serverEntry.ServerEntry
@@ -23,7 +25,7 @@ type Server struct{
 func NewServer(name string)(*Server){
 	srv := new(Server)
 
-	srv.sessions = make(map[string]sender.Sender)
+	srv.sessions = make(map[string]*session.Session)
 
 	srv.myName = name
 
@@ -50,6 +52,8 @@ func (srv *Server)SendTo(name string, bytes []byte){
 		}
 	}
 }
+
+func (srv *Server)UnlockSending(name string){}
 
 
 func (srv *Server)Start(clientPort, serverPort string)error{
@@ -85,7 +89,11 @@ func (srv *Server)connectToServer(name string)bool{
 }
 
 func (srv *Server)CreateSession(name string, socket *net.Conn){
-	//TODO
+	msgHandler := messageHandler.NewMessageHandlerImpl(srv, srv.serverCrypto)
+	sess := session.NewSession(socket, name, msgHandler)
+
+	sess.Start()
+	srv.sessions[name] = sess
 }
 
 func (srv *Server)RemoveSession(name string){
