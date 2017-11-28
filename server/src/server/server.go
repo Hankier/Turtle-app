@@ -15,7 +15,7 @@ type Server struct{
 	sessions map[string]*session.Session
 	clientListener *connectionListener.ConnectionListener
 	serverListener *connectionListener.ConnectionListener
-	serverList map[string]serverEntry.ServerEntry
+	serverList map[string]*serverEntry.ServerEntry
 	serverCrypto *decrypter.ServerCrypto
 	wg sync.WaitGroup
 	myName string
@@ -28,8 +28,14 @@ func NewServer(name string)(*Server){
 
 	srv.myName = name
 
-	//TODO Downloading server list from hardcoded DA
+	//TODO Downloading server list from DA
 
+	srv.serverList = make(map[string]*serverEntry.ServerEntry)
+
+	pk := make([]byte, 256)
+
+	srv.serverList["00000000"] = serverEntry.NewServerEntry("00000000", "127.0.0.1:8083", pk)
+	srv.serverList["00000001"] = serverEntry.NewServerEntry("00000001", "127.0.0.1:8081", pk)
 	srv.wg.Add(2)
 	srv.serverCrypto = decrypter.NewServerCrypto();
 	return srv
@@ -52,7 +58,9 @@ func (srv *Server)SendTo(name string, bytes []byte){
 	}
 }
 
-func (srv *Server)UnlockSending(name string){}
+func (srv *Server)UnlockSending(name string){
+	//TODO
+}
 
 
 func (srv *Server)Start(clientPort, serverPort string)error{
@@ -96,5 +104,6 @@ func (srv *Server)CreateSession(name string, socket *net.Conn){
 }
 
 func (srv *Server)RemoveSession(name string){
-	//TODO
+	srv.sessions[name].DeleteSession()
+	delete(srv.sessions, name)
 }
