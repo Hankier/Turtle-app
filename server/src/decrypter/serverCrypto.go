@@ -67,6 +67,7 @@ func (srv *ServerCrypto)loadKey()bool{
         return false
     }
     srv.privateKey = priv
+    srv.publicKey = &priv.PublicKey
 
     return true
 }
@@ -81,9 +82,21 @@ func (srv *ServerCrypto)DecryptRSA(bytes []byte)[]byte{
     return decryptedText
 }
 
-    return bytes
+func (srv *ServerCrypto)EncrytRSA(bytes []byte)[]byte{
+    var err error
+    var md5_hash hash.Hash
+    var label []byte
+    if encryptedText, err = rsa.EncrytOAEP(md5_hash, rand.Reader, srv.publicKey, bytes, label); err != nil {
+        log.Fatal(err)
+    }
+    return encryptedText
 }
+
 func (srv *ServerCrypto)Decrypt(bytes []byte)[]byte{
 
     return bytes
 }
+
+func main() {
+    serv := new(ServerCrypto)
+
