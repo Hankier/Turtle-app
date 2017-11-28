@@ -28,7 +28,7 @@ func FromBytes(bytes []byte)(*Message){
 
 	msg.previousName = string(bytes[0:8])
 	msg.messageType = (TYPE)(bytes[8])
-	msg.messageContent = bytes[9:]
+	msg.messageContent = append([]byte(nil), bytes[9:]...)
 
 	return msg
 }
