@@ -17,7 +17,7 @@ type Session struct{
 	wg *sync.WaitGroup
 }
 
-func NewSession(socket *net.Conn, name string, messageHandler *messageHandler.MessageHandler)(*Session){
+func NewSession(socket *net.Conn, name string, messageHandler messageHandler.MessageHandler)(*Session){
 	session := new(Session)
 
 	session.name = name
