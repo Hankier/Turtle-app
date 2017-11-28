@@ -17,4 +17,6 @@ func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypt dec
 	return mhi
 }
 
-func (*MessageHandlerImpl)HandleBytes(bytes []byte){}
+func (*MessageHandlerImpl)HandleBytes(bytes []byte){
+	//TODO
+}
