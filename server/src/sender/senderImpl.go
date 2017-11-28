@@ -39,6 +39,7 @@ func (sender *SenderImpl)Loop(wg *sync.WaitGroup){
 		if !sender.canSend{
 			sender.canSendMutex.Unlock()
 		} else {
+			sender.canSend = false
 			sender.canSendMutex.Unlock()
 			sender.messagesMutex.Lock()
 			if len(sender.messages) > 0{
