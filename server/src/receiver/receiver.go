@@ -10,11 +10,11 @@ import (
 )
 
 type Receiver struct{
-	socket *net.Conn
+	socket net.Conn
 	messageHandler messageHandler.MessageHandler
 }
 
-func NewReceiver(socket *net.Conn, messageHandler messageHandler.MessageHandler)(*Receiver){
+func NewReceiver(socket net.Conn, messageHandler messageHandler.MessageHandler)(*Receiver){
 	recv := new(Receiver)
 	recv.socket = socket
 	recv.messageHandler = messageHandler
@@ -25,20 +25,25 @@ func NewReceiver(socket *net.Conn, messageHandler messageHandler.MessageHandler)
 func (recv *Receiver)Loop(wg *sync.WaitGroup){
 	defer wg.Done()
 
-	reader := bufio.NewReader(*recv.socket)
+	log.Print("Starting receiver loop")
+
+
+	reader := bufio.NewReader(recv.socket)
 
 	size := make([]byte, 2)
 	for {
-		_, err := io.ReadFull(reader, size)
+		_, err := io.ReadFull(recv.socket, size)
 		if err != nil{log.Print("Receiver " + err.Error());break}
 
 		n := twoBytesToInt(size)
+
+		log.Print("Receiving ", n, " bytes")
 
 		bytes := make([]byte, n)
 		_, err = io.ReadFull(reader, bytes)
 		if err != nil{log.Print("Receiver " + err.Error());break}
 
-		log.Print("Received", n, "bytes:", string(bytes))
+		log.Print("Received ", n, " bytes:", string(bytes))
 
 		recv.messageHandler.HandleBytes(bytes)
 	}
