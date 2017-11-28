@@ -30,13 +30,15 @@ func (recv *Receiver)Loop(wg *sync.WaitGroup){
 	size := make([]byte, 2)
 	for {
 		_, err := io.ReadFull(reader, size)
-		if err == nil{log.Print("Receiver " + err.Error());break}
+		if err != nil{log.Print("Receiver " + err.Error());break}
 
 		n := twoBytesToInt(size)
 
 		bytes := make([]byte, n)
 		_, err = io.ReadFull(reader, bytes)
-		if err == nil{log.Print("Receiver " + err.Error());break}
+		if err != nil{log.Print("Receiver " + err.Error());break}
+
+		log.Print("Received", n, "bytes:", string(bytes))
 
 		recv.messageHandler.HandleBytes(bytes)
 	}
