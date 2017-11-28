@@ -42,8 +42,11 @@ func NewServer(name string)(*Server){
 }
 
 func checkIfNameIsServer(name string)bool{
-	//TODO
-	return true;
+	if name[0] == '0'{
+		return true;
+	}else {
+		return false
+	}
 }
 
 func (srv *Server)SendTo(name string, bytes []byte){
