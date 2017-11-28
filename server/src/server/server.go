@@ -36,6 +36,7 @@ func NewServer(name string)(*Server){
 
 	srv.serverList["00000000"] = serverEntry.NewServerEntry("00000000", "127.0.0.1:8081", pk)
 	srv.serverList["00000001"] = serverEntry.NewServerEntry("00000001", "127.0.0.1:8083", pk)
+	srv.serverList["00000002"] = serverEntry.NewServerEntry("00000002", "127.0.0.1:8085", pk)
 	srv.wg.Add(2)
 	srv.serverCrypto = decrypter.NewServerCrypto();
 	return srv
