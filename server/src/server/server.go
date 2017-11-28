@@ -107,9 +107,11 @@ func (srv *Server)CreateSession(name string, socket *net.Conn){
 
 	sess.Start()
 	srv.sessions[name] = sess
+	//TODO thread safe
 }
 
 func (srv *Server)RemoveSession(name string){
 	srv.sessions[name].DeleteSession()
 	delete(srv.sessions, name)
+	//TODO thread safe
 }
