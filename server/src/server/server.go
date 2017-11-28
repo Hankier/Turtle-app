@@ -9,6 +9,7 @@ import (
 	"serverEntry"
 	"session"
 	"messageHandler"
+	"bufio"
 )
 
 type Server struct{
@@ -93,14 +94,16 @@ func (srv *Server)connectToServer(name string)bool{
 		log.Fatalln("Error connecting to server" + name)
 		return false
 	}
-	socket.Write([]byte(srv.myName))
+	writer := bufio.NewWriter(socket)
+	writer.Write([]byte(srv.myName))
+	writer.Flush()
 	srv.CreateSession(name, &socket)
 	return true
 }
 
 func (srv *Server)CreateSession(name string, socket *net.Conn){
 	msgHandler := messageHandler.NewMessageHandlerImpl(srv, srv.serverCrypto)
-	sess := session.NewSession(socket, name, msgHandler)
+	sess := session.NewSession(socket, name, msgHandler, srv)
 
 	sess.Start()
 	srv.sessions[name] = sess
