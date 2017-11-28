@@ -7,6 +7,7 @@ import (
 	"sender"
 	"receiver"
 	"messageHandler"
+	"sessionHandler"
 )
 
 type Session struct{
@@ -14,17 +15,19 @@ type Session struct{
 	socket *net.Conn
 	sender *sender.SenderImpl
 	receiver *receiver.Receiver
+	handler sessionHandler.SessionHandler
 	wgS *sync.WaitGroup
 	wgR *sync.WaitGroup
 }
 
-func NewSession(socket *net.Conn, name string, messageHandler messageHandler.MessageHandler)(*Session){
+func NewSession(socket *net.Conn, name string, messageHandler messageHandler.MessageHandler, handler sessionHandler.SessionHandler)(*Session){
 	session := new(Session)
 
 	session.name = name
 	session.socket = socket
 	session.sender = sender.NewSenderImpl(socket)
 	session.receiver = receiver.NewReceiver(socket, messageHandler)
+	session.handler = handler
 	session.wgS = &sync.WaitGroup{}
 	session.wgS.Add(1)
 	session.wgR = &sync.WaitGroup{}
@@ -42,6 +45,8 @@ func (session *Session)Start(){
 	session.wgR.Wait()
 	session.DeleteSession()
 	session.wgS.Wait()
+
+	session.handler.RemoveSession(session.name)
 
 	log.Print("Session ended " + session.name)
 }
