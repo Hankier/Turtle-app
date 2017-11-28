@@ -7,6 +7,8 @@ import (
     "crypto/md5"
     "crypto/rsa"
     "crypto/rand"
+    "encoding/pem"
+    "crypto/x509"
 )
 
 type ServerCrypto struct{
@@ -53,10 +55,9 @@ func (srv *ServerCrypto)loadKey()bool{
     }
     block, _ := pem.Decode([]byte(read_bs))
 
-    fmt.Println(block)
     priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
     if err != nil {
-        fmt.Println("Failed to parse private key: %s", err)
+        log.Println("Failed to parse private key: %s", err)
         return false
     }
     priv.Precompute()
@@ -79,7 +80,6 @@ func (srv *ServerCrypto)DecryptRSA(bytes []byte)[]byte{
     }
     return decryptedText
 }
-
 
     return bytes
 }
