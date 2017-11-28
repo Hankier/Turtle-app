@@ -5,14 +5,17 @@ import (
     "io/ioutil"
 )
 
+//type ServerCrypto struct{
+//    privateKey  []byte
+//    publicKey   []byte
+//}
+
 type ServerCrypto struct{
-    privateKey  []byte
-    publicKey   []byte
 }
 
 func NewServerCrypto()(*ServerCrypto){
     srv := new(ServerCrypto)
-    srv.loadKey()
+    //srv.loadKey()
 
     return srv
 }
