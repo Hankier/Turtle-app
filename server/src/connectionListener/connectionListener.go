@@ -5,7 +5,6 @@ import (
 	"log"
 	"sync"
 	"sessionHandler"
-	"bufio"
 	"io"
 )
 
@@ -25,16 +24,13 @@ func NewConnectionListener(port string, handler sessionHandler.SessionHandler) (
 }
 
 
-func (cln *ConnectionListener)handleConnection(c *net.Conn) {
-	log.Printf("Client %v connected to port %d", (*c).RemoteAddr(), cln.socket.Addr().(*net.TCPAddr).Port)
-
-	reader := bufio.NewReader(*c)
+func (cln *ConnectionListener)handleConnection(c net.Conn) {
+	log.Printf("Client %v connected to port %d", c.RemoteAddr(), cln.socket.Addr().(*net.TCPAddr).Port)
 
 	nameBytes := make([]byte, 8)
-	io.ReadFull(reader, nameBytes)
+	io.ReadFull(c, nameBytes)
 
 	name := string(nameBytes)
-	log.Print("His name is " + name)
 
 	cln.sessionsHandler.CreateSession(name, c)
 }
@@ -47,7 +43,7 @@ func (cln *ConnectionListener)Loop(wg sync.WaitGroup) error{
 			if err != nil {
 				return err
 			}
-			go cln.handleConnection(&conn)
+			go cln.handleConnection(conn)
 		}
 	}
 	return nil
