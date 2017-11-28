@@ -59,7 +59,7 @@ func (srv *Server)SendTo(name string, bytes []byte){
 }
 
 func (srv *Server)UnlockSending(name string){
-	//TODO
+	srv.sessions[name].UnlockSending()
 }
 
 
