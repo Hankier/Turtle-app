@@ -2,12 +2,11 @@ package connectionListener
 
 import (
 	"net"
-	"fmt"
 	"log"
-	"encoding/binary"
-	"regexp"
 	"sync"
 	"sessionHandler"
+	"bufio"
+	"io"
 )
 
 
@@ -26,65 +25,30 @@ func NewConnectionListener(port string, handler sessionHandler.SessionHandler) (
 }
 
 
-func (cln *ConnectionListener)handleConnection(c net.Conn) {
+func (cln *ConnectionListener)handleConnection(c *net.Conn) {
+	log.Printf("Client %v connected to port %d", (*c).RemoteAddr(), cln.socket.Addr().(*net.TCPAddr).Port)
 
-	log.Printf("Client %v connected.", c.RemoteAddr())
+	reader := bufio.NewReader(*c)
 
-	messageSizeBuffer := make([]byte, 4)
+	nameBytes := make([]byte, 8)
+	io.ReadFull(reader, nameBytes)
 
-	n, err := c.Read(messageSizeBuffer)
-	if err != nil || n == 0 {
-		c.Close()
-	}
-	messageSize := binary.LittleEndian.Uint32(messageSizeBuffer[0:])
+	name := string(nameBytes)
+	log.Print("His name is " + name)
 
-	log.Printf("Data1: %v ", messageSize)
-	log.Printf("Data: %v , %v", n, messageSizeBuffer[0:n])
-
-	log.Printf(string(messageSizeBuffer[0:n]));
-
-	messageBuffer := make([]byte, messageSize)
-	for {
-		n, err := c.Read(messageBuffer)
-		fmt.Println(err)
-		if err != nil {
-			c.Close()
-			break
-		}
-		ip, msg := getIp(string(messageBuffer))
-		//sendTo(ip, msg)
-
-		log.Printf(ip)
-		log.Printf("%v", msg[0:])
-		log.Printf("Data: %v , %v", n, messageBuffer[0:n])
-
-	}
-	log.Printf("Connection from %v closed.", c.RemoteAddr())
+	cln.sessionsHandler.CreateSession(name, c)
 }
 
 func (cln *ConnectionListener)Loop(wg sync.WaitGroup) error{
 	defer wg.Done()
 	for{
-		fmt.Println("Server up and listening on port 12345")
-
 		for {
 			conn, err := cln.socket.Accept()
 			if err != nil {
 				return err
 			}
-			go cln.handleConnection(conn)
+			go cln.handleConnection(&conn)
 		}
 	}
 	return nil
-}
-
-func getIp(message string) (ipAddress string, newMessage []byte)  {
-	re := regexp.MustCompile("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+ ")
-	ipAddress = re.FindString(message)
-	fmt.Println(ipAddress)
-	reg := regexp.MustCompile(ipAddress)
-	message = reg.ReplaceAllString(message, "")
-	newMessage = []byte(message)
-
-	return ipAddress, newMessage
 }
