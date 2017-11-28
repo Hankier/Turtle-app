@@ -7,6 +7,7 @@ import (
 	"sender"
 	"receiver"
 	"messageHandler"
+	"sessionHandler"
 )
 
 type Session struct{
@@ -14,18 +15,23 @@ type Session struct{
 	socket *net.Conn
 	sender *sender.SenderImpl
 	receiver *receiver.Receiver
-	wg *sync.WaitGroup
+	handler sessionHandler.SessionHandler
+	wgS *sync.WaitGroup
+	wgR *sync.WaitGroup
 }
 
-func NewSession(socket *net.Conn, name string, messageHandler messageHandler.MessageHandler)(*Session){
+func NewSession(socket *net.Conn, name string, messageHandler messageHandler.MessageHandler, handler sessionHandler.SessionHandler)(*Session){
 	session := new(Session)
 
 	session.name = name
 	session.socket = socket
 	session.sender = sender.NewSenderImpl(socket)
 	session.receiver = receiver.NewReceiver(socket, messageHandler)
-	session.wg = &sync.WaitGroup{}
-	session.wg.Add(1)
+	session.handler = handler
+	session.wgS = &sync.WaitGroup{}
+	session.wgS.Add(1)
+	session.wgR = &sync.WaitGroup{}
+	session.wgR.Add(1)
 
 	return session
 }
@@ -33,12 +39,14 @@ func NewSession(socket *net.Conn, name string, messageHandler messageHandler.Mes
 func (session *Session)Start(){
 	log.Print("Starting session " + session.name)
 
-	go session.sender.Loop(session.wg)
-	go session.receiver.Loop(session.wg)
+	go session.sender.Loop(session.wgS)
+	go session.receiver.Loop(session.wgR)
 
-	session.wg.Wait()
-
+	session.wgR.Wait()
 	session.DeleteSession()
+	session.wgS.Wait()
+
+	session.handler.RemoveSession(session.name)
 
 	log.Print("Session ended " + session.name)
 }
