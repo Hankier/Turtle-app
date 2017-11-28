@@ -5,12 +5,14 @@ import (
 	"sync"
 	"bufio"
 	"time"
+	"log"
+	"strconv"
 )
 
 const LOOP_TIME = time.Second
 
 type SenderImpl struct{
-	socket *net.Conn
+	socket net.Conn
 	messages [][]byte
 	messagesMutex *sync.Mutex
 	canSend bool
@@ -18,11 +20,11 @@ type SenderImpl struct{
 	stopped bool
 }
 
-func NewSenderImpl(socket *net.Conn)(*SenderImpl){
+func NewSenderImpl(socket net.Conn)(*SenderImpl){
 	sender := new(SenderImpl)
 
 	sender.socket = socket
-	sender.messages = make([][]byte, 10)
+	sender.messages = make([][]byte, 0, 10)
 	sender.messagesMutex = &sync.Mutex{}
 	sender.canSend = true
 	sender.canSendMutex = &sync.Mutex{}
@@ -34,20 +36,25 @@ func NewSenderImpl(socket *net.Conn)(*SenderImpl){
 func (sender *SenderImpl)Loop(wg *sync.WaitGroup){
 	defer wg.Done()
 
+	log.Print("Starting sender loop")
+
+	writer := bufio.NewWriter(sender.socket)
+
 	for !sender.stopped{
 		sender.canSendMutex.Lock()
 		if !sender.canSend{
 			sender.canSendMutex.Unlock()
 		} else {
-			sender.canSend = false
 			sender.canSendMutex.Unlock()
 			sender.messagesMutex.Lock()
 			if len(sender.messages) > 0{
+				sender.canSend = false
 				messagesCopy := sender.messages[:]
+				sender.messages = sender.messages[:0]
 				sender.messagesMutex.Unlock()
 
 				packet := messagesToSingle(messagesCopy)
-				writer := bufio.NewWriter(*sender.socket)
+				log.Print("Sender sending message length " + strconv.Itoa(len(packet)) + " - " + string(packet))
 				writer.Write(packet)
 				writer.Flush()
 			} else {
@@ -76,6 +83,11 @@ func (sender *SenderImpl)Send(bytes []byte){
 	sender.messagesMutex.Lock()
 	sender.messages = append(sender.messages, bytes)
 	sender.messagesMutex.Unlock()
+}
+
+func (sender *SenderImpl)SendInstant(bytes []byte){
+	bytes = addSizeToMessage(bytes)
+	sender.socket.Write(bytes)
 }
 
 func (sender *SenderImpl)UnlockSending(){

@@ -8,11 +8,12 @@ import (
 	"receiver"
 	"messageHandler"
 	"sessionHandler"
+	"strconv"
 )
 
 type Session struct{
 	name string
-	socket *net.Conn
+	socket net.Conn
 	sender *sender.SenderImpl
 	receiver *receiver.Receiver
 	handler sessionHandler.SessionHandler
@@ -20,7 +21,7 @@ type Session struct{
 	wgR *sync.WaitGroup
 }
 
-func NewSession(socket *net.Conn, name string, messageHandler messageHandler.MessageHandler, handler sessionHandler.SessionHandler)(*Session){
+func NewSession(socket net.Conn, name string, messageHandler messageHandler.MessageHandler, handler sessionHandler.SessionHandler)(*Session){
 	session := new(Session)
 
 	session.name = name
@@ -53,14 +54,20 @@ func (session *Session)Start(){
 
 func (session *Session)DeleteSession(){
 	session.sender.Stop()
-	(*session.socket).Close()
+	session.socket.Close()
 }
 
 func (session *Session)Send(bytes []byte){
-	bytes = append(([]byte)(session.name), bytes...)
+	log.Print("Adding message size: " + strconv.Itoa(len(bytes)) + " to " + session.name)
 	session.sender.Send(bytes)
 }
 
+func (session *Session)SendInstant(bytes []byte){
+	log.Print("Sending instant: " + strconv.Itoa(len(bytes)) + " to " + session.name)
+	session.sender.SendInstant(bytes)
+}
+
 func (session *Session)UnlockSending(){
+	log.Print("Unlock sending to " + session.name)
 	session.sender.UnlockSending()
 }

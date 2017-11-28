@@ -1,0 +1,146 @@
+src/pkg/launchpad.net
+*.cgo*.go
+*.cgo*.c
+.hg/last-message.txt
+
+.DS_Store
+*.[568ao]
+*.ao
+*.so
+*.pyc
+._*
+.nfs.*
+[568a].out
+*~
+*.orig
+*.rej
+*.exe
+.*.swp
+core
+_cgo_*
+_obj
+_test
+_testmain.go
+test.out
+build.out
+y.tab.[ch]
+doc/htmlgen
+misc/cgo/life/run.out
+misc/dashboard/builder/gobuilder
+misc/goplay/goplay
+src/cmd/6a/6a
+src/cmd/?l/enam.c
+src/cmd/cc/y.output
+src/cmd/gc/builtin.c
+src/cmd/gc/mkbuiltin1
+src/cmd/gc/opnames.h
+src/cmd/gc/y.output
+src/cmd/gc/y1.tab.c
+src/cmd/gc/yerr.h
+src/pkg/Make.deps
+src/pkg/exp/ogle/ogle
+src/pkg/os/signal/unix.go
+src/pkg/runtime/*/asm.h
+src/pkg/runtime/goc2c
+src/pkg/runtime/mkversion
+src/pkg/runtime/runtime.acid.*
+src/pkg/runtime/runtime_defs.go
+src/pkg/runtime/version.go
+src/pkg/runtime/version_*.go
+src/pkg/unicode/maketables
+src/pkg/github.com/
+src/pkg/*.googlecode.com/
+test/pass.out
+test/run.out
+test/times.out
+test/garbage/*.out
+goinstall.log
+src/cmd/[568][acgl]/[568][acgl]
+src/cmd/nm/*nm
+src/cmd/cov/*cov
+src/cmd/prof/*prof
+src/cmd/cgo/cgo
+src/cmd/ebnflint/ebnflint
+src/cmd/godefs/godefs
+src/cmd/godoc/godoc
+src/cmd/gofix/gofix
+src/cmd/gofmt/gofmt
+src/cmd/goinstall/goinstall
+src/cmd/goinstall/syslist.go
+src/cmd/gopack/gopack
+src/cmd/gotest/gotest
+src/cmd/gotype/gotype
+src/cmd/govet/govet
+src/cmd/goyacc/goyacc
+src/cmd/hgpatch/hgpatch
+doc/codelab/wiki/*.bin
+/bin/
+/pkg/
+
+### Intellij ###
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+
+# User-specific stuff:
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+
+# Sensitive or high-churn files:
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.xml
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+
+# Gradle:
+.idea/**/gradle.xml
+.idea/**/libraries
+
+# CMake
+cmake-build-debug/
+
+# Mongo Explorer plugin:
+.idea/**/mongoSettings.xml
+
+## File-based project format:
+*.iws
+
+## Plugin-specific files:
+
+# IntelliJ
+/out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+
+# Cursive Clojure plugin
+.idea/replstate.xml
+
+# Ruby plugin and RubyMine
+/.rakeTasks
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+### Intellij Patch ###
+# Comment Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721
+
+# *.iml
+# modules.xml
+# .idea/misc.xml
+# *.ipr
+
+# Sonarlint plugin
+.idea/sonarlint
+
+# End of https://www.gitignore.io/api/go,intellij
+
