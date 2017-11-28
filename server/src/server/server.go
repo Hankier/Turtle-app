@@ -9,7 +9,6 @@ import (
 	"serverEntry"
 	"session"
 	"messageHandler"
-	"bufio"
 )
 
 type Server struct{
@@ -35,8 +34,8 @@ func NewServer(name string)(*Server){
 
 	pk := make([]byte, 256)
 
-	srv.serverList["00000000"] = serverEntry.NewServerEntry("00000000", "127.0.0.1:8083", pk)
-	srv.serverList["00000001"] = serverEntry.NewServerEntry("00000001", "127.0.0.1:8081", pk)
+	srv.serverList["00000000"] = serverEntry.NewServerEntry("00000000", "127.0.0.1:8081", pk)
+	srv.serverList["00000001"] = serverEntry.NewServerEntry("00000001", "127.0.0.1:8083", pk)
 	srv.wg.Add(2)
 	srv.serverCrypto = decrypter.NewServerCrypto();
 	return srv
@@ -51,8 +50,22 @@ func checkIfNameIsServer(name string)bool{
 }
 
 func (srv *Server)SendTo(name string, bytes []byte){
-	if session, ok := srv.sessions[name]; ok {
-		session.Send(bytes)
+	if sess, ok := srv.sessions[name]; ok {
+		bytes = append(([]byte)(srv.myName), bytes...)
+		sess.Send(bytes)
+	}else{
+		if checkIfNameIsServer(name) {
+			if srv.connectToServer(name){
+				srv.SendTo(name, bytes)
+			}
+		}
+	}
+}
+
+func (srv *Server)SendInstantTo(name string, bytes []byte){
+	if sess, ok := srv.sessions[name]; ok {
+		bytes = append(([]byte)(srv.myName), bytes...)
+		sess.SendInstant(bytes)
 	}else{
 		if checkIfNameIsServer(name) {
 			if srv.connectToServer(name){
@@ -91,21 +104,21 @@ func (srv *Server)connectToServer(name string)bool{
 	server := srv.serverList[name]
 	socket, err := net.Dial("tcp", server.Ip_port)
 	if err != nil {
-		log.Fatalln("Error connecting to server" + name)
+		log.Print("Error connecting to server " + name + " " + err.Error())
 		return false
 	}
-	writer := bufio.NewWriter(socket)
-	writer.Write([]byte(srv.myName))
-	writer.Flush()
-	srv.CreateSession(name, &socket)
+	socket.Write([]byte(srv.myName))
+	srv.CreateSession(name, socket)
+	log.Print("Succesfully connected to " + name)
 	return true
 }
 
-func (srv *Server)CreateSession(name string, socket *net.Conn){
+func (srv *Server)CreateSession(name string, socket net.Conn){
 	msgHandler := messageHandler.NewMessageHandlerImpl(srv, srv.serverCrypto)
+
 	sess := session.NewSession(socket, name, msgHandler, srv)
 
-	sess.Start()
+	go sess.Start()
 	srv.sessions[name] = sess
 }
 
