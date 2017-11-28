@@ -11,10 +11,10 @@ import (
 
 type Receiver struct{
 	socket *net.Conn
-	messageHandler *messageHandler.MessageHandler
+	messageHandler messageHandler.MessageHandler
 }
 
-func NewReceiver(socket *net.Conn, messageHandler *messageHandler.MessageHandler)(*Receiver){
+func NewReceiver(socket *net.Conn, messageHandler messageHandler.MessageHandler)(*Receiver){
 	recv := new(Receiver)
 	recv.socket = socket
 	recv.messageHandler = messageHandler
