@@ -45,8 +45,8 @@ func (msg *Message)toBytes()[]byte{
 	return bytes
 }
 
-func (msg *Message)Handle(sender *sessionsSender.SessionsSender, decrypter *decrypter.Decrypter){
-	msg.messageContent = (*decrypter).Decrypt(msg.messageContent)
+func (msg *Message)Handle(sender sessionsSender.SessionsSender, decrypter decrypter.Decrypter){
+	msg.messageContent = decrypter.Decrypt(msg.messageContent)
 
 	switch msg.messageType{
 	case MSG:

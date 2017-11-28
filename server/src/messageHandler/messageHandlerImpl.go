@@ -3,18 +3,24 @@ package messageHandler
 import (
 	"sessionsSender"
 	"decrypter"
+	"log"
 )
 
 type MessageHandlerImpl struct{
 	sessSender sessionsSender.SessionsSender
-	decrypt decrypter.Decrypter
+	decrypter decrypter.Decrypter
 }
 
-func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypt decrypter.Decrypter)(*MessageHandlerImpl){
+func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypter decrypter.Decrypter)(*MessageHandlerImpl){
 	mhi := new(MessageHandlerImpl)
 	mhi.sessSender = sessSender
-	mhi.decrypt = decrypt
+	mhi.decrypter = decrypter
 	return mhi
 }
 
-func (*MessageHandlerImpl)HandleBytes(bytes []byte){}
+func (handler *MessageHandlerImpl)HandleBytes(bytes []byte){
+	log.Print("Handling bytes " + string(bytes))
+
+	msg := FromBytes(bytes)
+	msg.Handle(handler.sessSender, handler.decrypter)
+}
