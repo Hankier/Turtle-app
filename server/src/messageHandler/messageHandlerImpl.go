@@ -3,7 +3,7 @@ package messageHandler
 import (
 	"sessionsSender"
 	"decrypter"
-	"log"
+	_"log"
 	"time"
 )
 
