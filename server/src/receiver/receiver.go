@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"messageHandler"
+	"utils"
 )
 
 type Receiver struct{
@@ -34,7 +35,7 @@ func (recv *Receiver)Loop(wg *sync.WaitGroup){
 		_, err := io.ReadFull(recv.socket, size)
 		if err != nil{log.Print("Receiver " + err.Error());break}
 
-		n := twoBytesToInt(size)
+		n := utils.TwoBytesToInt(size)
 
 		bytes := make([]byte, n)
 		_, err = io.ReadFull(reader, bytes)
@@ -44,13 +45,4 @@ func (recv *Receiver)Loop(wg *sync.WaitGroup){
 
 		recv.messageHandler.HandleBytes(recv.sessionName, bytes)
 	}
-}
-
-func twoBytesToInt(size []byte)int{
-	num := 0
-
-	num += (int)(size[0])
-	num += (int)(size[1]) * 256
-
-	return num
 }

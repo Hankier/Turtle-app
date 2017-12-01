@@ -5,6 +5,7 @@ import (
 	"sync"
 	"bufio"
 	"time"
+	"utils"
 )
 
 const LOOP_TIME = time.Second
@@ -90,17 +91,10 @@ func (sender *SenderImpl)UnlockSending(){
 }
 
 func addSizeToMessage(bytes []byte)([]byte){
-	size := intTo2bytes(len(bytes))
+	size := utils.IntToTwobytes(len(bytes))
 
 	bytes = append(size, bytes...)
 
 	return bytes
 }
 
-func intTo2bytes(len int)[]byte{
-	size := make([]byte, 2)
-	size[0] = (byte)(len % 256)
-	size[1] = (byte)(len / 256)
-
-	return size
-}
