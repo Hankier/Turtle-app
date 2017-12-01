@@ -19,16 +19,16 @@ type Message struct{
 	messageContent []byte
 }
 
-func FromBytes(bytes []byte)(*Message){
+func FromBytes(from string, bytes []byte)(*Message){
 	//no previous name and type
-	if len(bytes) < 9{
+	if len(bytes) < 1{
 		return nil
 	}
 	msg := new(Message)
 
-	msg.previousName = string(bytes[0:8])
-	msg.messageType = (TYPE)(bytes[8])
-	msg.messageContent = append([]byte(nil), bytes[9:]...)
+	msg.previousName = from
+	msg.messageType = (TYPE)(bytes[0])
+	msg.messageContent = append([]byte(nil), bytes[1:]...)
 
 	return msg
 }
