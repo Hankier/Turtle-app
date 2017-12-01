@@ -37,13 +37,14 @@ func NewSession(socket net.Conn, name string, messageHandler messageHandler.Mess
 }
 
 func (session *Session)Start(){
+	defer session.socket.Close()
 	log.Print("Starting session: " + session.name)
 
 	go session.sender.Loop(session.wgS)
 	go session.receiver.Loop(session.wgR)
 
 	session.wgR.Wait()
-	session.DeleteSession()
+	session.sender.Stop()
 	session.wgS.Wait()
 
 	session.handler.RemoveSession(session.name)
@@ -52,7 +53,6 @@ func (session *Session)Start(){
 }
 
 func (session *Session)DeleteSession(){
-	session.sender.Stop()
 	session.socket.Close()
 }
 
