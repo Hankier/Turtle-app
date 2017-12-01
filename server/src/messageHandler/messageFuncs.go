@@ -22,7 +22,7 @@ func (msg *Message)handleMSG(sender sessionsSender.SessionsSender){
 	msgOk.messageType = MSG_OK
 	msgOk.messageContent = make([]byte,0)
 
-	log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
+	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
 
 	sender.SendInstantTo(msg.previousName, msgOk.toBytes())
 }
