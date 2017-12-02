@@ -71,7 +71,7 @@ func (srv *ServerCrypto)loadKey() bool{
     return true
 }
 
-func (srv *ServerCrypto)DecryptRSA(msg []byte)[]byte{
+func (srv *ServerCrypto)decryptRSA(msg []byte)[]byte{
     decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, srv.privateKey, msg);
     if  err != nil {
         log.Fatal(err)
@@ -79,7 +79,7 @@ func (srv *ServerCrypto)DecryptRSA(msg []byte)[]byte{
     return decryptedText
 }
 
-func (srv *ServerCrypto)EncryptRSA(msg []byte)[]byte{
+func (srv *ServerCrypto)encryptRSA(msg []byte)[]byte{
 	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, srv.publicKey, msg)
     if err != nil {
         log.Fatal(err)
@@ -87,6 +87,23 @@ func (srv *ServerCrypto)EncryptRSA(msg []byte)[]byte{
     return encryptedText
 }
 
-func (srv *ServerCrypto)Decrypt(bytes []byte)[]byte{
+func (srv *ServerCrypto)Decrypt(enctype TYPE, bytes []byte)[]byte{
+    switch enctype {
+    case PLAIN:
+        return srv.decryptPlain(bytes)
+    case RSA:
+        return srv.decryptRSA(bytes)
+    case ELGAMAL:
+        return srv.decryptElGamal(bytes)
+    }
+    return bytes
+}
+
+func (srv *ServerCrypto) decryptElGamal(bytes []byte) []byte {
+    return bytes
+    //TODO ELGAMAL!!!
+}
+
+func (srv *ServerCrypto) decryptPlain(bytes []byte) []byte {
     return bytes
 }
