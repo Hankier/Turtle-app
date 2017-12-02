@@ -26,5 +26,21 @@ func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
 
 	//TODO remove debug delay
 	time.Sleep(time.Second)
-	msg.Handle(handler.sessSender, handler.decrypter)
+	handler.handle(msg)
+}
+
+func (handler *MessageHandlerImpl)handle(msg *Message){
+	msg.messageContent = handler.decrypter.Decrypt(msg.encType, msg.messageContent)
+
+	switch msg.messageType{
+	case MSG:
+		handler.handleMSG(msg)
+		break
+	case MSG_OK:
+		handler.handleMSG_OK(msg)
+		break
+	case PING:
+		handler.handlePING(msg)
+		break
+	}
 }
