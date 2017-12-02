@@ -1,5 +1,11 @@
 package decrypter
 
+const (
+	PLAIN = iota
+	RSA
+	ELGAMAL
+)
+
 type Decrypter interface{
-	Decrypt([]byte)([]byte)
+	Decrypt(int, []byte)([]byte)
 }
