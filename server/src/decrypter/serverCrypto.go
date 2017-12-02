@@ -87,7 +87,7 @@ func (srv *ServerCrypto)encryptRSA(msg []byte)[]byte{
     return encryptedText
 }
 
-func (srv *ServerCrypto)Decrypt(enctype int, bytes []byte)[]byte{
+func (srv *ServerCrypto)Decrypt(enctype TYPE, bytes []byte)[]byte{
     switch enctype {
     case PLAIN:
         return srv.decryptPlain(bytes)
