@@ -2,7 +2,6 @@ package messageHandler
 
 import (
 	"sessionSender"
-	"decrypter"
 	_"log"
 	"time"
 	"cryptographer"
@@ -27,5 +26,5 @@ func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
 
 	//TODO remove debug delay
 	time.Sleep(time.Second)
-	msg.Handle(handler.sessSender, handler.decrypter)
+	msg.handleMSG(handler.sessSender)
 }
