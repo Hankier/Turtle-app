@@ -3,8 +3,6 @@ package decrypter
 import (
     "log"
     "io/ioutil"
-    "hash"
-    "crypto/md5"
     "crypto/rsa"
     "crypto/rand"
     "encoding/pem"
@@ -19,13 +17,15 @@ type ServerCrypto struct{
 
 func NewServerCrypto()(*ServerCrypto){
     srv := new(ServerCrypto)
-    generateKey()
-    loadKey()
+    if !srv.loadKey(){
+        srv.generateKey()
+    }
     return srv
 }
 
-func (srv *ServerCrypto)generateKey()bool{
-    if privateKey, err = rsa.GenerateKey(rand.Reader, 1024); err != nil {
+func (srv *ServerCrypto)generateKey(){
+    privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
+    if err != nil {
         log.Fatal(err)
     }
 
@@ -38,7 +38,7 @@ func (srv *ServerCrypto)generateKey()bool{
     pemdata := pem.EncodeToMemory(
     &pem.Block{
         Type: "RSA PRIVATE KEY",
-        Bytes: x509.MarshalPKCS1PrivateKey(key),
+        Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
     },
     )
     err = ioutil.WriteFile("_privateKey",pemdata,0644)
@@ -46,18 +46,17 @@ func (srv *ServerCrypto)generateKey()bool{
 
 
 
-func (srv *ServerCrypto)loadKey()bool{
-    var bytes = make([]byte, 1024)
-    bytes, _ = ioutil.ReadFile("_privateKey")
+func (srv *ServerCrypto)loadKey() bool{
+    msg, err := ioutil.ReadFile("_privateKey")
     if err != nil {
         log.Print("Error reading private key.")
         return false
     }
-    block, _ := pem.Decode([]byte(read_bs))
+    block, _ := pem.Decode(msg)
 
     priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
     if err != nil {
-        log.Println("Failed to parse private key: %s", err)
+        log.Print("Failed to parse private key: " + err.Error())
         return false
     }
     priv.Precompute()
@@ -72,31 +71,22 @@ func (srv *ServerCrypto)loadKey()bool{
     return true
 }
 
-func (srv *ServerCrypto)DecryptRSA(bytes []byte)[]byte{
-    var err error
-    var md5_hash hash.Hash
-    var label []byte
-    if decryptedText, err = rsa.DecryptOAEP(md5_hash, rand.Reader, srv.privateKey, bytes, label); err != nil {
+func (srv *ServerCrypto)DecryptRSA(msg []byte)[]byte{
+    decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, srv.privateKey, msg);
+    if  err != nil {
         log.Fatal(err)
     }
     return decryptedText
 }
 
-func (srv *ServerCrypto)EncrytRSA(bytes []byte)[]byte{
-    var err error
-    var md5_hash hash.Hash
-    var label []byte
-    if encryptedText, err = rsa.EncrytOAEP(md5_hash, rand.Reader, srv.publicKey, bytes, label); err != nil {
+func (srv *ServerCrypto)EncryptRSA(msg []byte)[]byte{
+	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, srv.publicKey, msg)
+    if err != nil {
         log.Fatal(err)
     }
     return encryptedText
 }
 
 func (srv *ServerCrypto)Decrypt(bytes []byte)[]byte{
-
     return bytes
 }
-
-func main() {
-    serv := new(ServerCrypto)
-

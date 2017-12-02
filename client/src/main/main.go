@@ -39,13 +39,15 @@ func main(){
 
 	fmt.Println("Written name")
 
-	msgBytes := append(([]byte)("10000000"), 0)
+	msgBytes := make([]byte, 1)
+	msgBytes[0] = 0
 	msgBytes = append(msgBytes, ([]byte)("00000001")...)
 	msgBytes = append(msgBytes, ([]byte)("00000000")...)
+	msgBytes = append(msgBytes, ([]byte)("00000002")...)
 	msgBytes = append(msgBytes, ([]byte)("00000001")...)
 	msgBytes = append(msgBytes, ([]byte)("00000000")...)
 	msgBytes = append(msgBytes, ([]byte)("10000000")...)
-	msgBytes = append(msgBytes, ([]byte)("text")...)
+	msgBytes = append(msgBytes, ([]byte)("ukryta wiadomosc")...)
 
 	msgBytes = addSizeToMessage(msgBytes)
 
@@ -59,8 +61,11 @@ func main(){
 	msgOk := make([]byte, 100)
 	reader.Read(msgOk)
 
-	fmt.Print("MSGOK " + string(msgOk))
+	fmt.Println("MSGOK")
 
 	reader.Read(msgOk)
 	fmt.Println(string(msgOk))
+
+	conn.Close()
+	conn.Close()
 }

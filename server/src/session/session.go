@@ -8,7 +8,6 @@ import (
 	"receiver"
 	"messageHandler"
 	"sessionHandler"
-	"strconv"
 )
 
 type Session struct{
@@ -27,7 +26,7 @@ func NewSession(socket net.Conn, name string, messageHandler messageHandler.Mess
 	session.name = name
 	session.socket = socket
 	session.sender = sender.NewSenderImpl(socket)
-	session.receiver = receiver.NewReceiver(socket, messageHandler)
+	session.receiver = receiver.NewReceiver(name, socket, messageHandler)
 	session.handler = handler
 	session.wgS = &sync.WaitGroup{}
 	session.wgS.Add(1)
@@ -38,36 +37,36 @@ func NewSession(socket net.Conn, name string, messageHandler messageHandler.Mess
 }
 
 func (session *Session)Start(){
-	log.Print("Starting session " + session.name)
+	defer session.socket.Close()
+	log.Print("Starting session: " + session.name)
 
 	go session.sender.Loop(session.wgS)
 	go session.receiver.Loop(session.wgR)
 
 	session.wgR.Wait()
-	session.DeleteSession()
+	session.sender.Stop()
 	session.wgS.Wait()
 
 	session.handler.RemoveSession(session.name)
 
-	log.Print("Session ended " + session.name)
+	log.Print("Session ended: " + session.name)
 }
 
 func (session *Session)DeleteSession(){
-	session.sender.Stop()
 	session.socket.Close()
 }
 
 func (session *Session)Send(bytes []byte){
-	log.Print("Adding message size: " + strconv.Itoa(len(bytes)) + " to " + session.name)
+	log.Print("Sending to: " + session.name)
 	session.sender.Send(bytes)
 }
 
 func (session *Session)SendInstant(bytes []byte){
-	log.Print("Sending instant: " + strconv.Itoa(len(bytes)) + " to " + session.name)
+	log.Print("Sending instant to: " + session.name)
 	session.sender.SendInstant(bytes)
 }
 
 func (session *Session)UnlockSending(){
-	log.Print("Unlock sending to " + session.name)
+	log.Print("Unlock sending to: " + session.name)
 	session.sender.UnlockSending()
 }

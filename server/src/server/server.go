@@ -52,7 +52,6 @@ func checkIfNameIsServer(name string)bool{
 
 func (srv *Server)SendTo(name string, bytes []byte){
 	if sess, ok := srv.sessions[name]; ok {
-		bytes = append(([]byte)(srv.myName), bytes...)
 		sess.Send(bytes)
 	}else{
 		if checkIfNameIsServer(name) {
@@ -65,7 +64,6 @@ func (srv *Server)SendTo(name string, bytes []byte){
 
 func (srv *Server)SendInstantTo(name string, bytes []byte){
 	if sess, ok := srv.sessions[name]; ok {
-		bytes = append(([]byte)(srv.myName), bytes...)
 		sess.SendInstant(bytes)
 	}else{
 		if checkIfNameIsServer(name) {

@@ -1,6 +1,6 @@
 package messageHandler
 
 type MessageHandler interface{
-	HandleBytes(bytes []byte)
+	HandleBytes(from string, bytes []byte)
 }
 

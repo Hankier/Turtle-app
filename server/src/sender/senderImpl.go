@@ -5,8 +5,7 @@ import (
 	"sync"
 	"bufio"
 	"time"
-	"log"
-	"strconv"
+	"utils"
 )
 
 const LOOP_TIME = time.Second
@@ -36,8 +35,6 @@ func NewSenderImpl(socket net.Conn)(*SenderImpl){
 func (sender *SenderImpl)Loop(wg *sync.WaitGroup){
 	defer wg.Done()
 
-	log.Print("Starting sender loop")
-
 	writer := bufio.NewWriter(sender.socket)
 
 	for !sender.stopped{
@@ -54,7 +51,6 @@ func (sender *SenderImpl)Loop(wg *sync.WaitGroup){
 				sender.messagesMutex.Unlock()
 
 				packet := messagesToSingle(messagesCopy)
-				log.Print("Sender sending message length " + strconv.Itoa(len(packet)) + " - " + string(packet))
 				writer.Write(packet)
 				writer.Flush()
 			} else {
@@ -95,17 +91,10 @@ func (sender *SenderImpl)UnlockSending(){
 }
 
 func addSizeToMessage(bytes []byte)([]byte){
-	size := intTo2bytes(len(bytes))
+	size := utils.IntToTwobytes(len(bytes))
 
 	bytes = append(size, bytes...)
 
 	return bytes
 }
 
-func intTo2bytes(len int)[]byte{
-	size := make([]byte, 2)
-	size[0] = (byte)(len % 256)
-	size[1] = (byte)(len / 256)
-
-	return size
-}

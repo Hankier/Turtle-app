@@ -3,7 +3,7 @@ package messageHandler
 import (
 	"sessionsSender"
 	"decrypter"
-	"log"
+	_"log"
 	"time"
 )
 
@@ -19,10 +19,10 @@ func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypter d
 	return mhi
 }
 
-func (handler *MessageHandlerImpl)HandleBytes(bytes []byte){
-	log.Print("Handling bytes " + string(bytes))
+func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
+	//log.Print("Handling bytes " + string(bytes))
 
-	msg := FromBytes(bytes)
+	msg := FromBytes(from, bytes)
 
 	//TODO remove debug delay
 	time.Sleep(time.Second)
