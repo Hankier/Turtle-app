@@ -9,6 +9,7 @@ import (
 	"cryptographer"
 	"crypto/rand"
 	"math/big"
+	"errors"
 )
 
 type Client struct{
@@ -34,12 +35,13 @@ func NewClient()(*Client){
 
 
 func (cli *Client)SendTo(bytes []byte)error{
+
 	if cli.sess != nil{
 		cli.sess.Send(bytes)
 		return nil
 	}else{
 		log.Println("Not connected to any server\n");
-		return new(error)
+		return errors.New("NOT CONNECTED")
 	}
 }
 
@@ -49,7 +51,7 @@ func (cli *Client)SendInstantTo(bytes []byte)error{
 		return nil
 	}else{
 		log.Println("Not connected to any server\n");
-		return new(error)
+		return errors.New("NOT CONNECTED")
 	}
 }
 
@@ -92,11 +94,22 @@ func (cli *Client)GetRandomPath(length int)[]*serverEntry.ServerEntry{
 		keys = append(keys, k)
 	}
 
+	var key string
+	var rnd *big.Int
 
-	for i,_ := range path{
-		rnd, _ := rand.Int(rand.Reader, big.NewInt(int64(len(keys))))
-		key := keys[rnd.Int64()]
+	rnd, _ = rand.Int(rand.Reader, big.NewInt(int64(len(keys))))
+	key = keys[rnd.Int64()]
+	path[0] = cli.serverList[key]
+
+	for i := 1; i < len(path); i++{
+		rnd, _ = rand.Int(rand.Reader, big.NewInt(int64(len(keys))))
+		key = keys[rnd.Int64()]
 		path[i] = cli.serverList[key]
+		for path[i] == path[i-1]{
+			rnd, _ = rand.Int(rand.Reader, big.NewInt(int64(len(keys))))
+			key = keys[rnd.Int64()]
+			path[i] = cli.serverList[key]
+		}
 	}
 
 	return path
