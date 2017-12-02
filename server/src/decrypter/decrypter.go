@@ -1,6 +1,6 @@
 package decrypter
 
-type TYPE int
+type TYPE byte
 
 const (
 	PLAIN TYPE = iota
