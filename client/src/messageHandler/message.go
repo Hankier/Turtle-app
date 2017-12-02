@@ -1,7 +1,7 @@
 package messageHandler
 
 import (
-	"sessionsSender"
+	"sessionSender"
 	"decrypter"
 )
 
