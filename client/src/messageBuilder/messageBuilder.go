@@ -2,7 +2,7 @@ package messageBuilder
 
 import (
 	"serverEntry"
-	"messageHandler"
+	"message"
 	"cryptographer"
 )
 
@@ -11,7 +11,7 @@ type MessageBuilder struct{
 	Receiver string
 	ReceiverServer string
 	Message string
-	MsgType messageHandler.TYPE
+	MsgType message.TYPE
 	EncType cryptographer.TYPE
 	MyName string
 }
@@ -24,11 +24,11 @@ func (msgb *MessageBuilder) SetReceiver(rcvr string)  {
 	msgb.Receiver = rcvr
 }
 
-func (msgb *MessageBuilder) SetReceiverServer(rcvrsrv string)  {
+func (msgb *MessageBuilder) SetReceiverServer(rcvrsrv string)(*MessageBuilder){
 	msgb.ReceiverServer = rcvrsrv
 }
 
-func(msgb *MessageBuilder) SetMsgType (p messageHandler.TYPE){
+func(msgb *MessageBuilder) SetMsgType (p message.TYPE){
 	msgb.MsgType = p
 }
 
@@ -40,7 +40,7 @@ func (msgb *MessageBuilder) SetMyName(p string)  {
 	msgb.MyName = p
 }
 
-func (msgb *MessageBuilder)Build()(*messageHandler.Message){
+func (msgb *MessageBuilder)Build()(*message.Message){
 
 	msgContent := ""
 
@@ -52,7 +52,7 @@ func (msgb *MessageBuilder)Build()(*messageHandler.Message){
 	msgContent += msgb.Receiver
 	msgContent += msgb.Message
 
-	msg := messageHandler.Message{msgb.MsgType, msgb.MyName, msgb.EncType, []byte(msgContent)}
+	msg := message.Message{msgb.MsgType, msgb.MyName, msgb.EncType, []byte(msgContent)}
 
 	return &msg
 }
