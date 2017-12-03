@@ -10,11 +10,12 @@ func (handler *MessageHandlerImpl)handleMSG(msg *message.Message){
 		log.Print("Unexpected message end")
 		return
 	}
-	convoAndServerName := string(msg.GetMessageContent()[0:16])
+	serverName := string(msg.GetMessageContent()[0:8])
+	convoName := string(msg.GetMessageContent()[8:16])
 
 	msg.SetMessageContent(append([]byte(nil), msg.GetMessageContent()[16:]...))
 
-	handler.convosHandler.SendTo(convoAndServerName, msg)
+	handler.convosHandler.SendTo(serverName, convoName, msg)
 
 	msgOk := new(message.Message)
 	msgOk.SetMessageType(message.MSG_OK)
