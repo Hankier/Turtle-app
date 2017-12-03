@@ -1,4 +1,4 @@
-package messageHandler
+package message
 
 import (
 	"decrypter"

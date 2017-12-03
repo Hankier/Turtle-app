@@ -1,7 +1,9 @@
 package sender
 
+import "message"
+
 type Sender interface{
-	Send(bytes []byte)
-	SendInstant(bytes []byte)
+	Send(msg *message.Message)
+	SendInstant(msg *message.Message)
 	UnlockSending()
 }

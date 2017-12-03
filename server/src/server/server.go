@@ -9,6 +9,7 @@ import (
 	"serverEntry"
 	"session"
 	"messageHandler"
+	"message"
 )
 
 type Server struct{
@@ -50,25 +51,25 @@ func checkIfNameIsServer(name string)bool{
 	}
 }
 
-func (srv *Server)SendTo(name string, bytes []byte){
+func (srv *Server)SendTo(name string, msg *message.Message){
 	if sess, ok := srv.sessions[name]; ok {
-		sess.Send(bytes)
+		sess.Send(msg)
 	}else{
 		if checkIfNameIsServer(name) {
 			if srv.connectToServer(name){
-				srv.SendTo(name, bytes)
+				srv.SendTo(name, msg)
 			}
 		}
 	}
 }
 
-func (srv *Server)SendInstantTo(name string, bytes []byte){
+func (srv *Server)SendInstantTo(name string, msg *message.Message){
 	if sess, ok := srv.sessions[name]; ok {
-		sess.SendInstant(bytes)
+		sess.SendInstant(msg)
 	}else{
 		if checkIfNameIsServer(name) {
 			if srv.connectToServer(name){
-				srv.SendTo(name, bytes)
+				srv.SendTo(name, msg)
 			}
 		}
 	}

@@ -8,6 +8,7 @@ import (
 	"receiver"
 	"messageHandler"
 	"sessionHandler"
+	"message"
 )
 
 type Session struct{
@@ -56,14 +57,14 @@ func (session *Session)DeleteSession(){
 	session.socket.Close()
 }
 
-func (session *Session)Send(bytes []byte){
+func (session *Session)Send(msg *message.Message){
 	log.Print("Sending to: " + session.name)
-	session.sender.Send(bytes)
+	session.sender.Send(msg)
 }
 
-func (session *Session)SendInstant(bytes []byte){
+func (session *Session)SendInstant(msg *message.Message){
 	log.Print("Sending instant to: " + session.name)
-	session.sender.SendInstant(bytes)
+	session.sender.SendInstant(msg)
 }
 
 func (session *Session)UnlockSending(){

@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"time"
 	"utils"
+	"message"
 )
 
 const LOOP_TIME = time.Second
@@ -73,7 +74,8 @@ func (sender *SenderImpl)Stop(){
 	sender.stopped = true
 }
 
-func (sender *SenderImpl)Send(bytes []byte){
+func (sender *SenderImpl)Send(msg *message.Message){
+	bytes := msg.ToBytes()
 	bytes = addSizeToMessage(bytes)
 
 	sender.messagesMutex.Lock()
@@ -81,7 +83,8 @@ func (sender *SenderImpl)Send(bytes []byte){
 	sender.messagesMutex.Unlock()
 }
 
-func (sender *SenderImpl)SendInstant(bytes []byte){
+func (sender *SenderImpl)SendInstant(msg *message.Message){
+	bytes := msg.ToBytes()
 	bytes = addSizeToMessage(bytes)
 	sender.socket.Write(bytes)
 }
