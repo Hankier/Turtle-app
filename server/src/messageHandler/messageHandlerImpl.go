@@ -10,10 +10,10 @@ import (
 
 type MessageHandlerImpl struct{
 	sessSender sessionsSender.SessionsSender
-	decrypter  cryptographer.Decrypter
+	decrypter  cryptographer.Cryptographer
 }
 
-func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypter cryptographer.Decrypter)(*MessageHandlerImpl){
+func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypter cryptographer.Cryptographer)(*MessageHandlerImpl){
 	mhi := new(MessageHandlerImpl)
 	mhi.sessSender = sessSender
 	mhi.decrypter = decrypter
