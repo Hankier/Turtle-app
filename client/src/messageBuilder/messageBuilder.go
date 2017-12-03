@@ -2,8 +2,8 @@ package messageBuilder
 
 import (
 	"serverEntry"
-	"message"
 	"cryptographer"
+	"message"
 )
 
 type MessageBuilder struct{
@@ -24,7 +24,7 @@ func (msgb *MessageBuilder) SetReceiver(rcvr string)  {
 	msgb.Receiver = rcvr
 }
 
-func (msgb *MessageBuilder) SetReceiverServer(rcvrsrv string)(*MessageBuilder){
+func (msgb *MessageBuilder) SetReceiverServer(rcvrsrv string)  {
 	msgb.ReceiverServer = rcvrsrv
 }
 
