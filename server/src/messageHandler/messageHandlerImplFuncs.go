@@ -5,7 +5,7 @@ import (
 	"message"
 )
 
-func (handler *MessageHandlerImpl)handleMSG(msg *message.Message){
+func (handler *MessageHandlerImpl)handleMSG(from string, msg *message.Message){
 	if len(msg.GetMessageContent()) < 8{
 		log.Print("Unexpected message end")
 		return
@@ -22,18 +22,18 @@ func (handler *MessageHandlerImpl)handleMSG(msg *message.Message){
 
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
 
-	handler.sessSender.SendInstantTo(msg.GetPreviousName(), msgOk)
+	handler.sessSender.SendInstantTo(from, msgOk)
 }
 
-func (handler *MessageHandlerImpl)handleMSG_OK(msg *message.Message){
-	handler.sessSender.UnlockSending(msg.GetPreviousName())
+func (handler *MessageHandlerImpl)handleMSG_OK(from string, msg *message.Message){
+	handler.sessSender.UnlockSending(from)
 }
 
-func (handler *MessageHandlerImpl)handlePING(msg *message.Message){
+func (handler *MessageHandlerImpl)handlePING(from string, msg *message.Message){
 	msgOk := new(message.Message)
 	msgOk.SetMessageType(message.MSG_OK)
 	msgOk.SetMessageContent(make([]byte,0))
-	handler.sessSender.SendInstantTo(msg.GetPreviousName(), msgOk)
+	handler.sessSender.SendInstantTo(from, msgOk)
 
 	//TODO real PING
 	log.Print("RECEIVED PING")
