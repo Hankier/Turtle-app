@@ -3,7 +3,7 @@ package server
 import (
 	"connectionListener"
 	"sync"
-	"decrypter"
+	"cryptographer"
 	"log"
 	"net"
 	"serverEntry"
@@ -17,7 +17,7 @@ type Server struct{
 	clientListener *connectionListener.ConnectionListener
 	serverListener *connectionListener.ConnectionListener
 	serverList map[string]*serverEntry.ServerEntry
-	serverCrypto *decrypter.ServerCrypto
+	serverCrypto *cryptographer.ServerCrypto
 	wg sync.WaitGroup
 	myName string
 }
@@ -39,7 +39,7 @@ func NewServer(name string)(*Server){
 	srv.serverList["00000001"] = serverEntry.NewServerEntry("00000001", "127.0.0.1:8083", pk)
 	srv.serverList["00000002"] = serverEntry.NewServerEntry("00000002", "127.0.0.1:8085", pk)
 	srv.wg.Add(2)
-	srv.serverCrypto = decrypter.NewServerCrypto();
+	srv.serverCrypto = cryptographer.NewServerCrypto();
 	return srv
 }
 
