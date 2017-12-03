@@ -59,47 +59,28 @@ func (msgb *MessageBuilder) SetMyServer(p string)(*MessageBuilder){
 }
 
 func (msgb *MessageBuilder)Build()(*message.Message){
+	msgPieces := make([][]byte, len(msgb.Path) + 2)
 
-	msgPieces := make([][]byte, 0,0)
-	msgBytes := make([]byte, 0)
-	msgContent := ""
+	msgContent := ([]byte)(msgb.MyServer + msgb.MyName)
+	msgContent = append(msgContent, ([]byte)(msgb.Message)...)
 
+	piece := message.Message{msgb.MsgType, msgb.EncTypeCli, msgContent}
 
-	msgContent = msgb.Message + msgContent
+	msgPieces[0] = ([]byte)(msgb.Receiver)
+	msgPieces[0] = append(msgPieces[0], piece.ToBytes()...)
 
-	msgContent = msgb.MyServer + msgb.MyName + msgContent
+	piece = message.Message{msgb.MsgType, msgb.EncTypeServ, msgPieces[0]}
 
-	msgContent = msgb.Receiver
+	msgPieces[1] = ([]byte)(msgb.ReceiverServer)
+	msgPieces[1] = append(msgPieces[1], piece.ToBytes()...)
 
-
-	piece := message.Message{msgb.MsgType, nil, msgb.EncTypeCli, []byte(msgContent)}
-
-	msgPieces[0] = piece.ToBytes()
-
-	msgContent = msgb.Receiver
-
-	piece = message.Message{msgb.MsgType, nil, msgb.EncTypeServ, []byte(msgContent)}
-
-	msgPieces[1] = piece.ToBytes()
-
-	msgContent = msgb.ReceiverServer
-
-	piece = message.Message{msgb.MsgType, nil, msgb.EncTypeCli, []byte(msgContent)}
-
-	msgPieces[2] = piece.ToBytes()
-
-	for i := 3; i < len(msgb.Path); i++{
-		msgContent = msgb.Path[i].Name
-		piece = message.Message{msgb.MsgType, nil, msgb.EncTypeCli, []byte(msgContent)}
-
-		msgPieces[i] = piece.ToBytes()
+	for i := 0; i < len(msgb.Path); i++{
+		piece = message.Message{msgb.MsgType, msgb.EncTypeServ, msgPieces[i+1]}
+		msgPieces[i+2] = ([]byte)(msgb.Path[i].Name)
+		msgPieces[i+2] = append(msgPieces[i+2], piece.ToBytes()...)
 	}
 
-	for i := len(msgPieces)-1; i >= 0; i++ {
-		msgBytes = append(msgBytes, msgPieces[i]...)
-	}
+	msg := &message.Message{msgb.MsgType, msgb.EncTypeServ, msgPieces[len(msgb.Path) + 1]};
 
-	msg := message.Message{msgb.MsgType, msgb.MyName, msgb.EncTypeServ, msgBytes}
-
-	return &msg
+	return msg
 }
