@@ -10,6 +10,7 @@ import (
 	"crypto/rand"
 	"math/big"
 	"errors"
+	"message"
 )
 
 type Client struct{
@@ -34,10 +35,10 @@ func NewClient()(*Client){
 }
 
 
-func (cli *Client)SendTo(bytes []byte)error{
+func (cli *Client)SendTo(msg message.Message)error{
 
 	if cli.sess != nil{
-		cli.sess.Send(bytes)
+		cli.sess.Send(msg)
 		return nil
 	}else{
 		log.Println("Not connected to any server\n");
@@ -45,9 +46,9 @@ func (cli *Client)SendTo(bytes []byte)error{
 	}
 }
 
-func (cli *Client)SendInstantTo(bytes []byte)error{
+func (cli *Client)SendInstantTo(msg message.Message)error{
 	if cli.sess != nil{
-		cli.sess.SendInstant(bytes)
+		cli.sess.SendInstant(msg)
 		return nil
 	}else{
 		log.Println("Not connected to any server\n");
