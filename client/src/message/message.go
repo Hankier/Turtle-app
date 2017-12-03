@@ -2,6 +2,7 @@ package message
 
 import (
 	"cryptographer"
+	"utils"
 )
 
 type TYPE byte
@@ -43,6 +44,16 @@ func (msg *Message)ToBytes()[]byte{
 	for i := 0; i < len(msg.messageContent); i++{
 		bytes[i + 2] = msg.messageContent[i]
 	}
+
+	bytes = addSizeToBytes(bytes)
+
+	return bytes
+}
+
+func addSizeToBytes(bytes []byte)([]byte){
+	size := utils.IntToTwobytes(len(bytes))
+
+	bytes = append(size, bytes...)
 
 	return bytes
 }

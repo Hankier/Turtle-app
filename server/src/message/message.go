@@ -2,6 +2,7 @@ package message
 
 import (
 	"decrypter"
+	"utils"
 )
 
 type TYPE byte
@@ -35,7 +36,7 @@ func FromBytes(from string, bytes []byte)(*Message){
 }
 
 func (msg *Message)ToBytes()[]byte{
-	length := len(msg.messageContent) + 2 //+TYPE +ENC TYPE
+	length := len(msg.messageContent) + 2 //+SIZE +TYPE +ENC TYPE
 	bytes := make([]byte, length)
 
 	bytes[0] = (byte)(msg.messageType)
@@ -43,6 +44,16 @@ func (msg *Message)ToBytes()[]byte{
 	for i := 0; i < len(msg.messageContent); i++{
 		bytes[i + 2] = msg.messageContent[i]
 	}
+
+	bytes = addSizeToBytes(bytes)
+
+	return bytes
+}
+
+func addSizeToBytes(bytes []byte)([]byte){
+	size := utils.IntToTwobytes(len(bytes))
+
+	bytes = append(size, bytes...)
 
 	return bytes
 }
