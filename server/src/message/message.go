@@ -1,7 +1,7 @@
 package message
 
 import (
-	"decrypter"
+	"cryptographer"
 	"utils"
 )
 
@@ -14,10 +14,36 @@ const (
 )
 
 type Message struct{
-	messageType TYPE
-	previousName string
-	encType decrypter.TYPE
+	messageType    TYPE
+	previousName   string
+	encType        cryptographer.TYPE
 	messageContent []byte
+}
+
+func (msg *Message)GetMessageType() TYPE{
+	return msg.messageType
+}
+func (msg *Message)GetPreviousName() string{
+	return msg.previousName
+}
+func (msg *Message)GetEncType() cryptographer.TYPE{
+	return msg.encType
+}
+func (msg *Message)GetMessageContent() []byte{
+	return msg.messageContent
+}
+
+func (msg *Message)SetMessageType(messageType TYPE){
+	msg.messageType = messageType
+}
+func (msg *Message)SetPreviousName(previousName string){
+	msg.previousName = previousName
+}
+func (msg *Message)SetEncType(encType cryptographer.TYPE){
+	msg.encType = encType
+}
+func (msg *Message)SetMessageContent(messageContent []byte){
+	msg.messageContent = messageContent
 }
 
 func FromBytes(from string, bytes []byte)(*Message){
@@ -29,7 +55,7 @@ func FromBytes(from string, bytes []byte)(*Message){
 
 	msg.previousName = from
 	msg.messageType = (TYPE)(bytes[0])
-	msg.encType = (decrypter.TYPE)(bytes[1])
+	msg.encType = (cryptographer.TYPE)(bytes[1])
 	msg.messageContent = append([]byte(nil), bytes[2:]...)
 
 	return msg

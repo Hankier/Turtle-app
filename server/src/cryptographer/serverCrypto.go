@@ -1,4 +1,4 @@
-package decrypter
+package cryptographer
 
 import (
     "log"
