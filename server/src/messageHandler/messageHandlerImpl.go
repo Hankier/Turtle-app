@@ -23,25 +23,25 @@ func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypter c
 func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
 	//log.Print("Handling bytes " + string(bytes))
 
-	msg := message.FromBytes(from, bytes)
+	msg := message.FromBytes(bytes)
 
 	//TODO remove debug delay
 	time.Sleep(time.Second)
-	handler.handle(msg)
+	handler.handle(from, msg)
 }
 
-func (handler *MessageHandlerImpl)handle(msg *message.Message){
+func (handler *MessageHandlerImpl)handle(from string, msg *message.Message){
 	msg.SetMessageContent(handler.decrypter.Decrypt(msg.GetEncType(), msg.GetMessageContent()))
 
 	switch msg.GetMessageType(){
 	case message.MSG:
-		handler.handleMSG(msg)
+		handler.handleMSG(from, msg)
 		break
 	case message.MSG_OK:
-		handler.handleMSG_OK(msg)
+		handler.handleMSG_OK(from, msg)
 		break
 	case message.PING:
-		handler.handlePING(msg)
+		handler.handlePING(from, msg)
 		break
 	}
 }
