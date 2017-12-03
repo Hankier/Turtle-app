@@ -35,11 +35,11 @@ func (handler *MessageHandlerImpl)handle(from string, msg *message.Message){
 	msg.SetMessageContent(handler.decrypter.Decrypt(msg.GetEncType(), msg.GetMessageContent()))
 
 	switch msg.GetMessageType(){
-	case message.MSG:
-		handler.handleMSG(from, msg)
+	case message.DEFAULT:
+		handler.handleDEFAULT(from, msg)
 		break
-	case message.MSG_OK:
-		handler.handleMSG_OK(from, msg)
+	case message.OK:
+		handler.handleOK(from, msg)
 		break
 	case message.PING:
 		handler.handlePING(from, msg)

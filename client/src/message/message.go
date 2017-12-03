@@ -8,8 +8,8 @@ import (
 type TYPE byte
 
 const (
-	MSG TYPE = iota
-	MSG_OK
+	DEFAULT TYPE = iota
+	OK
 	PING
 )
 

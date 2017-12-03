@@ -5,7 +5,7 @@ import (
 	"message"
 )
 
-func (handler *MessageHandlerImpl)handleMSG(from string, msg *message.Message){
+func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Message){
 	if len(msg.GetMessageContent()) < 8{
 		log.Print("Unexpected message end")
 		return
@@ -17,7 +17,7 @@ func (handler *MessageHandlerImpl)handleMSG(from string, msg *message.Message){
 	handler.sessSender.SendTo(nextName, msg)
 
 	msgOk := new(message.Message)
-	msgOk.SetMessageType(message.MSG_OK)
+	msgOk.SetMessageType(message.OK)
 	msgOk.SetMessageContent(make([]byte,0))
 
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
@@ -25,13 +25,13 @@ func (handler *MessageHandlerImpl)handleMSG(from string, msg *message.Message){
 	handler.sessSender.SendInstantTo(from, msgOk)
 }
 
-func (handler *MessageHandlerImpl)handleMSG_OK(from string, msg *message.Message){
+func (handler *MessageHandlerImpl)handleOK(from string, msg *message.Message){
 	handler.sessSender.UnlockSending(from)
 }
 
 func (handler *MessageHandlerImpl)handlePING(from string, msg *message.Message){
 	msgOk := new(message.Message)
-	msgOk.SetMessageType(message.MSG_OK)
+	msgOk.SetMessageType(message.OK)
 	msgOk.SetMessageContent(make([]byte,0))
 	handler.sessSender.SendInstantTo(from, msgOk)
 
