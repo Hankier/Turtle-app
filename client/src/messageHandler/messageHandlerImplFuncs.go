@@ -6,35 +6,34 @@ import (
 )
 
 func (handler *MessageHandlerImpl)handleMSG(msg *message.Message){
-	if len(msg.messageContent) < 8{
+	if len(msg.GetMessageContent()) < 8{
 		log.Print("Unexpected message end")
 		return
 	}
-	nextName := string(msg.messageContent[0:8])
+	convoAndServerName := string(msg.GetMessageContent()[0:16])
 
-	msg.messageContent = append([]byte(nil), msg.messageContent[8:]...)
+	msg.SetMessageContent(append([]byte(nil), msg.GetMessageContent()[16:]...))
 
-	bytes := msg.ToBytes()
-	handler.sessSender.SendTo(nextName, bytes)
+	handler.convosHandler.SendTo(convoAndServerName, msg)
 
 	msgOk := new(message.Message)
-	msgOk.messageType = message.MSG_OK
-	msgOk.messageContent = make([]byte,0)
+	msgOk.SetMessageType(message.MSG_OK)
+	msgOk.SetMessageContent(make([]byte,0))
 
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
 
-	handler.sessSender.SendInstantTo(msg, msgOk.ToBytes())
+	handler.sessSender.SendInstantTo(msgOk)
 }
 
 func (handler *MessageHandlerImpl)handleMSG_OK(msg *message.Message){
-	handler.sessSender.UnlockSending(msg.previousName)
+	handler.sessSender.UnlockSending()
 }
 
 func (handler *MessageHandlerImpl)handlePING(msg *message.Message){
 	msgOk := new(message.Message)
-	msgOk.messageType = message.MSG_OK
-	msgOk.messageContent = make([]byte,0)
-	handler.sessSender.SendInstantTo(msg.previousName, msgOk.ToBytes())
+	msgOk.SetMessageType(message.MSG_OK)
+	msgOk.SetMessageContent(make([]byte,0))
+	handler.sessSender.SendInstantTo(msgOk)
 
 	//TODO real PING
 	log.Print("RECEIVED PING")

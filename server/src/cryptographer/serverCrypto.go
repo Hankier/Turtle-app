@@ -71,39 +71,26 @@ func (srv *ServerCrypto)loadKey() bool{
     return true
 }
 
-func (srv *ServerCrypto)decryptRSA(msg []byte)[]byte{
-    decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, srv.privateKey, msg);
-    if  err != nil {
-        log.Fatal(err)
-    }
-    return decryptedText
-}
-
-func (srv *ServerCrypto)encryptRSA(msg []byte)[]byte{
-	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, srv.publicKey, msg)
-    if err != nil {
-        log.Fatal(err)
-    }
-    return encryptedText
-}
-
-func (srv *ServerCrypto)Decrypt(enctype TYPE, bytes []byte)[]byte{
-    switch enctype {
+func (srv *ServerCrypto)Decrypt(encType TYPE, bytes []byte)[]byte{
+    switch encType {
     case PLAIN:
-        return srv.decryptPlain(bytes)
+        return DecryptPlain(bytes)
     case RSA:
-        return srv.decryptRSA(bytes)
+        return DecryptRSA(srv.privateKey, bytes)
     case ELGAMAL:
-        return srv.decryptElGamal(bytes)
+        return DecryptElGamal(bytes)
     }
     return bytes
 }
 
-func (srv *ServerCrypto) decryptElGamal(bytes []byte) []byte {
-    return bytes
-    //TODO ELGAMAL!!!
-}
-
-func (srv *ServerCrypto) decryptPlain(bytes []byte) []byte {
-    return bytes
+func (srv *ServerCrypto)Encrypt(encType TYPE, bytes []byte)[]byte{
+	switch encType {
+	case PLAIN:
+		return EncryptPlain(bytes)
+	case RSA:
+		return EncryptRSA(srv.publicKey, bytes)
+	case ELGAMAL:
+		return EncryptElGamal(bytes)
+	}
+	return bytes
 }

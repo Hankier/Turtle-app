@@ -57,12 +57,12 @@ func (session *Session)DeleteSession(){
 	session.socket.Close()
 }
 
-func (session *Session)Send(msg message.Message){
+func (session *Session)Send(msg *message.Message){
 	log.Print("Sending to: " + session.name)
 	session.sender.Send(msg)
 }
 
-func (session *Session)SendInstant(msg message.Message){
+func (session *Session)SendInstant(msg *message.Message){
 	log.Print("Sending instant to: " + session.name)
 	session.sender.SendInstant(msg)
 }
