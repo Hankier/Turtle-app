@@ -64,6 +64,8 @@ func (msgb *MessageBuilder)Build()(*message.Message){
 	msgContent := ([]byte)(msgb.MyServer + msgb.MyName)
 	msgContent = append(msgContent, ([]byte)(msgb.Message)...)
 
+	//TODO ENCRYPTION
+
 	piece := message.Message{msgb.MsgType, msgb.EncTypeCli, msgContent}
 
 	msgPieces[0] = ([]byte)(msgb.Receiver)
