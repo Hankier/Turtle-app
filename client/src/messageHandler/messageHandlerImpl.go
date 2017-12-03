@@ -1,18 +1,18 @@
 package messageHandler
 
 import (
-	"sessionsSender"
-	"decrypter"
+	"sessionSender"
 	_"log"
 	"time"
+	"cryptographer"
 )
 
 type MessageHandlerImpl struct{
-	sessSender sessionsSender.SessionsSender
-	decrypter decrypter.Decrypter
+	sessSender sessionSender.SessionSender
+	decrypter cryptographer.Cryptographer
 }
 
-func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypter decrypter.Decrypter)(*MessageHandlerImpl){
+func NewMessageHandlerImpl(sessSender sessionSender.SessionSender, decrypter cryptographer.Cryptographer)(*MessageHandlerImpl){
 	mhi := new(MessageHandlerImpl)
 	mhi.sessSender = sessSender
 	mhi.decrypter = decrypter
@@ -26,5 +26,5 @@ func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
 
 	//TODO remove debug delay
 	time.Sleep(time.Second)
-	msg.Handle(handler.sessSender, handler.decrypter)
+	msg.handleMSG(handler.sessSender)
 }

@@ -1,22 +1,20 @@
 package messageHandler
 
 import (
-	"sessionsSender"
+	"sessionSender"
 	"log"
 )
 
-func (msg *Message)handleMSG(sender sessionsSender.SessionsSender){
+func (msg *Message)handleMSG(sender sessionSender.SessionSender){
 	if len(msg.messageContent) < 8{
 		log.Print("Unexpected message end")
 		return
 	}
-	nextName := string(msg.messageContent[0:8])
-
 	msg.messageContent = append([]byte(nil), msg.messageContent[8:]...)
 
-	bytes := msg.toBytes()
+	bytes := msg.ToBytes()
 
-	sender.SendTo(nextName, bytes)
+	sender.SendTo(bytes)
 
 	msgOk := new(Message)
 	msgOk.messageType = MSG_OK
@@ -24,9 +22,9 @@ func (msg *Message)handleMSG(sender sessionsSender.SessionsSender){
 
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
 
-	sender.SendInstantTo(msg.previousName, msgOk.toBytes())
+	sender.SendInstantTo(msgOk.ToBytes())
 }
 
-func (msg *Message)handleMSG_OK(sender sessionsSender.SessionsSender){
-	sender.UnlockSending(msg.previousName)
+func (msg *Message)handleMSG_OK(sender sessionSender.SessionSender){
+	sender.UnlockSending()
 }

@@ -1,8 +1,7 @@
 package messageHandler
 
 import (
-	"sessionsSender"
-	"decrypter"
+	"cryptographer"
 )
 
 type TYPE byte
@@ -16,6 +15,7 @@ const (
 type Message struct{
 	messageType TYPE
 	previousName string
+	encType cryptographer.TYPE
 	messageContent []byte
 }
 
@@ -28,32 +28,21 @@ func FromBytes(from string, bytes []byte)(*Message){
 
 	msg.previousName = from
 	msg.messageType = (TYPE)(bytes[0])
-	msg.messageContent = append([]byte(nil), bytes[1:]...)
+	msg.encType = (cryptographer.TYPE)(bytes[1])
+	msg.messageContent = append([]byte(nil), bytes[2:]...)
 
 	return msg
 }
 
-func (msg *Message)toBytes()[]byte{
-	length := len(msg.messageContent) + 1 //+TYPE
+func (msg *Message)ToBytes()[]byte{
+	length := len(msg.messageContent) + 2 //+TYPE +ENC TYPE
 	bytes := make([]byte, length)
 
 	bytes[0] = (byte)(msg.messageType)
+	bytes[1] = (byte)(msg.encType)
 	for i := 0; i < len(msg.messageContent); i++{
-		bytes[i + 1] = msg.messageContent[i]
+		bytes[i + 2] = msg.messageContent[i]
 	}
 
 	return bytes
-}
-
-func (msg *Message)Handle(sender sessionsSender.SessionsSender, decrypter decrypter.Decrypter){
-	msg.messageContent = decrypter.Decrypt(msg.messageContent)
-
-	switch msg.messageType{
-	case MSG:
-		msg.handleMSG(sender)
-		break
-	case MSG_OK:
-		msg.handleMSG_OK(sender)
-		break
-	}
 }

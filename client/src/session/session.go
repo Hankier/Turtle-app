@@ -47,7 +47,7 @@ func (session *Session)Start(){
 	session.sender.Stop()
 	session.wgS.Wait()
 
-	session.handler.RemoveSession(session.name)
+	session.handler.RemoveSession()
 
 	log.Print("Session ended: " + session.name)
 }
