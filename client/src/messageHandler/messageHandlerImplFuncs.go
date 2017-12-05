@@ -11,10 +11,9 @@ func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Messag
 		return
 	}
 	convoName := string(msg.GetMessageContent()[0:16])
+	content := msg.GetMessageContent()[16:]
 
-	msg.SetMessageContent(append([]byte(nil), msg.GetMessageContent()[16:]...))
-
-	handler.convosHandler.ConvoMessage(convoName, msg)
+	handler.convosHandler.ReceiveMessage(convoName, content)
 
 	msgOk := new(message.Message)
 	msgOk.SetMessageType(message.OK)
