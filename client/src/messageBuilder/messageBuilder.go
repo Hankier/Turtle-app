@@ -10,7 +10,7 @@ type MessageBuilder struct{
 	Path []serverEntry.ServerEntry
 	Receiver string
 	ReceiverServer string
-	Message string
+	MessageContent []byte
 	MsgType message.TYPE
 	EncTypeServ cryptographer.TYPE
 	EncTypeCli	cryptographer.TYPE
@@ -38,6 +38,11 @@ func(msgb *MessageBuilder) SetMsgType (p message.TYPE)(*MessageBuilder){
 	return msgb
 }
 
+func(msgb *MessageBuilder) SetMsgContent (content []byte)(*MessageBuilder){
+	msgb.MessageContent = content
+	return msgb
+}
+
 func (msgb *MessageBuilder) SetEncTypeServ(p cryptographer.TYPE)(*MessageBuilder){
 	msgb.EncTypeServ = p
 	return msgb
@@ -62,7 +67,7 @@ func (msgb *MessageBuilder)Build()(*message.Message){
 	msgPieces := make([][]byte, len(msgb.Path) + 2)
 
 	msgContent := ([]byte)(msgb.MyServer + msgb.MyName)
-	msgContent = append(msgContent, ([]byte)(msgb.Message)...)
+	msgContent = append(msgContent, msgb.MessageContent...)
 
 	//TODO ENCRYPTION
 
