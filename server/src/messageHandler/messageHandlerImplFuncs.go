@@ -6,6 +6,8 @@ import (
 )
 
 func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Message){
+	log.Print("Received DEFAULT from: " + from)
+
 	if len(msg.GetMessageContent()) < 8{
 		log.Print("Unexpected message end")
 		return
@@ -14,27 +16,25 @@ func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Messag
 
 	msg.SetMessageContent(append([]byte(nil), msg.GetMessageContent()[8:]...))
 
-	handler.sessSender.SendTo(nextName, msg)
+	log.Print("Pushing DEFAULT to: " + nextName)
 
-	msgOk := new(message.Message)
-	msgOk.SetMessageType(message.OK)
-	msgOk.SetMessageContent(make([]byte,0))
+	handler.sessSender.SendTo(nextName, msg)
 
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
 
-	handler.sessSender.SendInstantTo(from, msgOk)
+	handler.sessSender.SendInstantTo(from, message.BuildMessageOK())
 }
 
 func (handler *MessageHandlerImpl)handleOK(from string, msg *message.Message){
+	log.Print("Received OK from: " + from)
+
 	handler.sessSender.UnlockSending(from)
 }
 
 func (handler *MessageHandlerImpl)handlePING(from string, msg *message.Message){
-	msgOk := new(message.Message)
-	msgOk.SetMessageType(message.OK)
-	msgOk.SetMessageContent(make([]byte,0))
-	handler.sessSender.SendInstantTo(from, msgOk)
+	log.Print("Received PING from: " + from)
+
+	handler.sessSender.SendInstantTo(from, message.BuildMessageOK())
 
 	//TODO real PING
-	log.Print("RECEIVED PING")
 }
