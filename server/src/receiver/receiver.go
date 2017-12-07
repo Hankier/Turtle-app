@@ -41,8 +41,6 @@ func (recv *Receiver)Loop(wg *sync.WaitGroup){
 		_, err = io.ReadFull(reader, bytes)
 		if err != nil{log.Print("Receiver " + err.Error());break}
 
-		log.Print("Received from: " + recv.sessionName)
-
 		recv.messageHandler.HandleBytes(recv.sessionName, bytes)
 	}
 }
