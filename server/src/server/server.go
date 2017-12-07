@@ -101,16 +101,19 @@ func (srv *Server)Start(clientPort, serverPort string)error{
 }
 
 func (srv *Server)connectToServer(name string)bool{
-	server := srv.serverList[name]
-	socket, err := net.Dial("tcp", server.Ip_port)
-	if err != nil {
-		log.Print("Error connecting to server " + name + " " + err.Error())
-		return false
+	if server, ok := srv.serverList[name]; ok{
+		socket, err := net.Dial("tcp", server.Ip_port)
+		if err != nil {
+			log.Print("Error connecting to server " + name + " " + err.Error())
+			return false
+		}
+		socket.Write([]byte(srv.myName))
+		srv.CreateSession(name, socket)
+		log.Print("Succesfully connected to " + name)
+		return true
 	}
-	socket.Write([]byte(srv.myName))
-	srv.CreateSession(name, socket)
-	log.Print("Succesfully connected to " + name)
-	return true
+	log.Print("No server on list " + name)
+	return false
 }
 
 func (srv *Server)CreateSession(name string, socket net.Conn){
