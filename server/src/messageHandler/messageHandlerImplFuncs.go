@@ -22,7 +22,7 @@ func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Messag
 
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
 
-	handler.sessSender.SendInstantTo(from, message.BuildMessageOK())
+	handler.sessSender.SendInstantTo(from, message.NewMessageOK())
 }
 
 func (handler *MessageHandlerImpl)handleOK(from string, msg *message.Message){
@@ -34,7 +34,7 @@ func (handler *MessageHandlerImpl)handleOK(from string, msg *message.Message){
 func (handler *MessageHandlerImpl)handlePING(from string, msg *message.Message){
 	log.Print("Received PING from: " + from)
 
-	handler.sessSender.SendInstantTo(from, message.BuildMessageOK())
+	handler.sessSender.SendInstantTo(from, message.NewMessageOK())
 
 	//TODO real PING
 }

@@ -72,7 +72,7 @@ func addSizeToBytes(bytes []byte)([]byte){
 	return bytes
 }
 
-func BuildMessageOK()(*Message){
+func NewMessageOK()(*Message){
 	msg := new(Message)
 	msg.messageContent = make([]byte, 2)
 	msg.messageContent[0] = (byte)(OK);
