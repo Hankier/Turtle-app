@@ -71,3 +71,12 @@ func addSizeToBytes(bytes []byte)([]byte){
 
 	return bytes
 }
+
+func BuildMessageOK()(*Message){
+	msg := new(Message)
+	msg.messageContent = make([]byte, 2)
+	msg.messageContent[0] = (byte)(OK);
+	msg.messageContent[1] = (byte)(cryptographer.PLAIN);
+
+	return msg;
+}
