@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/openpgp/elgamal"
 	"crypto/rand"
 	"bytes"
+	"os"
 )
 
 func TestElGamal(t *testing.T) {
@@ -48,8 +49,10 @@ func TestElGamalLoadSave(t *testing.T){
 
 	privKey.Y = new(big.Int).Exp(privKey.G, privKey.X, privKey.P)
 
+	os.Remove("testFile")
 	SaveElGamal(privKey, "testFile")
 	privKey2, _ := LoadElGamal("testFile")
+	os.Remove("testFile")
 
 	if privKey.G.Cmp(privKey2.G) != 0 || privKey.P.Cmp(privKey2.P) != 0 || privKey.X.Cmp(privKey2.X) != 0 || privKey.Y.Cmp(privKey2.Y) != 0{
 		t.Error("keys do not match!")
