@@ -35,6 +35,27 @@ func TestElGamal(t *testing.T) {
 	}
 }
 
+func TestElGamalLoadSave(t *testing.T){
+	x, _ := rand.Int(rand.Reader, p)
+
+	privKey := &elgamal.PrivateKey{
+		PublicKey: elgamal.PublicKey{
+			G: g,
+			P: p,
+		},
+		X: x,
+	}
+
+	privKey.Y = new(big.Int).Exp(privKey.G, privKey.X, privKey.P)
+
+	SaveElGamal(privKey, "testFile")
+	privKey2, _ := LoadElGamal("testFile")
+
+	if privKey.G.Cmp(privKey2.G) != 0 || privKey.P.Cmp(privKey2.P) != 0 || privKey.X.Cmp(privKey2.X) != 0 || privKey.Y.Cmp(privKey2.Y) != 0{
+		t.Error("keys do not match!")
+	}
+}
+
 func TestElGamalTooLongMessage(t *testing.T) {
 	x, _ := rand.Int(rand.Reader, p)
 

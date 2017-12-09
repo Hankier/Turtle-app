@@ -8,6 +8,9 @@ import (
 	"math/big"
 	"io"
 	"errors"
+	"encoding/pem"
+	"crypto/x509"
+	"io/ioutil"
 )
 
 type TYPE byte
@@ -51,6 +54,40 @@ func GenerateRSA() *rsa.PrivateKey {
 	return privateKeyRSA
 }
 
+func SaveRSA(privateKeyRSA *rsa.PrivateKey, filename string) (err error){
+	pemdata := pem.EncodeToMemory(
+		&pem.Block{
+			Type: "RSA PRIVATE KEY",
+			Bytes: x509.MarshalPKCS1PrivateKey(privateKeyRSA),
+		},
+	)
+	err = ioutil.WriteFile(filename,pemdata,0644)
+	return err
+}
+
+func LoadRSA(filename string) (*rsa.PrivateKey, error){
+	key, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Print("Error reading private key.")
+		return nil, errors.New("error reading private key")
+	}
+	block, _ := pem.Decode(key)
+
+	privateKeyRSA, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		log.Print("Failed to parse private key: " + err.Error())
+		return nil, err
+	}
+	privateKeyRSA.Precompute()
+
+	if err = privateKeyRSA.Validate(); err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	return privateKeyRSA, nil
+}
+
 func GenerateElGamal() *elgamal.PrivateKey{
 	x, _ := rand.Int(rand.Reader, p)
 	privateKeyElGamal := &elgamal.PrivateKey{
@@ -63,6 +100,58 @@ func GenerateElGamal() *elgamal.PrivateKey{
 	privateKeyElGamal.Y = new(big.Int).Exp(privateKeyElGamal.G, privateKeyElGamal.X, privateKeyElGamal.P)
 
 	return privateKeyElGamal
+}
+
+func SaveElGamal(privateKeyElGamal *elgamal.PrivateKey, filename string) (err error){
+	pemdata := pem.EncodeToMemory(
+		&pem.Block{
+			Type: "ELGAMAL PRIVATE KEY G",
+			Bytes: privateKeyElGamal.G.Bytes(),
+		},
+	)
+	pemdata = append(pemdata, pem.EncodeToMemory(
+		&pem.Block{
+			Type: "ELGAMAL PRIVATE KEY P",
+			Bytes: privateKeyElGamal.P.Bytes(),
+		},
+	)...)
+	pemdata = append(pemdata, pem.EncodeToMemory(
+		&pem.Block{
+			Type: "ELGAMAL PRIVATE KEY X",
+			Bytes: privateKeyElGamal.X.Bytes(),
+		},
+	)...)
+	pemdata = append(pemdata, pem.EncodeToMemory(
+		&pem.Block{
+			Type: "ELGAMAL PRIVATE KEY Y",
+			Bytes: privateKeyElGamal.Y.Bytes(),
+		},
+	)...)
+	err = ioutil.WriteFile(filename,pemdata,0644)
+	return err
+}
+
+func LoadElGamal(filename string) (*elgamal.PrivateKey, error){
+	privateKeyElGamal := &elgamal.PrivateKey{}
+
+	key, err := ioutil.ReadFile(filename)
+	if err != nil{
+		return nil, err
+	}
+
+	block, key := pem.Decode(key)
+	privateKeyElGamal.G = new(big.Int).SetBytes(block.Bytes)
+
+	block, key = pem.Decode(key)
+	privateKeyElGamal.P = new(big.Int).SetBytes(block.Bytes)
+
+	block, key = pem.Decode(key)
+	privateKeyElGamal.X = new(big.Int).SetBytes(block.Bytes)
+
+	block, _ = pem.Decode(key)
+	privateKeyElGamal.Y = new(big.Int).SetBytes(block.Bytes)
+
+	return privateKeyElGamal, nil
 }
 
 func DecryptRSA(privateKey *rsa.PrivateKey, msg []byte)[]byte{
