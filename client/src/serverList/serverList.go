@@ -17,6 +17,8 @@ type ServerList struct{
 func NewServerList()(*ServerList)  {
 	sli := new(ServerList)
 
+	//TODO debug remove hardcoded serverEntry info
+
 	sli.serverList = make(map[string]*serverEntry)
 
 	sli.serverList["00000000"] = NewServerEntry("00000000", "127.0.0.1:8081", nil, nil)
