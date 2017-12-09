@@ -1,93 +1,123 @@
 package messageBuilder
 
 import (
-	"serverEntry"
+	"serverList"
 	"cryptographer"
 	"message"
+	"errors"
 )
 
 type MessageBuilder struct{
-	Path []serverEntry.ServerEntry
-	Receiver string
-	ReceiverServer string
-	MessageContent []byte
-	MsgType message.TYPE
-	EncTypeServ cryptographer.TYPE
-	EncTypeCli	cryptographer.TYPE
-	MyName string
-	MyServer string
+	path []string
+	receiver string
+	receiverServer string
+	srvList *serverList.ServerList
+	messageContent []byte
+	msgType message.TYPE
+	encType	cryptographer.TYPE
+	myServer string
 }
 
-func (msgb *MessageBuilder)AddToPath(srve serverEntry.ServerEntry)(*MessageBuilder){
-	msgb.Path = append(msgb.Path, srve)
+func NewMessageBuilder(sl *serverList.ServerList)(*MessageBuilder){
+	msgb := new(MessageBuilder)
+	msgb.srvList = sl
+	return msgb
+}
+
+func (msgb *MessageBuilder)SetMyServer(ms string)(*MessageBuilder){
+	msgb.myServer = ms
+	return msgb
+}
+
+func (msgb *MessageBuilder)SetPath(srve []string)(*MessageBuilder){
+	msgb.path = srve
 	return msgb
 }
 
 func (msgb *MessageBuilder) SetReceiver(rcvr string) (*MessageBuilder) {
-	msgb.Receiver = rcvr
+	msgb.receiver = rcvr
 	return msgb
 }
 
 func (msgb *MessageBuilder) SetReceiverServer(rcvrsrv string) (*MessageBuilder) {
-	msgb.ReceiverServer = rcvrsrv
+	msgb.receiverServer = rcvrsrv
 	return msgb
 }
 
 func(msgb *MessageBuilder) SetMsgType (p message.TYPE)(*MessageBuilder){
-	msgb.MsgType = p
+	msgb.msgType = p
 	return msgb
 }
 
 func(msgb *MessageBuilder) SetMsgContent (content []byte)(*MessageBuilder){
-	msgb.MessageContent = content
+	msgb.messageContent = content
 	return msgb
 }
 
-func (msgb *MessageBuilder) SetEncTypeServ(p cryptographer.TYPE)(*MessageBuilder){
-	msgb.EncTypeServ = p
+func (msgb *MessageBuilder) SetEncType(p cryptographer.TYPE)(*MessageBuilder){
+	msgb.encType = p
 	return msgb
 }
 
-func (msgb *MessageBuilder) SetEncTypeCli(p cryptographer.TYPE)(*MessageBuilder){
-	msgb.EncTypeCli = p
-	return msgb
-}
+func (msgb *MessageBuilder)Build()(*message.Message, error){
+	msgPieces := make([][]byte, len(msgb.path) + 2)
 
-func (msgb *MessageBuilder) SetMyName(p string)(*MessageBuilder)  {
-	msgb.MyName = p
-	return msgb
-}
+	msgContent := ([]byte)(msgb.messageContent)
 
-func (msgb *MessageBuilder) SetMyServer(p string)(*MessageBuilder){
-	msgb.MyServer = p
-	return msgb
-}
+	var piece message.Message
+	var encElGamal []byte
 
-func (msgb *MessageBuilder)Build()(*message.Message){
-	msgPieces := make([][]byte, len(msgb.Path) + 2)
+	piece = message.Message{msgb.msgType, msgb.encType, msgContent}
 
-	msgContent := ([]byte)(msgb.MyServer + msgb.MyName)
-	msgContent = append(msgContent, msgb.MessageContent...)
 
-	//TODO ENCRYPTION
-
-	piece := message.Message{msgb.MsgType, msgb.EncTypeCli, msgContent}
-
-	msgPieces[0] = ([]byte)(msgb.Receiver)
+	msgPieces[0] = ([]byte)(msgb.receiver)
 	msgPieces[0] = append(msgPieces[0], piece.ToBytes()...)
 
-	piece = message.Message{msgb.MsgType, msgb.EncTypeServ, msgPieces[0]}
+	switch(msgb.encType){
+	case cryptographer.PLAIN:
+		piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[0])}
+	case cryptographer.ELGAMAL:
+		encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[0])
+		piece = message.Message{msgb.msgType, msgb.encType, encElGamal}
+	case cryptographer.RSA:
+		piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.receiver), msgPieces[0])}
+	default:
+		return nil, errors.New("INVALID ENCRYPTION TYPE")
+	}
 
-	msgPieces[1] = ([]byte)(msgb.ReceiverServer)
+
+	msgPieces[1] = ([]byte)(msgb.receiverServer)
 	msgPieces[1] = append(msgPieces[1], piece.ToBytes()...)
 
-	for i := 0; i < len(msgb.Path); i++{
-		piece = message.Message{msgb.MsgType, msgb.EncTypeServ, msgPieces[i+1]}
-		msgPieces[i+2] = ([]byte)(msgb.Path[i].Name)
+	for i := 0; i < len(msgb.path); i++{
+		switch(msgb.encType){
+		case cryptographer.PLAIN:
+			piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[i+1])}
+		case cryptographer.ELGAMAL:
+			encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[i+1])
+			piece = message.Message{msgb.msgType, msgb.encType, encElGamal}
+		case cryptographer.RSA:
+			piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.path[i]), msgPieces[i+1])}
+		default:
+			return nil, errors.New("INVALID ENCRYPTION TYPE")
+		}
+		msgPieces[i+2] = ([]byte)(msgb.path[i])
 		msgPieces[i+2] = append(msgPieces[i+2], piece.ToBytes()...)
 	}
 
-	msg := &message.Message{msgb.MsgType, msgb.EncTypeServ, msgPieces[len(msgb.Path) + 1]};
+	var msg *message.Message
 
-	return msg
+	switch(msgb.encType){
+	case cryptographer.PLAIN:
+		msg = &message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[len(msgb.path) + 1])}
+	case cryptographer.ELGAMAL:
+		encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[len(msgb.path) + 1])
+		msg = &message.Message{msgb.msgType, msgb.encType, encElGamal}
+	case cryptographer.RSA:
+		msg = &message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.myServer), msgPieces[len(msgb.path) + 1])}
+	default:
+		return nil, errors.New("INVALID ENCRYPTION TYPE")
+	}
+
+	return msg, nil
 }
