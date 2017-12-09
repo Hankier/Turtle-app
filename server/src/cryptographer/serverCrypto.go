@@ -40,26 +40,26 @@ func NewServerCrypto()(*ServerCrypto){
     return srv
 }
 
-func (srv *ServerCrypto)Decrypt(encType TYPE, bytes []byte)[]byte{
+func (srv *ServerCrypto)Decrypt(encType TYPE, bytes []byte) ([]byte, error){
     switch encType {
     case PLAIN:
-        return DecryptPlain(bytes)
+        return DecryptPlain(bytes), nil
     case RSA:
         return DecryptRSA(srv.privateKeyRSA, bytes)
     case ELGAMAL:
-        //return DecryptElGamal(bytes)
+        return DecryptElGamal(srv.privateKeyElGamal, bytes)
     }
-    return bytes
+    return bytes, nil
 }
 
-func (srv *ServerCrypto)Encrypt(encType TYPE, bytes []byte)[]byte{
+func (srv *ServerCrypto)Encrypt(encType TYPE, bytes []byte) ([]byte, error){
 	switch encType {
 	case PLAIN:
-		return EncryptPlain(bytes)
+		return EncryptPlain(bytes), nil
 	case RSA:
 		return EncryptRSA(srv.publicKeyRSA, bytes)
 	case ELGAMAL:
-		//return EncryptElGamal(bytes)
+		return EncryptElGamal(srv.publicKeyElGamal, bytes)
 	}
-	return bytes
+	return bytes, nil
 }

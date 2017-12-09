@@ -154,20 +154,20 @@ func LoadElGamal(filename string) (*elgamal.PrivateKey, error){
 	return privateKeyElGamal, nil
 }
 
-func DecryptRSA(privateKey *rsa.PrivateKey, msg []byte)[]byte{
+func DecryptRSA(privateKey *rsa.PrivateKey, msg []byte) ([]byte, error){
 	decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, msg);
 	if  err != nil {
 		log.Fatal(err)
 	}
-	return decryptedText
+	return decryptedText, err
 }
 
 func DecryptElGamal(privateKey *elgamal.PrivateKey, msg []byte) ([]byte, error) {
-	if len(msg) != pLen{
+	if len(msg) != 2 * pLen{
 		return nil, errors.New("bad message length")
 	}
-	c1 := new(big.Int).SetBytes(msg[0:pLen / 2])
-	c2 := new(big.Int).SetBytes(msg[pLen / 2:pLen])
+	c1 := new(big.Int).SetBytes(msg[0:pLen])
+	c2 := new(big.Int).SetBytes(msg[pLen:2*pLen])
 	return elgamal.Decrypt(privateKey, c1, c2)
 }
 
@@ -175,12 +175,12 @@ func DecryptPlain(msg []byte) []byte {
 	return msg
 }
 
-func EncryptRSA(publicKey *rsa.PublicKey, msg []byte)[]byte{
+func EncryptRSA(publicKey *rsa.PublicKey, msg []byte) ([]byte, error){
 	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, msg);
 	if  err != nil {
 		log.Fatal(err)
 	}
-	return encryptedText
+	return encryptedText, err
 }
 
 func EncryptElGamal(publicKey *elgamal.PublicKey, msg []byte) ([]byte, error) {
