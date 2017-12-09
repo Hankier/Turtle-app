@@ -66,6 +66,8 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 
 	var piece message.Message
 	var encElGamal []byte
+	var encRSA []byte
+	var err error
 
 	piece = message.Message{msgb.msgType, msgb.encType, msgContent}
 
@@ -77,10 +79,17 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	case cryptographer.PLAIN:
 		piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[0])}
 	case cryptographer.ELGAMAL:
-		encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[0])
+		encElGamal, err = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[0])
+		if err != nil{
+			return nil, err
+		}
 		piece = message.Message{msgb.msgType, msgb.encType, encElGamal}
 	case cryptographer.RSA:
-		piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.receiver), msgPieces[0])}
+		encRSA, err = cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.receiver), msgPieces[0])
+		if err != nil{
+			return nil, err
+		}
+		piece = message.Message{msgb.msgType, msgb.encType, encRSA}
 	default:
 		return nil, errors.New("INVALID ENCRYPTION TYPE")
 	}
@@ -97,7 +106,11 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 			encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[i+1])
 			piece = message.Message{msgb.msgType, msgb.encType, encElGamal}
 		case cryptographer.RSA:
-			piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.path[i]), msgPieces[i+1])}
+			encRSA, err = cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.path[i]), msgPieces[i+1])
+			if err != nil{
+				return nil, err
+			}
+			piece = message.Message{msgb.msgType, msgb.encType, encRSA}
 		default:
 			return nil, errors.New("INVALID ENCRYPTION TYPE")
 		}
@@ -114,7 +127,11 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 		encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[len(msgb.path) + 1])
 		msg = &message.Message{msgb.msgType, msgb.encType, encElGamal}
 	case cryptographer.RSA:
-		msg = &message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.myServer), msgPieces[len(msgb.path) + 1])}
+		encRSA, err = cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.myServer), msgPieces[len(msgb.path) + 1])
+		if err != nil{
+			return nil, err
+		}
+		msg = &message.Message{msgb.msgType, msgb.encType, encRSA}
 	default:
 		return nil, errors.New("INVALID ENCRYPTION TYPE")
 	}
