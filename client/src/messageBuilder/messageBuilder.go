@@ -7,87 +7,88 @@ import (
 )
 
 type MessageBuilder struct{
-	Path []serverEntry.ServerEntry
-	Receiver string
-	ReceiverServer string
-	MessageContent []byte
-	MsgType message.TYPE
-	EncTypeServ cryptographer.TYPE
-	EncTypeCli	cryptographer.TYPE
-	MyName string
-	MyServer string
+	path []serverEntry.ServerEntry
+	receiver string
+	receiverServer string
+	messageContent []byte
+	msgType message.TYPE
+	encTypeServ cryptographer.TYPE
+	encTypeCli	cryptographer.TYPE
+	myName string
+	myServer string
 }
 
-func (msgb *MessageBuilder)AddToPath(srve serverEntry.ServerEntry)(*MessageBuilder){
-	msgb.Path = append(msgb.Path, srve)
+func NewMessageBuilder(myName string)(*MessageBuilder){
+	msgb := new(MessageBuilder)
+	msgb.myName = myName
+	return msgb
+}
+
+func (msgb *MessageBuilder)SetPath(srve []serverEntry.ServerEntry)(*MessageBuilder){
+	msgb.path = srve
 	return msgb
 }
 
 func (msgb *MessageBuilder) SetReceiver(rcvr string) (*MessageBuilder) {
-	msgb.Receiver = rcvr
+	msgb.receiver = rcvr
 	return msgb
 }
 
 func (msgb *MessageBuilder) SetReceiverServer(rcvrsrv string) (*MessageBuilder) {
-	msgb.ReceiverServer = rcvrsrv
+	msgb.receiverServer = rcvrsrv
 	return msgb
 }
 
 func(msgb *MessageBuilder) SetMsgType (p message.TYPE)(*MessageBuilder){
-	msgb.MsgType = p
+	msgb.msgType = p
 	return msgb
 }
 
 func(msgb *MessageBuilder) SetMsgContent (content []byte)(*MessageBuilder){
-	msgb.MessageContent = content
+	msgb.messageContent = content
 	return msgb
 }
 
 func (msgb *MessageBuilder) SetEncTypeServ(p cryptographer.TYPE)(*MessageBuilder){
-	msgb.EncTypeServ = p
+	msgb.encTypeServ = p
 	return msgb
 }
 
 func (msgb *MessageBuilder) SetEncTypeCli(p cryptographer.TYPE)(*MessageBuilder){
-	msgb.EncTypeCli = p
-	return msgb
-}
-
-func (msgb *MessageBuilder) SetMyName(p string)(*MessageBuilder)  {
-	msgb.MyName = p
+	msgb.encTypeCli = p
 	return msgb
 }
 
 func (msgb *MessageBuilder) SetMyServer(p string)(*MessageBuilder){
-	msgb.MyServer = p
+	msgb.myServer = p
 	return msgb
 }
 
 func (msgb *MessageBuilder)Build()(*message.Message){
-	msgPieces := make([][]byte, len(msgb.Path) + 2)
+	msgPieces := make([][]byte, len(msgb.path) + 2)
 
-	msgContent := ([]byte)(msgb.MyServer + msgb.MyName)
-	msgContent = append(msgContent, msgb.MessageContent...)
+	msgContent := ([]byte)(msgb.myServer + msgb.myName)
+	msgContent = append(msgContent, msgb.messageContent...)
 
 	//TODO ENCRYPTION
 
-	piece := message.Message{msgb.MsgType, msgb.EncTypeCli, msgContent}
+	piece := message.Message{msgb.msgType, msgb.encTypeCli, msgContent}
 
-	msgPieces[0] = ([]byte)(msgb.Receiver)
+	msgPieces[0] = ([]byte)(msgb.receiver)
 	msgPieces[0] = append(msgPieces[0], piece.ToBytes()...)
 
-	piece = message.Message{msgb.MsgType, msgb.EncTypeServ, msgPieces[0]}
+	piece = message.Message{msgb.msgType, msgb.encTypeServ, msgPieces[0]}
 
-	msgPieces[1] = ([]byte)(msgb.ReceiverServer)
+	msgPieces[1] = ([]byte)(msgb.receiverServer)
 	msgPieces[1] = append(msgPieces[1], piece.ToBytes()...)
 
-	for i := 0; i < len(msgb.Path); i++{
-		piece = message.Message{msgb.MsgType, msgb.EncTypeServ, msgPieces[i+1]}
-		msgPieces[i+2] = ([]byte)(msgb.Path[i].Name)
+	for i := 0; i < len(msgb.path); i++{
+		piece = message.Message{msgb.msgType, msgb.encTypeServ, msgPieces[i+1]}
+		msgPieces[i+2] = ([]byte)(msgb.path[i].Name)
 		msgPieces[i+2] = append(msgPieces[i+2], piece.ToBytes()...)
 	}
 
-	msg := &message.Message{msgb.MsgType, msgb.EncTypeServ, msgPieces[len(msgb.Path) + 1]};
+	msg := &message.Message{msgb.msgType, msgb.encTypeServ, msgPieces[len(msgb.path) + 1]};
 
 	return msg
 }
