@@ -1,11 +1,10 @@
 package userInterface
 
-import "serverEntry"
 
 type UserInterface interface{
-	GetCurrentPath()([]serverEntry.ServerEntry)
-	ChooseNewPath()([]serverEntry.ServerEntry)
+	GetCurrentPath()([]string)
+	ChooseNewPath()([]string)
 	ConnectToServer(name string)
-	GetServerList()([]serverEntry.ServerEntry)
+	GetServerList()([]string)
 	SendTo(message, receiver, recServer string)
 }
