@@ -35,8 +35,8 @@ func fromHex(hex string) *big.Int {
 }
 
 type Cryptographer interface{
-	Encrypt(encType TYPE, bytes []byte)[]byte
-	Decrypt(encType TYPE, bytes []byte)[]byte
+	Encrypt(encType TYPE, bytes []byte) ([]byte, error)
+	Decrypt(encType TYPE, bytes []byte) ([]byte, error)
 }
 
 func GenerateRSA() *rsa.PrivateKey {
