@@ -17,7 +17,7 @@ type Server struct{
 	clientListener *connectionListener.ConnectionListener
 	serverListener *connectionListener.ConnectionListener
 	serverList map[string]*serverEntry.ServerEntry
-	serverCrypto *cryptographer.ServerCrypto
+	serverCrypto *cryptographer.NodeCrypto
 	wg sync.WaitGroup
 	myName string
 }
