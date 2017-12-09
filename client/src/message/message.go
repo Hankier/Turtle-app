@@ -19,6 +19,14 @@ type Message struct{
 	messageContent []byte
 }
 
+func NewMessage(msgT TYPE, encT cryptographer.TYPE, msgc []byte)(*Message){
+	msg := new(Message)
+	msg.messageContent = msgc
+	msg.messageType = msgT
+	msg.encType = encT
+	return msg
+}
+
 func (msg *Message)GetMessageType() TYPE{
 	return msg.messageType
 }
