@@ -11,7 +11,6 @@ import (
 type ServerList struct{
 	serverListMutex sync.Mutex
 	serverList map[string]*serverEntry
-	daList []string
 }
 
 func NewServerList()(*ServerList)  {
@@ -29,42 +28,53 @@ func NewServerList()(*ServerList)  {
 }
 
 func (sli *ServerList)GetServerIpPort(name string)(string){
-	return sli.serverList[name].Ip_port
+	sli.serverListMutex.Lock()
+	ret := sli.serverList[name].Ip_port
+	sli.serverListMutex.Unlock()
+	return ret
 }
 
 func (sli *ServerList)GetPublicKeyRSA(name string)(*rsa.PublicKey){
-	return sli.serverList[name].PublicKeyRSA
+	sli.serverListMutex.Lock()
+	ret := sli.serverList[name].PublicKeyRSA
+	sli.serverListMutex.Unlock()
+	return ret
 }
 
 func (sli *ServerList)GetPublicKeyElGamal(name string)(*elgamal.PublicKey){
-	return sli.serverList[name].PublicKeyElGamal
+	sli.serverListMutex.Lock()
+	ret := sli.serverList[name].PublicKeyElGamal
+	sli.serverListMutex.Unlock()
+	return ret
 }
 
 func (sli *ServerList)GetRandomPath(length int)([]string){
 	path := make([]string, length)
 
-	keys := make([]string, 0, len(sli.serverList))
-	for k := range sli.serverList {
-		keys = append(keys, k)
-	}
+	names := sli.GetServerList()
 
-	var key string
 	var rnd *big.Int
 
-
 	for i := 0; i < length; i++{
-		rnd, _ = rand.Int(rand.Reader, big.NewInt(int64(len(keys))))
-		key = keys[rnd.Int64()]
-		path[i] = sli.serverList[key].Name
+		rnd, _ = rand.Int(rand.Reader, big.NewInt(int64(len(names))))
+		path[i] = names[rnd.Int64()]
 		for i > 0 && path[i] == path[i-1]{
-			rnd, _ = rand.Int(rand.Reader, big.NewInt(int64(len(keys))))
-			key = keys[rnd.Int64()]
-			path[i] = sli.serverList[key].Name
+			rnd, _ = rand.Int(rand.Reader, big.NewInt(int64(len(names))))
+			path[i] = names[rnd.Int64()]
 		}
 	}
 
-
 	return path
+}
+
+func (sli *ServerList)GetServerList()[]string{
+	names := make([]string, 0, len(sli.serverList))
+	sli.serverListMutex.Lock()
+	for k := range sli.serverList {
+		names = append(names, k)
+	}
+	sli.serverListMutex.Unlock()
+	return names
 }
 
 func (sli *ServerList)RefreshList(){
