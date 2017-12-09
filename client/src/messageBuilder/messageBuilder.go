@@ -65,6 +65,7 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	msgContent := ([]byte)(msgb.messageContent)
 
 	var piece message.Message
+	var encElGamal []byte
 
 	piece = message.Message{msgb.msgType, msgb.encType, msgContent}
 
@@ -76,7 +77,8 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	case cryptographer.PLAIN:
 		piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[0])}
 	case cryptographer.ELGAMAL:
-		piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptElGamal(msgPieces[0])}
+		encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[0])
+		piece = message.Message{msgb.msgType, msgb.encType, encElGamal}
 	case cryptographer.RSA:
 		piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.receiver), msgPieces[0])}
 	default:
@@ -92,7 +94,8 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 		case cryptographer.PLAIN:
 			piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[i+1])}
 		case cryptographer.ELGAMAL:
-			piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptElGamal(msgPieces[i+1])}
+			encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[i+1])
+			piece = message.Message{msgb.msgType, msgb.encType, encElGamal}
 		case cryptographer.RSA:
 			piece = message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.path[i]), msgPieces[i+1])}
 		default:
@@ -108,7 +111,8 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	case cryptographer.PLAIN:
 		msg = &message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[len(msgb.path) + 1])}
 	case cryptographer.ELGAMAL:
-		msg = &message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptElGamal(msgPieces[len(msgb.path) + 1])}
+		encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[len(msgb.path) + 1])
+		msg = &message.Message{msgb.msgType, msgb.encType, encElGamal}
 	case cryptographer.RSA:
 		msg = &message.Message{msgb.msgType, msgb.encType, cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.myServer), msgPieces[len(msgb.path) + 1])}
 	default:
