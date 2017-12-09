@@ -1,96 +1,65 @@
 package cryptographer
 
 import (
-    "log"
-    "io/ioutil"
     "crypto/rsa"
-    "crypto/rand"
-    "encoding/pem"
-    "crypto/x509"
+    "golang.org/x/crypto/openpgp/elgamal"
 )
 
 type ServerCrypto struct{
-    privateKey  *rsa.PrivateKey
-    publicKey   *rsa.PublicKey
+    privateKeyRSA  *rsa.PrivateKey
+    publicKeyRSA   *rsa.PublicKey
+    privateKeyElGamal  *elgamal.PrivateKey
+    publicKeyElGamal   *elgamal.PublicKey
 }
 
 
 func NewServerCrypto()(*ServerCrypto){
     srv := new(ServerCrypto)
-    if !srv.loadKey(){
-        srv.generateKey()
+
+    var privateKeyRSA *rsa.PrivateKey
+
+	privateKeyRSA, err := LoadRSA("privateKeyRSA")
+    if err != nil{
+        privateKeyRSA = GenerateRSA()
+        SaveRSA(privateKeyRSA, "privateKeyRSA")
     }
+	srv.privateKeyRSA = privateKeyRSA
+	srv.publicKeyRSA = &privateKeyRSA.PublicKey
+
+
+	var privateKeyElGamal *elgamal.PrivateKey
+
+	privateKeyElGamal, err = LoadElGamal("privateKeyElGamal")
+	if err != nil{
+		privateKeyElGamal = GenerateElGamal()
+		SaveElGamal(privateKeyElGamal, "privateKeyElGamal")
+	}
+	srv.privateKeyElGamal = privateKeyElGamal
+	srv.publicKeyElGamal = &privateKeyElGamal.PublicKey
+
     return srv
 }
 
-func (srv *ServerCrypto)generateKey(){
-    privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    privateKey.Precompute()
-
-    if err = privateKey.Validate(); err != nil {
-        log.Fatal(err)
-    }
-
-    pemdata := pem.EncodeToMemory(
-    &pem.Block{
-        Type: "RSA PRIVATE KEY",
-        Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
-    },
-    )
-    err = ioutil.WriteFile("_privateKey",pemdata,0644)
-}
-
-
-
-func (srv *ServerCrypto)loadKey() bool{
-    msg, err := ioutil.ReadFile("_privateKey")
-    if err != nil {
-        log.Print("Error reading private key.")
-        return false
-    }
-    block, _ := pem.Decode(msg)
-
-    priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-    if err != nil {
-        log.Print("Failed to parse private key: " + err.Error())
-        return false
-    }
-    priv.Precompute()
-
-    if err = priv.Validate(); err != nil {
-        log.Fatal(err)
-        return false
-    }
-    srv.privateKey = priv
-    srv.publicKey = &priv.PublicKey
-
-    return true
-}
-
-func (srv *ServerCrypto)Decrypt(encType TYPE, bytes []byte)[]byte{
+func (srv *ServerCrypto)Decrypt(encType TYPE, bytes []byte) ([]byte, error){
     switch encType {
     case PLAIN:
-        return DecryptPlain(bytes)
+        return DecryptPlain(bytes), nil
     case RSA:
-        return DecryptRSA(srv.privateKey, bytes)
+        return DecryptRSA(srv.privateKeyRSA, bytes)
     case ELGAMAL:
-        return DecryptElGamal(bytes)
+        return DecryptElGamal(srv.privateKeyElGamal, bytes)
     }
-    return bytes
+    return bytes, nil
 }
 
-func (srv *ServerCrypto)Encrypt(encType TYPE, bytes []byte)[]byte{
+func (srv *ServerCrypto)Encrypt(encType TYPE, bytes []byte) ([]byte, error){
 	switch encType {
 	case PLAIN:
-		return EncryptPlain(bytes)
+		return EncryptPlain(bytes), nil
 	case RSA:
-		return EncryptRSA(srv.publicKey, bytes)
+		return EncryptRSA(srv.publicKeyRSA, bytes)
 	case ELGAMAL:
-		return EncryptElGamal(bytes)
+		return EncryptElGamal(srv.publicKeyElGamal, bytes)
 	}
-	return bytes
+	return bytes, nil
 }
