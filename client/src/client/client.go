@@ -14,7 +14,7 @@ import (
 type Client struct{
 	sess *session.Session
 	srvList	*serverList.ServerList
-	clientCrypto *cryptographer.ClientCrypto
+	clientCrypto *cryptographer.NodeCrypto
 	myName string
 }
 
@@ -53,8 +53,7 @@ func (cli *Client)UnlockSending(){
 }
 
 func (cli *Client)ConnectToServer(name string)bool{
-	server := cli.serverList[name]
-	socket, err := net.Dial("tcp", server.Ip_port)
+	socket, err := net.Dial("tcp", cli.srvList.GetServerIpPort(name))
 	if err != nil {
 		log.Print("Error connecting to server " + name + " " + err.Error())
 		return false
