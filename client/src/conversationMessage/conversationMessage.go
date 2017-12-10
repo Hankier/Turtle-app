@@ -18,6 +18,14 @@ type ConversationMessage struct{
 	messageContent []byte
 }
 
+func NewConversationMessage(messageType TYPE, encType commonKeyProtocol.TYPE, content []byte)*ConversationMessage{
+	convoMsg := new(ConversationMessage)
+	convoMsg.messageType = messageType
+	convoMsg.encType = encType
+	convoMsg.messageContent = content
+	return convoMsg
+}
+
 func FromBytes(bytes []byte)*ConversationMessage{
 	//no previous name and type
 	if len(bytes) < 1{
