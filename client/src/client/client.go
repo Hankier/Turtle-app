@@ -135,9 +135,15 @@ func (cli *Client)SendTo(message string, receiver string, receiverServer string)
 		}
 		convo = newConvo
 	}
-	convoMessage := convo.BuildMessage(cli.myName, cli.sess.GetName(), message)
+	cli.messageBuilder.SetMsgString(message)
+	cli.messageBuilder.SetMsgContentBuilder(convo.MessageBuilder())
 
-	err := cli.Send(convoMessage.ToBytes(), receiver, receiverServer)
+	build, err := cli.messageBuilder.Build()
+	if err != nil {
+		return err
+	}
+
+	err = cli.Send(build.ToBytes(), receiver, receiverServer)
 	if err != nil {
 		return err
 	}
