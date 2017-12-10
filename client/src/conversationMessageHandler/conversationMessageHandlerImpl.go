@@ -23,8 +23,12 @@ func NewConversationMessageHandlerImpl(commonKeyProt commonKeyProtocol.CommonKey
 }
 
 func (convMHI *ConversationMessageHandlerImpl)HandleBytes(from string, bytes []byte){
-	msg := conversationMessage.FromBytes(bytes)
+	msg, err := conversationMessage.FromBytes(bytes)
 
+	if err != nil{
+		log.Print(err)
+		return
+	}
 	convMHI.handle(from, msg)
 }
 

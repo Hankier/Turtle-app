@@ -2,6 +2,7 @@ package conversationMessage
 
 import (
 	"commonKeyProtocol"
+	"errors"
 )
 
 type TYPE byte
@@ -26,10 +27,10 @@ func NewConversationMessage(messageType TYPE, encType commonKeyProtocol.TYPE, co
 	return convoMsg
 }
 
-func FromBytes(bytes []byte)*ConversationMessage{
+func FromBytes(bytes []byte)(*ConversationMessage, error){
 	//no previous name and type
 	if len(bytes) < 1{
-		return nil
+		return nil, errors.New("Too few bytes to create a ConversationMessage")
 	}
 	msg := new(ConversationMessage)
 
@@ -37,7 +38,7 @@ func FromBytes(bytes []byte)*ConversationMessage{
 	msg.encType = (commonKeyProtocol.TYPE)(bytes[1])
 	msg.messageContent = append([]byte(nil), bytes[2:]...)
 
-	return msg
+	return msg, nil
 }
 
 func (msg *ConversationMessage)ToBytes()[]byte{

@@ -27,8 +27,12 @@ func NewMessageHandlerImpl(sessSender sessionSender.SessionSender, convosHandler
 func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
 	//log.Print("Handling bytes " + string(bytes))
 
-	msg := message.FromBytes(bytes)
+	msg, err := message.FromBytes(bytes)
 
+	if err != nil{
+		log.Print(err)
+		return
+	}
 	//TODO remove debug delay
 	time.Sleep(time.Second)
 	handler.handle(from, msg)
