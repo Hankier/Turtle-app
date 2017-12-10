@@ -6,11 +6,13 @@ import (
 	"time"
 	"cryptographer"
 	"message"
+	"conversationsHandler"
+	"log"
 )
 
 type MessageHandlerImpl struct{
 	sessSender sessionSender.SessionSender
-	convosHandler conversationsHandler
+	convosHandler conversationsHandler.ConversationsHandler
 	decrypter cryptographer.Cryptographer
 }
 
@@ -32,7 +34,12 @@ func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
 }
 
 func (handler *MessageHandlerImpl)handle(from string, msg *message.Message){
-	msg.SetMessageContent(handler.decrypter.Decrypt(msg.GetEncType(), msg.GetMessageContent()))
+	decrypted, err := handler.decrypter.Decrypt(msg.GetEncType(), msg.GetMessageContent())
+	if err != nil{
+		log.Print(err.Error())
+		return
+	}
+	msg.SetMessageContent(decrypted)
 
 	switch msg.GetMessageType(){
 	case message.DEFAULT:
