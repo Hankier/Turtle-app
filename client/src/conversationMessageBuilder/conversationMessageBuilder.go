@@ -1,9 +1,9 @@
 package conversationMessageBuilder
 
 import (
-	"commonKeyProtocol"
 	"receiverKeyHandler"
 	"conversationMessage"
+	"commonKeyProtocol"
 	"cryptographer"
 )
 
@@ -16,10 +16,10 @@ type ConversationMessageBuilder struct{
 	messageContent []byte
 }
 
-func NewConversationMessageBuilder(commonKeyProtocol commonKeyProtocol.CommonKeyProtocol, receiverKeyHandler receiverKeyHandler.ReceiverKeyHandler)*ConversationMessageBuilder{
+func NewConversationMessageBuilder(commonKeyProt commonKeyProtocol.CommonKeyProtocol, receiverKeyHandl receiverKeyHandler.ReceiverKeyHandler)*ConversationMessageBuilder{
 	builder := new(ConversationMessageBuilder)
-	builder.commonKeyProtocol = commonKeyProtocol
-	builder.receiverKeyHandler = receiverKeyHandler
+	builder.commonKeyProtocol = commonKeyProt
+	builder.receiverKeyHandler = receiverKeyHandl
 	builder.messageType = conversationMessage.DEFAULT
 	builder.encType = commonKeyProtocol.PLAIN
 	builder.messageContent = make([]byte, 0, 0)
@@ -49,4 +49,8 @@ func (builder *ConversationMessageBuilder)SetInitData(content []byte){
 func (builder *ConversationMessageBuilder)Build()[]byte{
 	convoMsg := conversationMessage.NewConversationMessage(builder.messageType, builder.encType, builder.messageContent)
 	return convoMsg.ToBytes()
+}
+
+func (builder *ConversationMessageBuilder)ParseString(message string){
+	//TODO
 }
