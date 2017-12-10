@@ -13,11 +13,13 @@ import (
 	"conversation"
 	"messageBuilder"
 	"sync"
+	"commandsListener"
 )
 
 type Client struct{
-	sess           *session.Session
 	srvList        *serverList.ServerList
+	sess           *session.Session
+	cmdListener	   *commandsListener.CommandsListener
 	nodeCrypto     cryptographer.Cryptographer
 	currentPath    []string
 	convosMutex	   sync.Mutex
@@ -27,23 +29,30 @@ type Client struct{
 	myName         string
 }
 
-func NewClient()(*Client){
+func NewClient(name string)(*Client){
 	cli := new(Client)
 
+	cli.myName = name
 	cli.srvList = serverList.NewServerList()
 	cli.nodeCrypto = cryptographer.NewNodeCrypto()
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
 	cli.messageBuilder = messageBuilder.NewMessageBuilder(cli.srvList)
 	cli.messageBuilder.SetMyName(cli.myName)
+	cli.cmdListener = commandsListener.NewCommandsListener(cli, cli.textReceiver)
+	cli.conversations = make(map[string]*conversation.Conversation)
 
 	return cli
+}
+
+func (cli *Client)Start(){
+	cli.cmdListener.Listen()
 }
 
 func (cli *Client)CreateSession(name string, socket net.Conn){
 	if cli.sess != nil{
 		cli.RemoveSession()
 	}
-	msgHandler := messageHandler.NewMessageHandlerImpl(cli, cli.nodeCrypto)
+	msgHandler := messageHandler.NewMessageHandlerImpl(cli, cli, cli.nodeCrypto)
 
 	sess := session.NewSession(socket, name, msgHandler, cli)
 
@@ -134,10 +143,13 @@ func (cli *Client)SendTo(message string, receiver string, receiverServer string)
 		}
 		convo = newConvo
 	}
-	cli.messageBuilder.SetMsgString(message)
-	cli.messageBuilder.SetMsgContentBuilder(convo.MessageBuilder())
-	cli.messageBuilder.SetReceiverKeyHandler(convo.ReceiverKeyHandler())
-	cli.messageBuilder.SetReceiver(receiver).SetReceiverServer(receiverServer)
+	cli.messageBuilder.
+		SetMsgString(message).
+		SetMsgContentBuilder(convo.MessageBuilder()).
+		SetReceiverKeyHandler(convo.ReceiverKeyHandler()).
+		SetReceiver(receiver).SetReceiverServer(receiverServer).
+		SetPath(cli.currentPath)
+
 	msg, err := cli.messageBuilder.Build()
 	if err != nil {
 		return err
