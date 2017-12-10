@@ -3,7 +3,7 @@ package sessionSender
 import "message"
 
 type SessionSender interface{
-	Send(content []byte, receiver string, receiverServer string)error
+	Send(msg *message.Message)error
 	SendInstant(msg *message.Message)error
 	UnlockSending()
 }

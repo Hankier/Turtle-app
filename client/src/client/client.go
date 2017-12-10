@@ -55,11 +55,7 @@ func (cli *Client)RemoveSession(){
 	cli.sess = nil
 }
 
-func (cli *Client)Send(content []byte, receiver string, receiverServer string)error{
-	msg, err := cli.messageBuilder.SetMsgContent(content).SetReceiver(receiver).SetReceiverServer(receiverServer).Build()
-	if err != nil{
-		return err
-	}
+func (cli *Client)Send(msg *message.Message)error{
 	if cli.sess != nil{
 		cli.sess.Send(msg)
 		return nil
@@ -137,13 +133,13 @@ func (cli *Client)SendTo(message string, receiver string, receiverServer string)
 	}
 	cli.messageBuilder.SetMsgString(message)
 	cli.messageBuilder.SetMsgContentBuilder(convo.MessageBuilder())
-
-	build, err := cli.messageBuilder.Build()
+	cli.messageBuilder.SetReceiver(receiver).SetReceiverServer(receiverServer)
+	msg, err := cli.messageBuilder.Build()
 	if err != nil {
 		return err
 	}
 
-	err = cli.Send(build.ToBytes(), receiver, receiverServer)
+	err = cli.Send(msg)
 	if err != nil {
 		return err
 	}
