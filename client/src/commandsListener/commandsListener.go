@@ -15,11 +15,13 @@ type CommandsListener struct{
 	run bool
 }
 
-func NewCommandsListener(userInterface userInterface.UserInterface, textReceiver textReceiver.TextReceiver){
+func NewCommandsListener(userInterface userInterface.UserInterface, textReceiver textReceiver.TextReceiver)(*CommandsListener){
 	cmdl := new(CommandsListener)
 	cmdl.userInterface = userInterface
 	cmdl.textReceiver = textReceiver
 	cmdl.run = true
+
+	return cmdl
 }
 
 func (cmdl *CommandsListener)Listen(){
@@ -37,7 +39,7 @@ func (cmdl *CommandsListener)Listen(){
 
 func (cmdl *CommandsListener)execCmd(cmd string){
 	cmds := strings.Fields(cmd)
-	cmdl.textReceiver.Print("Command: ", cmd)
+	cmdl.textReceiver.Print("command", cmd)
 
 	if len(cmds) > 1 {
 		switch cmds[0] {
@@ -45,12 +47,12 @@ func (cmdl *CommandsListener)execCmd(cmd string){
 			if len(cmds) > 1 {
 				switch cmds[1] {
 				case "path":
-					cmdl.textReceiver.Print("Current path: ", strings.Join(cmdl.userInterface.GetCurrentPath(), " "))
+					cmdl.textReceiver.Print("path", strings.Join(cmdl.userInterface.GetCurrentPath(), " "))
 				case "servers":
-					cmdl.textReceiver.Print("Servers: ", strings.Join(cmdl.userInterface.GetServerList(), " "))
+					cmdl.textReceiver.Print("servers", strings.Join(cmdl.userInterface.GetServerList(), " "))
 				}
 			} else {
-				cmdl.textReceiver.Print("Error: ", "Wrong command")
+				cmdl.textReceiver.Print("error", "usage: get path, get servers")
 			}
 			break
 		case "connect":
@@ -61,6 +63,8 @@ func (cmdl *CommandsListener)execCmd(cmd string){
 				} else {
 					cmdl.textReceiver.Print("Connecting to server ", cmds[1])
 				}
+			} else {
+				cmdl.textReceiver.Print("error", "usage: connect serverName")
 			}
 			break
 		case "new":
@@ -74,6 +78,8 @@ func (cmdl *CommandsListener)execCmd(cmd string){
 						} else {
 							cmdl.textReceiver.Print("Created conversation ", cmds[2]+" "+cmds[3])
 						}
+					} else {
+						cmdl.textReceiver.Print("error", "usage: new convo clientName serverName")
 					}
 				case "path":
 					if len(cmds) > 2 {
@@ -81,10 +87,15 @@ func (cmdl *CommandsListener)execCmd(cmd string){
 						if err != nil {
 							cmdl.textReceiver.Print("Error: ", err.Error())
 						} else {
-							cmdl.userInterface.ChooseNewPath(length)
+							path := cmdl.userInterface.ChooseNewPath(length)
+							cmdl.textReceiver.Print("new path", strings.Join(path, " "))
 						}
+					} else {
+						cmdl.textReceiver.Print("error", "usage: new path length")
 					}
 				}
+			} else {
+				cmdl.textReceiver.Print("error", "usage: new convo clientName serverName, new path length")
 			}
 			break
 		case "send":
@@ -98,6 +109,8 @@ func (cmdl *CommandsListener)execCmd(cmd string){
 				} else {
 					cmdl.textReceiver.Print("Message sent to ", cmds[1]+" "+cmds[2])
 				}
+			} else {
+				cmdl.textReceiver.Print("error", "usage: send receiver receiverServer message")
 			}
 			break
 		case "exit":
