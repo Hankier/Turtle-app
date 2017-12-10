@@ -4,7 +4,6 @@ import (
 	"receiverKeyHandler"
 	"conversationMessage"
 	"commonKeyProtocol"
-	"cryptographer"
 )
 
 type ConversationMessageBuilder struct{
@@ -35,15 +34,11 @@ func (builder *ConversationMessageBuilder)SetMessage(message string){
 }
 
 func (builder *ConversationMessageBuilder)SetCommonKeyData(part int, content []byte){
-	builder.commonKeyProtocol.SetCommonKeyData(part, content)
+	builder.messageContent = builder.commonKeyProtocol.GetCommonKeyData(part)
 }
 
-func (builder *ConversationMessageBuilder)SetInitData(content []byte){
-	if len(content) > 0 {
-		typ := (cryptographer.TYPE)(content[0])
-		keyData := content[1:]
-		builder.receiverKeyHandler.SetKey(typ, keyData)
-	}
+func (builder *ConversationMessageBuilder)SetInitData(){
+	//TODO get this data from nodeCrypto
 }
 
 func (builder *ConversationMessageBuilder)Build()[]byte{
