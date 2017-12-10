@@ -1,24 +1,21 @@
 package conversationMessageBuilder
 
 import (
-	"receiverKeyHandler"
 	"conversationMessage"
 	"commonKeyProtocol"
 )
 
 type ConversationMessageBuilder struct{
 	commonKeyProtocol commonKeyProtocol.CommonKeyProtocol
-	receiverKeyHandler receiverKeyHandler.ReceiverKeyHandler
 
 	messageType conversationMessage.TYPE
 	encType commonKeyProtocol.TYPE
 	messageContent []byte
 }
 
-func NewConversationMessageBuilder(commonKeyProt commonKeyProtocol.CommonKeyProtocol, receiverKeyHandl receiverKeyHandler.ReceiverKeyHandler)*ConversationMessageBuilder{
+func NewConversationMessageBuilder(commonKeyProt commonKeyProtocol.CommonKeyProtocol)*ConversationMessageBuilder{
 	builder := new(ConversationMessageBuilder)
 	builder.commonKeyProtocol = commonKeyProt
-	builder.receiverKeyHandler = receiverKeyHandl
 	builder.messageType = conversationMessage.DEFAULT
 	builder.encType = commonKeyProtocol.PLAIN
 	builder.messageContent = make([]byte, 0, 0)
