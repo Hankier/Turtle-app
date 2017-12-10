@@ -3,7 +3,6 @@ package message
 import (
 	"cryptographer"
 	"utils"
-	"errors"
 )
 
 type TYPE byte
@@ -40,10 +39,10 @@ func (msg *Message)SetMessageContent(messageContent []byte){
 	msg.messageContent = messageContent
 }
 
-func FromBytes(bytes []byte)(*Message, error){
+func FromBytes(bytes []byte)(*Message){
 	//no previous name and type
-	if len(bytes) < 2{
-		return nil, errors.New("no message type and/or encryption type")
+	if len(bytes) < 1{
+		return nil
 	}
 	msg := new(Message)
 
@@ -51,19 +50,25 @@ func FromBytes(bytes []byte)(*Message, error){
 	msg.encType = (cryptographer.TYPE)(bytes[1])
 	msg.messageContent = append([]byte(nil), bytes[2:]...)
 
-	return msg, nil
+	return msg
 }
 
-func (msg *Message)ToBytes()[]byte{
-	bytes := make([]byte, len(msg.messageContent))
+func (msg *Message)ToBytes(addSize bool)[]byte{
+	length := len(msg.messageContent) + 2 //+SIZE +TYPE +ENC TYPE
+	bytes := make([]byte, length)
 
-	copy(bytes, msg.messageContent)
+	bytes[0] = (byte)(msg.messageType)
+	bytes[1] = (byte)(msg.encType)
+	for i := 0; i < len(msg.messageContent); i++{
+		bytes[i + 2] = msg.messageContent[i]
+	}
 
-	bytes = addSizeToBytes(bytes)
+	if addSize {
+		bytes = addSizeToBytes(bytes)
+	}
 
 	return bytes
 }
-
 func addSizeToBytes(bytes []byte)([]byte){
 	size := utils.IntToTwobytes(len(bytes))
 
@@ -74,9 +79,8 @@ func addSizeToBytes(bytes []byte)([]byte){
 
 func NewMessageOK()(*Message){
 	msg := new(Message)
-	msg.messageContent = make([]byte, 2)
-	msg.messageContent[0] = (byte)(OK);
-	msg.messageContent[1] = (byte)(cryptographer.PLAIN);
+	msg.encType = cryptographer.PLAIN;
+	msg.messageType = OK;
 
 	return msg;
 }
