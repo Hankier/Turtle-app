@@ -8,14 +8,15 @@ import (
 )
 
 type MessageBuilder struct{
-	path []string
-	receiver string
+	path           []string
+	receiver       string
 	receiverServer string
-	srvList *serverList.ServerList
-	messageContent []byte
-	msgType message.TYPE
-	encType	cryptographer.TYPE
-	myServer string
+	srvList        *serverList.ServerList
+	convoBuilder   *conversationMessageBuilder.ConversationMessageBuilder
+	msgString	   string
+	msgType        message.TYPE
+	encType        cryptographer.TYPE
+	myServer       string
 }
 
 func NewMessageBuilder(sl *serverList.ServerList)(*MessageBuilder){
@@ -49,8 +50,13 @@ func(msgb *MessageBuilder) SetMsgType (p message.TYPE)(*MessageBuilder){
 	return msgb
 }
 
-func(msgb *MessageBuilder) SetMsgContent (content []byte)(*MessageBuilder){
-	msgb.messageContent = content
+func(msgb *MessageBuilder) SetMsgString (content string)(*MessageBuilder){
+	msgb.msgString = content
+	return msgb
+}
+
+func(msgb *MessageBuilder) SetMsgContentBuilder (builder *conversationMessageBuilder.ConversationMessageBuilder)(*MessageBuilder){
+	msgb.convoBuilder = builder
 	return msgb
 }
 
@@ -62,7 +68,8 @@ func (msgb *MessageBuilder) SetEncType(p cryptographer.TYPE)(*MessageBuilder){
 func (msgb *MessageBuilder)Build()(*message.Message, error){
 	msgPieces := make([][]byte, len(msgb.path) + 2)
 
-	msgContent := ([]byte)(msgb.messageContent)
+	msgb.convoBuilder.ParseString(msgb.msgString)
+	msgContent := msgb.convoBuilder.Build()
 
 	var piece *message.Message
 	var encElGamal []byte
