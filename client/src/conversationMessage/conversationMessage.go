@@ -53,3 +53,7 @@ func (msg *ConversationMessage)ToBytes()[]byte{
 
 	return bytes
 }
+
+func (msg *ConversationMessage)GetMessageType()TYPE{
+	return msg.messageType
+}
