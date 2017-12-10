@@ -23,8 +23,8 @@ func NewConversation(textReceiver textReceiver.TextReceiver, name string, server
 	convo.name = name
 	convo.server = server
 	convo.textReceiver = textReceiver
-	convo.commonKeyProtocol = commonKeyProtocol.NewCommonKeyProtocol()
-	convo.receiverKeyHandler = receiverKeyHandler.NewReceiverKeyHandler()
+	convo.commonKeyProtocol = commonKeyProtocol.NewCommonKeyProtocolImpl()
+	convo.receiverKeyHandler = receiverKeyHandler.NewReceiverKeyHandlerImpl()
 	return convo
 }
 
