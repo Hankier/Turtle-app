@@ -2,7 +2,6 @@ package message
 
 import (
 	"cryptographer"
-	"utils"
 )
 
 type TYPE byte
@@ -72,4 +71,12 @@ func (msg *Message)ToBytes()[]byte{
 	}
 
 	return bytes
+}
+
+func NewMessageOK()(*Message){
+	msg := new(Message)
+	msg.encType = cryptographer.PLAIN;
+	msg.messageType = OK;
+
+	return msg;
 }
