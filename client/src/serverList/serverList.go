@@ -20,9 +20,9 @@ func NewServerList()(*ServerList)  {
 
 	sli.serverList = make(map[string]*serverEntry)
 
-	sli.serverList["00000000"] = NewServerEntry("00000000", "127.0.0.1:8081", nil, nil)
-	sli.serverList["00000001"] = NewServerEntry("00000001", "127.0.0.1:8083", nil, nil)
-	sli.serverList["00000002"] = NewServerEntry("00000002", "127.0.0.1:8085", nil, nil)
+	sli.serverList["00000000"] = NewServerEntry("00000000", "127.0.0.1:8080", nil, nil)
+	sli.serverList["00000001"] = NewServerEntry("00000001", "127.0.0.1:8082", nil, nil)
+	sli.serverList["00000002"] = NewServerEntry("00000002", "127.0.0.1:8084", nil, nil)
 
 	return sli
 }
