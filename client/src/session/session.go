@@ -71,3 +71,7 @@ func (session *Session)UnlockSending(){
 	log.Print("Unlock sending to: " + session.name)
 	session.sender.UnlockSending()
 }
+
+func (session *Session)GetName()string{
+	return session.name
+}
