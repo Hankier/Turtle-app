@@ -133,6 +133,7 @@ func (cli *Client)SendTo(message string, receiver string, receiverServer string)
 	}
 	cli.messageBuilder.SetMsgString(message)
 	cli.messageBuilder.SetMsgContentBuilder(convo.MessageBuilder())
+	cli.messageBuilder.SetReceiverKeyHandler(convo.ReceiverKeyHandler())
 	cli.messageBuilder.SetReceiver(receiver).SetReceiverServer(receiverServer)
 	msg, err := cli.messageBuilder.Build()
 	if err != nil {
