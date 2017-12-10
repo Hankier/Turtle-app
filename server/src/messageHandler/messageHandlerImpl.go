@@ -22,11 +22,14 @@ func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypter c
 }
 
 func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
-	if msg := message.FromBytes(bytes); msg != nil{
-		//TODO remove debug delay
-		time.Sleep(time.Second)
-		handler.handle(from, msg)
+	msg, err := message.FromBytes(bytes);
+	if  err != nil{
+		log.Print(err)
+		return
 	}
+	//TODO remove debug delay
+	time.Sleep(time.Second)
+	handler.handle(from, msg)
 }
 
 func (handler *MessageHandlerImpl)handle(from string, msg *message.Message){
