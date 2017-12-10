@@ -17,9 +17,9 @@ func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Messag
 	}
 	nextName := string(msg.GetMessageContent()[0:8])
 
-	newMsg := message.FromBytes(msg.GetMessageContent()[8:])
-	if newMsg == nil{
-		log.Print("Bad message")
+	newMsg, err := message.FromBytes(msg.GetMessageContent()[8:])
+	if err != nil{
+		log.Print(err)
 		return
 	}
 
