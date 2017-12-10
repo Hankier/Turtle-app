@@ -15,6 +15,10 @@ type ReceiverKeyHandlerImpl struct{
 	publicKeyElGamal *elgamal.PublicKey
 }
 
+func NewReceiverKeyHandlerImpl()(*ReceiverKeyHandlerImpl){
+	return new(ReceiverKeyHandlerImpl)
+}
+
 func (recv *ReceiverKeyHandlerImpl)SetKey(encType cryptographer.TYPE, keyData []byte){
 	switch encType{
 	case cryptographer.RSA:
