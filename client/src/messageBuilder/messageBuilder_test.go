@@ -14,17 +14,31 @@ import (
 
 func TestMessageBuilder_Build(t *testing.T) {
 	msgb := NewMessageBuilder(serverList.NewServerList())
+	msgb.SetMyName("10000000").SetMyServer("00000000")
 
-	comparer := message.NewMessage(message.DEFAULT, cryptographer.PLAIN, []byte("00000000")).ToBytes()
-	comparer = append(comparer, message.NewMessage(message.DEFAULT, cryptographer.PLAIN, []byte("00000001")).ToBytes()...)
-	comparer = append(comparer, message.NewMessage(message.DEFAULT, cryptographer.PLAIN, []byte("00000002")).ToBytes()...)
-	comparer = append(comparer, message.NewMessage(message.DEFAULT, cryptographer.PLAIN, []byte("00000000")).ToBytes()...)
-	comparer = append(comparer, message.NewMessage(message.DEFAULT, cryptographer.PLAIN, []byte("50000000")).ToBytes()...)
+	expected := ([]byte)("H   00000001<   000000020   00000000$   50000000   0000000010000000  abcd")
+	expected[1] = 0
+	expected[2] = 0
+	expected[3] = 0
+	expected[3] = 0
+	expected[13] = 0
+	expected[14] = 0
+	expected[15] = 0
+	expected[25] = 0
+	expected[26] = 0
+	expected[27] = 0
+	expected[37] = 0
+	expected[38] = 0
+	expected[39] = 0
+	expected[49] = 0
+	expected[50] = 0
+	expected[51] = 0
+	expected[68] = 0
+	expected[69] = 0
 
-	comparer = append(comparer, message.NewMessage(message.DEFAULT, cryptographer.PLAIN, []byte("abcd")).ToBytes()...)
 	msgString := "abcd"
 
-	path := []string{"00000002", "00000001", "00000000"}
+	path := []string{"00000002", "00000001"}
 
 	convoBuilder := conversationMessageBuilder.NewConversationMessageBuilder(&commonKeyProtocol.CommonKeyProtocolImpl{})
 
@@ -35,14 +49,13 @@ func TestMessageBuilder_Build(t *testing.T) {
 		SetReceiver("50000000").
 		SetReceiverServer("00000000").
 		SetEncType(cryptographer.PLAIN).
-		SetMyServer("00000000").
 		SetMsgType(message.DEFAULT).
 		SetPath(path).
 		Build()
 	fmt.Println(string(msg.ToBytes()))
-	fmt.Println(string(comparer))
+	fmt.Println(string(expected))
 
-	if !bytes.Equal(msg.ToBytes(), comparer){
+	if !bytes.Equal(msg.ToBytes(), ([]byte)(expected)){
 		t.Error("Unexpected message")
 	}
 }
