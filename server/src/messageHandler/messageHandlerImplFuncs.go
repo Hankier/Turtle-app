@@ -8,21 +8,26 @@ import (
 func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Message){
 	log.Print("Received DEFAULT from: " + from)
 
+	//confirm receive
+	handler.sessSender.SendInstantTo(from, message.NewMessageOK())
+
 	if len(msg.GetMessageContent()) < 8{
 		log.Print("Unexpected message end")
 		return
 	}
 	nextName := string(msg.GetMessageContent()[0:8])
 
-	msg.SetMessageContent(append([]byte(nil), msg.GetMessageContent()[8:]...))
+	newMsg := message.FromBytes(msg.GetMessageContent()[8:])
+	if newMsg == nil{
+		log.Print("Bad message")
+		return
+	}
 
 	log.Print("Pushing DEFAULT to: " + nextName)
 
-	handler.sessSender.SendTo(nextName, msg)
+	handler.sessSender.SendTo(nextName, newMsg)
 
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
-
-	handler.sessSender.SendInstantTo(from, message.NewMessageOK())
 }
 
 func (handler *MessageHandlerImpl)handleOK(from string, msg *message.Message){

@@ -10,29 +10,32 @@ import (
 )
 
 type MessageHandlerImpl struct{
-	sessSender sessionsSender.SessionsSender
-	decrypter  cryptographer.Cryptographer
+	sessSender  sessionsSender.SessionsSender
+	cryptograph cryptographer.Cryptographer
 }
 
 func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypter cryptographer.Cryptographer)(*MessageHandlerImpl){
 	mhi := new(MessageHandlerImpl)
 	mhi.sessSender = sessSender
-	mhi.decrypter = decrypter
+	mhi.cryptograph = decrypter
 	return mhi
 }
 
 func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
-	if msg, err := message.FromBytes(bytes); err == nil{
+	if msg := message.FromBytes(bytes); msg != nil{
 		//TODO remove debug delay
 		time.Sleep(time.Second)
 		handler.handle(from, msg)
-	} else {
-		log.Print(err)
 	}
 }
 
 func (handler *MessageHandlerImpl)handle(from string, msg *message.Message){
-	msg.SetMessageContent(handler.decrypter.Decrypt(msg.GetEncType(), msg.GetMessageContent()))
+	decrypted, err := handler.cryptograph.Decrypt(msg.GetEncType(), msg.GetMessageContent())
+	if err != nil{
+		log.Print(err.Error())
+		return
+	}
+	msg.SetMessageContent(decrypted)
 
 	switch msg.GetMessageType(){
 	case message.DEFAULT:

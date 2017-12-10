@@ -74,7 +74,7 @@ func (sender *SenderImpl)Stop(){
 }
 
 func (sender *SenderImpl)Send(msg *message.Message){
-	bytes := msg.ToBytes()
+	bytes := msg.ToBytes(true)
 
 	sender.messagesMutex.Lock()
 	sender.messages = append(sender.messages, bytes)
@@ -82,7 +82,7 @@ func (sender *SenderImpl)Send(msg *message.Message){
 }
 
 func (sender *SenderImpl)SendInstant(msg *message.Message){
-	bytes := msg.ToBytes()
+	bytes := msg.ToBytes(true)
 	sender.socket.Write(bytes)
 }
 
