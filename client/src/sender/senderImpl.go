@@ -5,7 +5,6 @@ import (
 	"sync"
 	"bufio"
 	"time"
-	"utils"
 	"message"
 )
 
@@ -77,6 +76,7 @@ func (sender *SenderImpl)Stop(){
 func (sender *SenderImpl)Send(msg *message.Message){
 
 	bytes := msg.ToBytes()
+	bytes = addSizeToBytes(bytes)
 
 	sender.messagesMutex.Lock()
 	sender.messages = append(sender.messages, bytes)
@@ -85,6 +85,7 @@ func (sender *SenderImpl)Send(msg *message.Message){
 
 func (sender *SenderImpl)SendInstant(msg *message.Message){
 	bytes := msg.ToBytes()
+	bytes = addSizeToBytes(bytes)
 	sender.socket.Write(bytes)
 }
 

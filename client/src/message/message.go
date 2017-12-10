@@ -71,15 +71,5 @@ func (msg *Message)ToBytes()[]byte{
 		bytes[i + 2] = msg.messageContent[i]
 	}
 
-	bytes = addSizeToBytes(bytes)
-
-	return bytes
-}
-
-func addSizeToBytes(bytes []byte)([]byte){
-	size := utils.IntToTwobytes(len(bytes))
-
-	bytes = append(size, bytes...)
-
 	return bytes
 }
