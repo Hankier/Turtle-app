@@ -16,29 +16,23 @@ func TestMessageBuilder_Build(t *testing.T) {
 	msgb := NewMessageBuilder(serverList.NewServerList())
 	msgb.SetMyName("10000000").SetMyServer("00000000")
 
-	expected := ([]byte)("H   00000001<   000000020   00000000$   50000000   0000000010000000  abcd")
+	expected := ([]byte)("  00000002  00000001  recvserv  recvrecv  0000000010000000  abcd")
+	expected[0] = 0
 	expected[1] = 0
-	expected[2] = 0
-	expected[3] = 0
-	expected[3] = 0
-	expected[13] = 0
-	expected[14] = 0
-	expected[15] = 0
-	expected[25] = 0
-	expected[26] = 0
-	expected[27] = 0
-	expected[37] = 0
-	expected[38] = 0
-	expected[39] = 0
-	expected[49] = 0
-	expected[50] = 0
-	expected[51] = 0
-	expected[68] = 0
-	expected[69] = 0
+	expected[10] = 0
+	expected[11] = 0
+	expected[20] = 0
+	expected[21] = 0
+	expected[30] = 0
+	expected[31] = 0
+	expected[40] = 0
+	expected[41] = 0
+	expected[58] = 0
+	expected[59] = 0
 
 	msgString := "abcd"
 
-	path := []string{"00000002", "00000001"}
+	path := []string{"00000001", "00000002"}
 
 	convoBuilder := conversationMessageBuilder.NewConversationMessageBuilder(&commonKeyProtocol.CommonKeyProtocolImpl{})
 
@@ -46,8 +40,8 @@ func TestMessageBuilder_Build(t *testing.T) {
 		msgb.SetMsgString(msgString).
 		SetMsgContentBuilder(convoBuilder).
 		SetReceiverKeyHandler(&receiverKeyHandler.ReceiverKeyHandlerImpl{}).
-		SetReceiver("50000000").
-		SetReceiverServer("00000000").
+		SetReceiver("recvrecv").
+		SetReceiverServer("recvserv").
 		SetEncType(cryptographer.PLAIN).
 		SetMsgType(message.DEFAULT).
 		SetPath(path).

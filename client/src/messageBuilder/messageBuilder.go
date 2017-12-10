@@ -94,7 +94,6 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 
 	piece = message.NewMessage(msgb.msgType, msgb.encType, msgContent)
 
-
 	msgPieces[0] = ([]byte)(msgb.receiver)
 	msgPieces[0] = append(msgPieces[0], piece.ToBytes()...)
 
