@@ -5,6 +5,7 @@ import(
 	"receiverKeyHandler"
 	"textReceiver"
 	"conversationMessageHandler"
+	"conversationMessageBuilder"
 )
 
 type Conversation struct{
@@ -17,13 +18,14 @@ type Conversation struct{
 	textReceiver textReceiver.TextReceiver
 }
 
-func NewConversation(textReceiver textReceiver.TextReceiver, name string, server string){
+func NewConversation(textReceiver textReceiver.TextReceiver, name string, server string)*Conversation{
 	convo := new(Conversation)
 	convo.name = name
 	convo.server = server
 	convo.textReceiver = textReceiver
 	convo.commonKeyProtocol = commonKeyProtocol.NewCommonKeyProtocol()
 	convo.receiverKeyHandler = receiverKeyHandler.NewReceiverKeyHandler()
+	return convo
 }
 
 func (convo *Conversation)Receive(msg []byte){
