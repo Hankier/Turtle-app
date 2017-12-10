@@ -35,3 +35,7 @@ func (convo *Conversation)Receive(msg []byte){
 func (convo *Conversation)MessageBuilder()*conversationMessageBuilder.ConversationMessageBuilder{
 	return convo.conversationMessageBuilder
 }
+
+func (convo *Conversation)ReceiverKeyHandler()receiverKeyHandler.ReceiverKeyHandler{
+	return convo.receiverKeyHandler
+}

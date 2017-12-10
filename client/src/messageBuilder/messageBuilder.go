@@ -6,6 +6,7 @@ import (
 	"message"
 	"errors"
 	"conversationMessageBuilder"
+	"receiverKeyHandler"
 )
 
 type MessageBuilder struct{
@@ -14,6 +15,7 @@ type MessageBuilder struct{
 	receiverServer string
 	srvList        *serverList.ServerList
 	convoBuilder   *conversationMessageBuilder.ConversationMessageBuilder
+	receiverKeyHandler receiverKeyHandler.ReceiverKeyHandler
 	msgString	   string
 	msgType        message.TYPE
 	encType        cryptographer.TYPE
@@ -38,6 +40,11 @@ func (msgb *MessageBuilder)SetPath(srve []string)(*MessageBuilder){
 
 func (msgb *MessageBuilder) SetReceiver(rcvr string) (*MessageBuilder) {
 	msgb.receiver = rcvr
+	return msgb
+}
+
+func(msgb *MessageBuilder) SetReceiverKeyHandler (handler receiverKeyHandler.ReceiverKeyHandler)(*MessageBuilder){
+	msgb.receiverKeyHandler = handler
 	return msgb
 }
 
@@ -70,7 +77,9 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	msgPieces := make([][]byte, len(msgb.path) + 2)
 
 	msgb.convoBuilder.ParseString(msgb.msgString)
-	msgContent := msgb.convoBuilder.Build()
+	msgContent := ([]byte)(msgb.receiverServer)
+	msgContent = append(msgContent, ([]byte)(msgb.receiver)...)
+	msgContent = append(msgContent, ([]byte)(msgb.convoBuilder.Build())...)
 
 	var piece *message.Message
 	var encElGamal []byte
@@ -87,13 +96,13 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	case cryptographer.PLAIN:
 		piece = message.NewMessage(msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[0]))
 	case cryptographer.ELGAMAL:
-		encElGamal, err = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[0])
+		encElGamal, err = msgb.receiverKeyHandler.Encrypt(cryptographer.ELGAMAL, msgPieces[0])
 		if err != nil{
 			return nil, err
 		}
 		piece = message.NewMessage(msgb.msgType, msgb.encType, encElGamal)
 	case cryptographer.RSA:
-		encRSA, err = cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.receiver), msgPieces[0])
+		encRSA, err = msgb.receiverKeyHandler.Encrypt(cryptographer.RSA, msgPieces[0])
 		if err != nil{
 			return nil, err
 		}
@@ -107,11 +116,11 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	msgPieces[1] = append(msgPieces[1], piece.ToBytes()...)
 
 	for i := 0; i < len(msgb.path); i++{
-		switch(msgb.encType){
+		switch msgb.encType {
 		case cryptographer.PLAIN:
 			piece = message.NewMessage(msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[i+1]))
 		case cryptographer.ELGAMAL:
-			encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[i+1])
+			encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.path[i]), msgPieces[i+1])
 			piece = message.NewMessage(msgb.msgType, msgb.encType, encElGamal)
 		case cryptographer.RSA:
 			encRSA, err = cryptographer.EncryptRSA(msgb.srvList.GetPublicKeyRSA(msgb.path[i]), msgPieces[i+1])
