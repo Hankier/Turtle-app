@@ -5,6 +5,7 @@ import (
 	"cryptographer"
 	"message"
 	"errors"
+	"conversationMessageBuilder"
 )
 
 type MessageBuilder struct{
