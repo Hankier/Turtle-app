@@ -44,5 +44,6 @@ func (builder *ConversationMessageBuilder)Build()[]byte{
 }
 
 func (builder *ConversationMessageBuilder)ParseString(message string){
+	builder.SetMessage(message)
 	//TODO
 }
