@@ -20,6 +20,7 @@ type MessageBuilder struct{
 	msgType        message.TYPE
 	encType        cryptographer.TYPE
 	myServer       string
+	myName         string
 }
 
 func NewMessageBuilder(sl *serverList.ServerList)(*MessageBuilder){
@@ -30,6 +31,11 @@ func NewMessageBuilder(sl *serverList.ServerList)(*MessageBuilder){
 
 func (msgb *MessageBuilder)SetMyServer(ms string)(*MessageBuilder){
 	msgb.myServer = ms
+	return msgb
+}
+
+func (msgb *MessageBuilder)SetMyName(ms string)(*MessageBuilder){
+	msgb.myName = ms
 	return msgb
 }
 
@@ -77,8 +83,8 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	msgPieces := make([][]byte, len(msgb.path) + 2)
 
 	msgb.convoBuilder.ParseString(msgb.msgString)
-	msgContent := ([]byte)(msgb.receiverServer)
-	msgContent = append(msgContent, ([]byte)(msgb.receiver)...)
+	msgContent := ([]byte)(msgb.myServer)
+	msgContent = append(msgContent, ([]byte)(msgb.myName)...)
 	msgContent = append(msgContent, ([]byte)(msgb.convoBuilder.Build())...)
 
 	var piece *message.Message
