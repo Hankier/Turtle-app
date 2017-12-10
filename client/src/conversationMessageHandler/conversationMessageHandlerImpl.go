@@ -5,6 +5,7 @@ import (
 	"receiverKeyHandler"
 	"textReceiver"
 	"conversationMessage"
+	"log"
 )
 
 type ConversationMessageHandlerImpl struct{
@@ -29,9 +30,13 @@ func (convMHI *ConversationMessageHandlerImpl)HandleBytes(from string, bytes []b
 
 func (convMHI *ConversationMessageHandlerImpl)handle(from string, msg *conversationMessage.ConversationMessage){
 
-	decrypted := convMHI.commonKeyProt.Decrypt(msg.GetMessageContent())
+	decrypted, err := convMHI.commonKeyProt.Decrypt(msg.GetEncryptionType(), msg.GetMessageContent())
+	if err != nil{
+		log.Print(err)
+		return
+	}
 
-	switch(msg.GetMessageType()){
+	switch msg.GetMessageType() {
 	case conversationMessage.DEFAULT:
 		convMHI.handleDEFAULT(from, decrypted)
 	case conversationMessage.COMMON_KEY_PROTOCOL:
