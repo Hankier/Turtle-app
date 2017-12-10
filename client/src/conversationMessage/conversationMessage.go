@@ -53,3 +53,15 @@ func (msg *ConversationMessage)ToBytes()[]byte{
 
 	return bytes
 }
+
+func (msg *ConversationMessage)GetMessageType()TYPE{
+	return msg.messageType
+}
+
+func (msg *ConversationMessage)GetEncryptionType()commonKeyProtocol.TYPE{
+	return msg.encType
+}
+
+func (msg *ConversationMessage)GetMessageContent()[]byte{
+	return msg.messageContent
+}

@@ -1,5 +1,5 @@
 package conversationMessageHandler
 
 type ConversationMessageHandler interface{
-	HandleBytes(bytes []byte)
+	HandleBytes(from string, bytes []byte)
 }
