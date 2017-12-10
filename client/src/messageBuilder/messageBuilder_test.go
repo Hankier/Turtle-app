@@ -7,6 +7,9 @@ import (
 	"message"
 	"fmt"
 	"bytes"
+	"conversationMessageBuilder"
+	"commonKeyProtocol"
+	"receiverKeyHandler"
 )
 
 func TestMessageBuilder_Build(t *testing.T) {
@@ -19,18 +22,23 @@ func TestMessageBuilder_Build(t *testing.T) {
 	comparer = append(comparer, message.NewMessage(message.DEFAULT, cryptographer.PLAIN, []byte("50000000")).ToBytes()...)
 
 	comparer = append(comparer, message.NewMessage(message.DEFAULT, cryptographer.PLAIN, []byte("abcd")).ToBytes()...)
-	msgContent := "abcd"
+	msgString := "abcd"
 
 	path := []string{"00000002", "00000001", "00000000"}
 
-	msg,_ := msgb.SetEncType(cryptographer.PLAIN).
-		SetMsgContent([]byte(msgContent)).
-			SetMyServer("00000000").
-				SetMsgType(message.DEFAULT).
-					SetPath(path).
-						SetReceiver("50000000").
-							SetReceiverServer("00000000").
-								Build()
+	convoBuilder := conversationMessageBuilder.NewConversationMessageBuilder(&commonKeyProtocol.CommonKeyProtocolImpl{})
+
+	msg,_ :=
+		msgb.SetMsgString(msgString).
+		SetMsgContentBuilder(convoBuilder).
+		SetReceiverKeyHandler(&receiverKeyHandler.ReceiverKeyHandlerImpl{}).
+		SetReceiver("50000000").
+		SetReceiverServer("00000000").
+		SetEncType(cryptographer.PLAIN).
+		SetMyServer("00000000").
+		SetMsgType(message.DEFAULT).
+		SetPath(path).
+		Build()
 	fmt.Println(string(msg.ToBytes()))
 	fmt.Println(string(comparer))
 
