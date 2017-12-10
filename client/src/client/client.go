@@ -144,15 +144,19 @@ func (cli *Client)SendTo(message string, receiver string, receiverServer string)
 	return nil
 }
 
-func (cli *Client)ReceiveMessage(content []byte, receiver string, receiverServer string){
+func (cli *Client)ReceiveMessage(content []byte, receiver string, receiverServer string)error{
 	name := receiverServer + receiver
 	cli.convosMutex.Lock()
 	convo, ok := cli.conversations[name]
-	if !ok{
-		convo = conversation.NewConversation(cli.textReceiver, receiver, receiverServer)
-		cli.conversations[name] = convo
-	}
 	cli.convosMutex.Unlock()
+	if !ok{
+		newConvo, err := cli.CreateConversation(receiver, receiverServer)
+		if err != nil{
+			return err
+		}
+		convo = newConvo
+	}
 	convo.Receive(content)
+	return nil
 }
 
