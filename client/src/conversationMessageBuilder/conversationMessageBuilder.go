@@ -50,3 +50,7 @@ func (builder *ConversationMessageBuilder)Build()[]byte{
 	convoMsg := conversationMessage.NewConversationMessage(builder.messageType, builder.encType, builder.messageContent)
 	return convoMsg.ToBytes()
 }
+
+func (builder *ConversationMessageBuilder)ParseString(message string){
+	//TODO
+}
