@@ -33,6 +33,8 @@ func NewClient()(*Client){
 	cli.srvList = serverList.NewServerList()
 	cli.nodeCrypto = cryptographer.NewNodeCrypto()
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
+	cli.messageBuilder = messageBuilder.NewMessageBuilder(cli.srvList)
+	cli.messageBuilder.SetMyName(cli.myName)
 
 	return cli
 }
@@ -94,6 +96,7 @@ func (cli *Client)ConnectToServer(name string)error{
 		return err
 	}
 	socket.Write([]byte(cli.myName))
+	cli.messageBuilder.SetMyServer(name)
 	cli.CreateSession(name, socket)
 	log.Print("Succesfully connected to " + name)
 	return nil
