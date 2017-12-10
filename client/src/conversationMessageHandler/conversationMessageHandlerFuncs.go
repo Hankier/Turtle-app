@@ -1,7 +1,7 @@
 package conversationMessageHandler
 
-func (convMHI *ConversationMessageHandlerImpl)handleDEFAULT(bytes []byte){
-
+func (convMHI *ConversationMessageHandlerImpl)handleDEFAULT(from string, bytes []byte){
+	convMHI.textReceiver.Print(from, string(bytes))
 }
 
 func (convMHI *ConversationMessageHandlerImpl)handleCOMMON_KEY_PROTOCOL(bytes []byte){
