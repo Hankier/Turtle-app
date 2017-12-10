@@ -8,7 +8,7 @@ const (
 )
 
 type CommonKeyProtocol interface{
-	Decrypt(bytes []byte)([]byte)
+	Decrypt(encType TYPE, bytes []byte)([]byte, error)
 	decryptSymmetric(bytes []byte)([]byte, error)
 	SetCommonKeyData(part int, bytes []byte)
 	GetCommonKeyData(part int)([]byte)

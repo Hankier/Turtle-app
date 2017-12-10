@@ -27,10 +27,16 @@ func NewCommonKeyProtocolImpl()(*CommonKeyProtocolImpl){
 	return ckpi;
 }
 
-func (ckpi *CommonKeyProtocolImpl)Decrypt(bytes []byte)([]byte){
-	//TODO
-	return nil
+func (ckpi *CommonKeyProtocolImpl)Decrypt(encType TYPE, bytes []byte)([]byte, error){
+	switch encType {
+	case PLAIN:
+		return bytes, nil
+	case SYMMETRIC:
+		return ckpi.decryptSymmetric(bytes)
+	}
+	return bytes, nil
 }
+
 func (ckpi *CommonKeyProtocolImpl)decryptSymmetric(bytes []byte)([]byte, error){
 	//TODO
 	return nil, nil
