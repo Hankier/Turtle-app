@@ -8,21 +8,28 @@ import (
 )
 
 type ConversationMessageHandlerImpl struct{
-	commonKeyProtocol commonKeyProtocol.CommonKeyProtocol
-	receiverKeyHandler receiverKeyHandler.ReceiverKeyHandler
-	textReceiver textReceiver.TextReceiver
+	commonKeyProt commonKeyProtocol.CommonKeyProtocol
+	recvKeyHandler receiverKeyHandler.ReceiverKeyHandler
+	textRecv textReceiver.TextReceiver
+}
+
+func NewConversationMessageHandlerImpl(commonKeyProt commonKeyProtocol.CommonKeyProtocol, recvKeyHandler receiverKeyHandler.ReceiverKeyHandler, textRecv textReceiver.TextReceiver)(*ConversationMessageHandlerImpl){
+	convMHI := new(ConversationMessageHandlerImpl)
+	convMHI.commonKeyProt = commonKeyProt
+	convMHI.recvKeyHandler = recvKeyHandler
+	convMHI.textRecv = textRecv
+	return convMHI
 }
 
 func (convMHI *ConversationMessageHandlerImpl)HandleBytes(from string, bytes []byte){
 	msg := conversationMessage.FromBytes(bytes)
-
 
 	convMHI.handle(from, msg)
 }
 
 func (convMHI *ConversationMessageHandlerImpl)handle(from string, msg *conversationMessage.ConversationMessage){
 
-	decrypted := convMHI.commonKeyProtocol.Decrypt(msg.GetMessageContent())
+	decrypted := convMHI.commonKeyProt.Decrypt(msg.GetMessageContent())
 
 	switch(msg.GetMessageType()){
 	case conversationMessage.DEFAULT:
