@@ -7,9 +7,9 @@ import (
 type TYPE byte
 
 const (
-	INIT_DATA TYPE = iota
+	DEFAULT TYPE = iota
+	INIT_DATA
 	COMMON_KEY_PROTOCOL
-	DEFAULT
 )
 
 type ConversationMessage struct{
