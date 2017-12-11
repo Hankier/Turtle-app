@@ -2,17 +2,18 @@ package conversation
 
 import(
 	"commonKeyProtocol"
-	"receiverKeyHandler"
+	"receiverEncrypter"
 	"textReceiver"
 	"conversationMessageHandler"
 	"conversationMessageBuilder"
+	"cryptographer"
 )
 
 type Conversation struct{
 	name                string
 	server              string
 	commonKeyProtocol   commonKeyProtocol.CommonKeyProtocol
-	receiverKeyHandler  receiverKeyHandler.ReceiverKeyHandler
+	receiverEncrypter   *receiverEncrypter.ReceiverEncrypterImpl
 	textReceiver        textReceiver.TextReceiver
 	convoMessageBuilder *conversationMessageBuilder.ConversationMessageBuilder
 	convoMessageHandler conversationMessageHandler.ConversationMessageHandler
@@ -23,10 +24,10 @@ func NewConversation(textReceiver textReceiver.TextReceiver, name string, server
 	convo.name = name
 	convo.server = server
 	convo.commonKeyProtocol = commonKeyProtocol.New()
-	convo.receiverKeyHandler = receiverKeyHandler.New()
+	convo.receiverEncrypter = receiverEncrypter.New()
 	convo.textReceiver = textReceiver
 	convo.convoMessageBuilder = conversationMessageBuilder.NewConversationMessageBuilder(convo.commonKeyProtocol)
-	convo.convoMessageHandler = conversationMessageHandler.New(convo.commonKeyProtocol, convo.receiverKeyHandler, convo.textReceiver)
+	convo.convoMessageHandler = conversationMessageHandler.New(convo.commonKeyProtocol, convo.receiverEncrypter, convo.textReceiver)
 	return convo
 }
 
@@ -38,6 +39,6 @@ func (convo *Conversation)MessageBuilder()*conversationMessageBuilder.Conversati
 	return convo.convoMessageBuilder
 }
 
-func (convo *Conversation)ReceiverKeyHandler()receiverKeyHandler.ReceiverKeyHandler{
-	return convo.receiverKeyHandler
+func (convo *Conversation) Encrypter()cryptographer.Encrypter{
+	return convo.receiverEncrypter
 }
