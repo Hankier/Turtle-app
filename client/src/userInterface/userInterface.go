@@ -4,7 +4,7 @@ import "conversation"
 
 type UserInterface interface{
 	GetCurrentPath()([]string)
-	ChooseNewPath(length int)([]string)
+	ChooseNewPath(length int)([]string,error)
 	ConnectToServer(name string)error
 	GetServerList()([]string)
 	CreateConversation(receiver string, receiverServer string) (convo *conversation.Conversation, err error)
