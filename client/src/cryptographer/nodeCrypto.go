@@ -42,7 +42,7 @@ func NewNodeCrypto()(*NodeCrypto){
 func (nodeCrypto *NodeCrypto)Decrypt(encType TYPE, bytes []byte) ([]byte, error){
 	switch encType {
 	case PLAIN:
-		return DecryptPlain(bytes), nil
+		return bytes, nil
 	case RSA:
 		return DecryptRSA(nodeCrypto.privateKeyRSA, bytes)
 	case ELGAMAL:
@@ -54,7 +54,7 @@ func (nodeCrypto *NodeCrypto)Decrypt(encType TYPE, bytes []byte) ([]byte, error)
 func (nodeCrypto *NodeCrypto)Encrypt(encType TYPE, bytes []byte) ([]byte, error){
 	switch encType {
 	case PLAIN:
-		return EncryptPlain(bytes), nil
+		return bytes, nil
 	case RSA:
 		return EncryptRSA(nodeCrypto.publicKeyRSA, bytes)
 	case ELGAMAL:
