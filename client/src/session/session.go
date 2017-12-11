@@ -9,6 +9,7 @@ import (
 	"messageHandler"
 	"sessionHandler"
 	"message"
+	"session/handler"
 )
 
 type Session struct{
@@ -16,12 +17,12 @@ type Session struct{
 	socket   net.Conn
 	sender   *sender.SenderImpl
 	recver   *receiver.Receiver
-	handler  sessionHandler.SessionHandler
+	handler  handler.Handler
 	wgSender *sync.WaitGroup
 	wgRecver *sync.WaitGroup
 }
 
-func New(socket net.Conn, name string, messageHandler messageHandler.MessageHandler, handler sessionHandler.SessionHandler)(*Session){
+func New(socket net.Conn, name string, messageHandler messageHandler.MessageHandler, handler handler.Handler)(*Session){
 	s := new(Session)
 
 	s.name = name
