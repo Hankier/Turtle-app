@@ -9,16 +9,16 @@ import (
 )
 
 type ConversationMessageHandlerImpl struct{
-	commonKeyProt commonKeyProtocol.CommonKeyProtocol
-	recvKeyHandler receiverKeyHandler.ReceiverKeyHandler
-	textRecv textReceiver.TextReceiver
+	ckp      commonKeyProtocol.CommonKeyProtocol
+	rkh      receiverKeyHandler.ReceiverKeyHandler
+	textrecv textReceiver.TextReceiver
 }
 
-func NewConversationMessageHandlerImpl(commonKeyProt commonKeyProtocol.CommonKeyProtocol, recvKeyHandler receiverKeyHandler.ReceiverKeyHandler, textRecv textReceiver.TextReceiver)(*ConversationMessageHandlerImpl){
+func New(ckp commonKeyProtocol.CommonKeyProtocol, rkh receiverKeyHandler.ReceiverKeyHandler, textrecv textReceiver.TextReceiver)(*ConversationMessageHandlerImpl){
 	convMHI := new(ConversationMessageHandlerImpl)
-	convMHI.commonKeyProt = commonKeyProt
-	convMHI.recvKeyHandler = recvKeyHandler
-	convMHI.textRecv = textRecv
+	convMHI.ckp = ckp
+	convMHI.rkh = rkh
+	convMHI.textrecv = textrecv
 	return convMHI
 }
 
@@ -34,7 +34,7 @@ func (convMHI *ConversationMessageHandlerImpl)HandleBytes(from string, bytes []b
 
 func (convMHI *ConversationMessageHandlerImpl)handle(from string, msg *conversationMessage.ConversationMessage){
 
-	decrypted, err := convMHI.commonKeyProt.Decrypt(msg.GetEncryptionType(), msg.GetMessageContent())
+	decrypted, err := convMHI.ckp.Decrypt(msg.GetEncryptionType(), msg.GetMessageContent())
 	if err != nil{
 		log.Print(err)
 		return

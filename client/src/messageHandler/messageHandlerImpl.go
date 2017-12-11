@@ -11,16 +11,16 @@ import (
 )
 
 type MessageHandlerImpl struct{
-	sessSender    sessionSender.SessionSender
-	convosHandler conversationsHandler.ConversationsHandler
-	cryptograph   cryptographer.Cryptographer
+	ss            sessionSender.SessionSender
+	convoshandler conversationsHandler.ConversationsHandler
+	crypt         cryptographer.Cryptographer
 }
 
-func NewMessageHandlerImpl(sessSender sessionSender.SessionSender, convosHandler conversationsHandler.ConversationsHandler, cryptograph cryptographer.Cryptographer)(*MessageHandlerImpl){
+func New(sessSender sessionSender.SessionSender, convohandler conversationsHandler.ConversationsHandler, crypt cryptographer.Cryptographer)(*MessageHandlerImpl){
 	mhi := new(MessageHandlerImpl)
-	mhi.sessSender = sessSender
-	mhi.convosHandler = convosHandler
-	mhi.cryptograph = cryptograph
+	mhi.ss = sessSender
+	mhi.convoshandler = convohandler
+	mhi.crypt = crypt
 	return mhi
 }
 
@@ -39,7 +39,7 @@ func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
 }
 
 func (handler *MessageHandlerImpl)handle(from string, msg *message.Message){
-	decrypted, err := handler.cryptograph.Decrypt(msg.GetEncType(), msg.GetMessageContent())
+	decrypted, err := handler.crypt.Decrypt(msg.GetEncType(), msg.GetMessageContent())
 	if err != nil{
 		log.Print(err.Error())
 		return

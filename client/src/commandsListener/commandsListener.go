@@ -10,15 +10,15 @@ import (
 )
 
 type CommandsListener struct{
-	userInterface userInterface.UserInterface
-	textReceiver textReceiver.TextReceiver
-	run bool
+	ui       userInterface.UserInterface
+	textrecv textReceiver.TextReceiver
+	run      bool
 }
 
-func NewCommandsListener(userInterface userInterface.UserInterface, textReceiver textReceiver.TextReceiver)(*CommandsListener){
+func New(ui userInterface.UserInterface, textrecv textReceiver.TextReceiver)(*CommandsListener){
 	cmdl := new(CommandsListener)
-	cmdl.userInterface = userInterface
-	cmdl.textReceiver = textReceiver
+	cmdl.ui = ui
+	cmdl.textrecv = textrecv
 	cmdl.run = true
 
 	return cmdl
@@ -39,7 +39,7 @@ func (cmdl *CommandsListener)Listen(){
 
 func (cmdl *CommandsListener)execCmd(cmd string){
 	cmds := strings.Fields(cmd)
-	cmdl.textReceiver.Print("command", cmd)
+	cmdl.textrecv.Print("command", cmd)
 
 	if len(cmds) > 1 {
 		switch cmds[0] {
@@ -47,24 +47,24 @@ func (cmdl *CommandsListener)execCmd(cmd string){
 			if len(cmds) > 1 {
 				switch cmds[1] {
 				case "path":
-					cmdl.textReceiver.Print("path", strings.Join(cmdl.userInterface.GetCurrentPath(), " "))
+					cmdl.textrecv.Print("path", strings.Join(cmdl.ui.GetCurrentPath(), " "))
 				case "servers":
-					cmdl.textReceiver.Print("servers", strings.Join(cmdl.userInterface.GetServerList(), " "))
+					cmdl.textrecv.Print("servers", strings.Join(cmdl.ui.GetServerList(), " "))
 				}
 			} else {
-				cmdl.textReceiver.Print("error", "usage: get path, get servers")
+				cmdl.textrecv.Print("error", "usage: get path, get servers")
 			}
 			break
 		case "connect":
 			if len(cmds) > 1 {
-				err := cmdl.userInterface.ConnectToServer(cmds[1])
+				err := cmdl.ui.ConnectToServer(cmds[1])
 				if err != nil {
-					cmdl.textReceiver.Print("Error: ", "Wrong server")
+					cmdl.textrecv.Print("Error: ", "Wrong server")
 				} else {
-					cmdl.textReceiver.Print("Connecting to server ", cmds[1])
+					cmdl.textrecv.Print("Connecting to server ", cmds[1])
 				}
 			} else {
-				cmdl.textReceiver.Print("error", "usage: connect serverName")
+				cmdl.textrecv.Print("error", "usage: connect serverName")
 			}
 			break
 		case "new":
@@ -72,30 +72,30 @@ func (cmdl *CommandsListener)execCmd(cmd string){
 				switch cmds[1] {
 				case "convo":
 					if len(cmds) > 3 {
-						_, err := cmdl.userInterface.CreateConversation(cmds[2], cmds[3])
+						_, err := cmdl.ui.CreateConversation(cmds[2], cmds[3])
 						if err != nil {
-							cmdl.textReceiver.Print("Error: ", err.Error())
+							cmdl.textrecv.Print("Error: ", err.Error())
 						} else {
-							cmdl.textReceiver.Print("Created conversation ", cmds[2]+" "+cmds[3])
+							cmdl.textrecv.Print("Created conversation ", cmds[2]+" "+cmds[3])
 						}
 					} else {
-						cmdl.textReceiver.Print("error", "usage: new convo clientName serverName")
+						cmdl.textrecv.Print("error", "usage: new convo clientName serverName")
 					}
 				case "path":
 					if len(cmds) > 2 {
 						length, err := strconv.Atoi(cmds[2])
 						if err != nil {
-							cmdl.textReceiver.Print("Error: ", err.Error())
+							cmdl.textrecv.Print("Error: ", err.Error())
 						} else {
-							path := cmdl.userInterface.ChooseNewPath(length)
-							cmdl.textReceiver.Print("new path", strings.Join(path, " "))
+							path := cmdl.ui.ChooseNewPath(length)
+							cmdl.textrecv.Print("new path", strings.Join(path, " "))
 						}
 					} else {
-						cmdl.textReceiver.Print("error", "usage: new path length")
+						cmdl.textrecv.Print("error", "usage: new path length")
 					}
 				}
 			} else {
-				cmdl.textReceiver.Print("error", "usage: new convo clientName serverName, new path length")
+				cmdl.textrecv.Print("error", "usage: new convo clientName serverName, new path length")
 			}
 			break
 		case "send":
@@ -103,14 +103,14 @@ func (cmdl *CommandsListener)execCmd(cmd string){
 				receiver := cmds[1]
 				receiverServer := cmds[2]
 				message := strings.Join(cmds[3:], " ")
-				err := cmdl.userInterface.SendTo(message, receiver, receiverServer)
+				err := cmdl.ui.SendTo(message, receiver, receiverServer)
 				if err != nil {
-					cmdl.textReceiver.Print("Error: ", err.Error())
+					cmdl.textrecv.Print("Error: ", err.Error())
 				} else {
-					cmdl.textReceiver.Print("Message sent to ", cmds[1]+" "+cmds[2])
+					cmdl.textrecv.Print("Message sent to ", cmds[1]+" "+cmds[2])
 				}
 			} else {
-				cmdl.textReceiver.Print("error", "usage: send receiver receiverServer message")
+				cmdl.textrecv.Print("error", "usage: send receiver receiverServer message")
 			}
 			break
 		case "exit":

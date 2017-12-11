@@ -11,36 +11,37 @@ import (
 )
 
 type ReceiverKeyHandlerImpl struct{
-	publicKeyRSA   *rsa.PublicKey
-	publicKeyElGamal *elgamal.PublicKey
+	pubRSA     *rsa.PublicKey
+	pubElGamal *elgamal.PublicKey
 }
 
-func NewReceiverKeyHandlerImpl()(*ReceiverKeyHandlerImpl){
+func New()(*ReceiverKeyHandlerImpl){
 	return new(ReceiverKeyHandlerImpl)
 }
 
-func (recv *ReceiverKeyHandlerImpl)SetKey(encType cryptographer.TYPE, keyData []byte){
-	switch encType{
+func (recv *ReceiverKeyHandlerImpl)SetKey(enctype cryptographer.TYPE, keydata []byte){
+	switch enctype {
 	case cryptographer.RSA:
-		recv.setRSA(keyData)
+		recv.setRSA(keydata)
 		break
 	case cryptographer.ELGAMAL:
-		recv.setElGamal(keyData)
+		recv.setElGamal(keydata)
 		break
 	}
 }
 
-func (recv *ReceiverKeyHandlerImpl)setRSA(keyData []byte){
-	block, _ := pem.Decode(keyData)
+func (recv *ReceiverKeyHandlerImpl)setRSA(keydata []byte){
+	//todo public key
+	block, _ := pem.Decode(keydata)
 
-	privateKeyRSA, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	pubRSA, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		log.Print("Failed to parse private key: " + err.Error())
 		return
 	}
-	privateKeyRSA.Precompute()
+	pubRSA.Precompute()
 
-	if err = privateKeyRSA.Validate(); err != nil {
+	if err = pubRSA.Validate(); err != nil {
 		log.Print(err)
 		return
 	}
@@ -58,17 +59,17 @@ func (recv *ReceiverKeyHandlerImpl)setElGamal(keyData []byte){
 	block, _ = pem.Decode(keyData)
 	publicKeyElGamal.Y = new(big.Int).SetBytes(block.Bytes)
 
-	recv.publicKeyElGamal = publicKeyElGamal
+	recv.pubElGamal = publicKeyElGamal
 }
 
 func (recv *ReceiverKeyHandlerImpl)Encrypt(encType cryptographer.TYPE, msg []byte)([]byte, error){
 	switch encType {
 	case cryptographer.PLAIN:
-		return cryptographer.EncryptPlain(msg), nil
+		return msg, nil
 	case cryptographer.RSA:
-		return cryptographer.EncryptRSA(recv.publicKeyRSA, msg)
+		return cryptographer.EncryptRSA(recv.pubRSA, msg)
 	case cryptographer.ELGAMAL:
-		return cryptographer.EncryptElGamal(recv.publicKeyElGamal, msg)
+		return cryptographer.EncryptElGamal(recv.pubElGamal, msg)
 	}
 
 	return msg, nil

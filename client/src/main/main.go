@@ -10,6 +10,6 @@ func main(){
 
 	name := args[0]
 
-	client := client.NewClient(name)
-	client.Start()
+	cli := client.NewClient(name)
+	cli.Start()
 }

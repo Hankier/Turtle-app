@@ -6,59 +6,59 @@ import (
 )
 
 type NodeCrypto struct{
-	privateKeyRSA  *rsa.PrivateKey
-	publicKeyRSA   *rsa.PublicKey
-	privateKeyElGamal  *elgamal.PrivateKey
-	publicKeyElGamal   *elgamal.PublicKey
+	privRSA           *rsa.PrivateKey
+	pubRSA            *rsa.PublicKey
+	privElGamal *elgamal.PrivateKey
+	pubElGamal        *elgamal.PublicKey
 }
 
-func NewNodeCrypto()(*NodeCrypto){
-	nodeCrypto := new(NodeCrypto)
+func New()(*NodeCrypto){
+	nc := new(NodeCrypto)
 
-	var privateKeyRSA *rsa.PrivateKey
+	var privRSA *rsa.PrivateKey
 
-	privateKeyRSA, err := LoadRSA("privateKeyRSA")
+	privRSA, err := LoadRSA("privateKeyRSA")
 	if err != nil{
-		privateKeyRSA = GenerateRSA()
-		SaveRSA(privateKeyRSA, "privateKeyRSA")
+		privRSA = GenerateRSA()
+		SaveRSA(privRSA, "privateKeyRSA")
 	}
-	nodeCrypto.privateKeyRSA = privateKeyRSA
-	nodeCrypto.publicKeyRSA = &privateKeyRSA.PublicKey
+	nc.privRSA = privRSA
+	nc.pubRSA = &privRSA.PublicKey
 
 
-	var privateKeyElGamal *elgamal.PrivateKey
+	var privElGamal *elgamal.PrivateKey
 
-	privateKeyElGamal, err = LoadElGamal("privateKeyElGamal")
+	privElGamal, err = LoadElGamal("privateKeyElGamal")
 	if err != nil{
-		privateKeyElGamal = GenerateElGamal()
-		SaveElGamal(privateKeyElGamal, "privateKeyElGamal")
+		privElGamal = GenerateElGamal()
+		SaveElGamal(privElGamal, "privateKeyElGamal")
 	}
-	nodeCrypto.privateKeyElGamal = privateKeyElGamal
-	nodeCrypto.publicKeyElGamal = &privateKeyElGamal.PublicKey
+	nc.privElGamal = privElGamal
+	nc.pubElGamal = &privElGamal.PublicKey
 
-	return nodeCrypto
+	return nc
 }
 
-func (nodeCrypto *NodeCrypto)Decrypt(encType TYPE, bytes []byte) ([]byte, error){
+func (nc *NodeCrypto)Decrypt(encType TYPE, bytes []byte) ([]byte, error){
 	switch encType {
 	case PLAIN:
-		return DecryptPlain(bytes), nil
+		return bytes, nil
 	case RSA:
-		return DecryptRSA(nodeCrypto.privateKeyRSA, bytes)
+		return DecryptRSA(nc.privRSA, bytes)
 	case ELGAMAL:
-		return DecryptElGamal(nodeCrypto.privateKeyElGamal, bytes)
+		return DecryptElGamal(nc.privElGamal, bytes)
 	}
 	return bytes, nil
 }
 
-func (nodeCrypto *NodeCrypto)Encrypt(encType TYPE, bytes []byte) ([]byte, error){
+func (nc *NodeCrypto)Encrypt(encType TYPE, bytes []byte) ([]byte, error){
 	switch encType {
 	case PLAIN:
-		return EncryptPlain(bytes), nil
+		return bytes, nil
 	case RSA:
-		return EncryptRSA(nodeCrypto.publicKeyRSA, bytes)
+		return EncryptRSA(nc.pubRSA, bytes)
 	case ELGAMAL:
-		return EncryptElGamal(nodeCrypto.publicKeyElGamal, bytes)
+		return EncryptElGamal(nc.pubElGamal, bytes)
 	}
 	return bytes, nil
 }

@@ -9,6 +9,8 @@ import (
 	"os"
 )
 
+//TODO RSA
+
 func TestElGamal(t *testing.T) {
 	x, _ := rand.Int(rand.Reader, p)
 

@@ -20,7 +20,7 @@ type CommonKeyProtocolImpl struct{
 	sessionCommonKey         *pbc.Element //K
 }
 
-func NewCommonKeyProtocolImpl()(*CommonKeyProtocolImpl){
+func New()(*CommonKeyProtocolImpl){
 	//TODO
 	ckpi := new(CommonKeyProtocolImpl)
 

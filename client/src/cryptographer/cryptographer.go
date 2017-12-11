@@ -171,10 +171,6 @@ func DecryptElGamal(privateKey *elgamal.PrivateKey, msg []byte) ([]byte, error) 
 	return elgamal.Decrypt(privateKey, c1, c2)
 }
 
-func DecryptPlain(msg []byte) []byte {
-	return msg
-}
-
 func EncryptRSA(publicKey *rsa.PublicKey, msg []byte) ([]byte, error){
 	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, msg);
 	if  err != nil {
@@ -191,10 +187,6 @@ func EncryptElGamal(publicKey *elgamal.PublicKey, msg []byte) ([]byte, error) {
 	encmsg := c1.Bytes()
 	encmsg = append(encmsg, c2.Bytes()...)
 	return encmsg, nil
-}
-
-func EncryptPlain(msg []byte) []byte {
-	return msg
 }
 
 func nonZeroRandomBytes(s []byte, rand io.Reader) (err error) {
