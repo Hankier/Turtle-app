@@ -51,8 +51,11 @@ func (s *SenderImpl)Loop(wg *sync.WaitGroup){
 				s.msgsmutex.Unlock()
 
 				packet := messagesToSingle(messagesCopy)
-				writer.Write(packet)
-				writer.Flush()
+
+				_, err := writer.Write(packet)
+				if err != nil{s.stopped = true; break}
+				err = writer.Flush()
+				if err != nil{s.stopped = true; break}
 			} else {
 				s.msgsmutex.Unlock()
 			}
@@ -75,18 +78,18 @@ func (s *SenderImpl)Stop(){
 
 func (s *SenderImpl)Send(msg *message.Message){
 
-	bytes := msg.ToBytes()
-	bytes = addSizeToBytes(bytes)
+	content := msg.ToBytes()
+	content = addSizeToBytes(content)
 
 	s.msgsmutex.Lock()
-	s.msgs = append(s.msgs, bytes)
+	s.msgs = append(s.msgs, content)
 	s.msgsmutex.Unlock()
 }
 
 func (s *SenderImpl)SendInstant(msg *message.Message){
-	bytes := msg.ToBytes()
-	bytes = addSizeToBytes(bytes)
-	s.socket.Write(bytes)
+	content := msg.ToBytes()
+	content = addSizeToBytes(content)
+	s.socket.Write(content)
 }
 
 func (s *SenderImpl)UnlockSending(){
