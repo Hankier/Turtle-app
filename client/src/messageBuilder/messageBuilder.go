@@ -123,7 +123,7 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	for i := 0; i < len(msgb.path); i++{
 		switch msgb.encType {
 		case cryptographer.PLAIN:
-			piece = message.NewMessage(msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[i+1]))
+			piece = message.NewMessage(msgb.msgType, msgb.encType, msgPieces[i+1])
 		case cryptographer.ELGAMAL:
 			encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.path[i]), msgPieces[i+1])
 			piece = message.NewMessage(msgb.msgType, msgb.encType, encElGamal)
@@ -144,7 +144,7 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 
 	switch(msgb.encType){
 	case cryptographer.PLAIN:
-		msg = message.NewMessage(msgb.msgType, msgb.encType, cryptographer.EncryptPlain(msgPieces[len(msgb.path) + 1]))
+		msg = message.NewMessage(msgb.msgType, msgb.encType, msgPieces[len(msgb.path) + 1])
 	case cryptographer.ELGAMAL:
 		encElGamal, _ = cryptographer.EncryptElGamal(msgb.srvList.GetPublicKeyElGamal(msgb.receiver), msgPieces[len(msgb.path) + 1])
 		msg = message.NewMessage(msgb.msgType, msgb.encType, encElGamal)
