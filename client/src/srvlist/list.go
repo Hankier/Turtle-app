@@ -64,7 +64,7 @@ func (sli *ServerList)GetRandomPath(length int)([]string, error){
 	var rnd *big.Int
 	var err error
 
-	for i := 1; i < length; i++{
+	for i := 0; i < length; i++{
 		rnd, err = rand.Int(rand.Reader, big.NewInt(int64(serversLen)))
 		if err != nil {	return nil, err	}
 		path[i] = names[rnd.Int64()]
