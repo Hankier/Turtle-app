@@ -94,9 +94,15 @@ func (cli *Client)GetCurrentPath() []string{
 	return cli.currentPath
 }
 
-func (cli *Client)ChooseNewPath(length int)[]string{
-	cli.currentPath = cli.srvList.GetRandomPath(length)
-	return cli.currentPath
+func (cli *Client)ChooseNewPath(length int)([]string, error){
+	var err error
+	cli.currentPath, err = cli.srvList.GetRandomPath(length)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return cli.currentPath, nil
 }
 
 func (cli *Client)ConnectToServer(name string)error{
