@@ -2,7 +2,7 @@ package conversationMessageHandler
 
 import (
 	"commonKeyProtocol"
-	"receiverKeyHandler"
+	"receiverEncrypter"
 	"textReceiver"
 	"conversationMessage"
 	"log"
@@ -10,11 +10,11 @@ import (
 
 type ConversationMessageHandlerImpl struct{
 	ckp      commonKeyProtocol.CommonKeyProtocol
-	rkh      receiverKeyHandler.ReceiverKeyHandler
+	rkh      *receiverEncrypter.ReceiverEncrypterImpl
 	textrecv textReceiver.TextReceiver
 }
 
-func New(ckp commonKeyProtocol.CommonKeyProtocol, rkh receiverKeyHandler.ReceiverKeyHandler, textrecv textReceiver.TextReceiver)(*ConversationMessageHandlerImpl){
+func New(ckp commonKeyProtocol.CommonKeyProtocol, rkh *receiverEncrypter.ReceiverEncrypterImpl, textrecv textReceiver.TextReceiver)(*ConversationMessageHandlerImpl){
 	convMHI := new(ConversationMessageHandlerImpl)
 	convMHI.ckp = ckp
 	convMHI.rkh = rkh

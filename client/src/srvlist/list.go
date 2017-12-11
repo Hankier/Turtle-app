@@ -1,51 +1,44 @@
-package serverList
+package srvlist
 
 import (
 	"sync"
-	"crypto/rsa"
-	"golang.org/x/crypto/openpgp/elgamal"
 	"math/big"
 	"crypto/rand"
 	"errors"
+	"cryptographer"
+	"srvlist/entry"
 )
 
 type ServerList struct{
-	serverListMutex sync.Mutex
-	serverList map[string]*serverEntry
+	listmutex sync.Mutex
+	list      map[string]*entry.Entry
 }
 
-func NewServerList()(*ServerList)  {
+func New()(*ServerList)  {
 	sli := new(ServerList)
 
 	//TODO debug remove hardcoded serverEntry info
 
-	sli.serverList = make(map[string]*serverEntry)
+	sli.list = make(map[string]*entry.Entry)
 
-	sli.serverList["00000000"] = NewServerEntry("00000000", "127.0.0.1:8080", nil, nil, nil)
-	sli.serverList["00000001"] = NewServerEntry("00000001", "127.0.0.1:8082", nil, nil, nil)
-	sli.serverList["00000002"] = NewServerEntry("00000002", "127.0.0.1:8084", nil, nil, nil)
+	sli.list["00000000"] = entry.New("00000000", "127.0.0.1:8080", nil, nil)
+	sli.list["00000001"] = entry.New("00000001", "127.0.0.1:8082", nil, nil)
+	sli.list["00000002"] = entry.New("00000002", "127.0.0.1:8084", nil, nil)
 
 	return sli
 }
 
 func (sli *ServerList)GetServerIpPort(name string)(string){
-	sli.serverListMutex.Lock()
-	ret := sli.serverList[name].Ip_port
-	sli.serverListMutex.Unlock()
+	sli.listmutex.Lock()
+	ret := sli.list[name].Ipport
+	sli.listmutex.Unlock()
 	return ret
 }
 
-func (sli *ServerList)GetPublicKeyRSA(name string)(*rsa.PublicKey){
-	sli.serverListMutex.Lock()
-	ret := sli.serverList[name].PublicKeyRSA
-	sli.serverListMutex.Unlock()
-	return ret
-}
-
-func (sli *ServerList)GetPublicKeyElGamal(name string)(*elgamal.PublicKey){
-	sli.serverListMutex.Lock()
-	ret := sli.serverList[name].PublicKeyElGamal
-	sli.serverListMutex.Unlock()
+func (sli *ServerList)GetEncrypter(name string)(cryptographer.Encrypter){
+	sli.listmutex.Lock()
+	ret := sli.list[name].Encrypter
+	sli.listmutex.Unlock()
 	return ret
 }
 
@@ -86,12 +79,12 @@ func (sli *ServerList)GetRandomPath(length int)([]string, error){
 }
 
 func (sli *ServerList)GetServerList()[]string{
-	names := make([]string, 0, len(sli.serverList))
-	sli.serverListMutex.Lock()
-	for k := range sli.serverList {
+	names := make([]string, 0, len(sli.list))
+	sli.listmutex.Lock()
+	for k := range sli.list {
 		names = append(names, k)
 	}
-	sli.serverListMutex.Unlock()
+	sli.listmutex.Unlock()
 	return names
 }
 

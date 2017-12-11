@@ -1,9 +1,9 @@
-package sessionHandler
+package handler
 
 
 import "net"
 
-type SessionHandler interface{
+type Handler interface{
 	CreateSession(name string, socket net.Conn)
 	RemoveSession()
 }
