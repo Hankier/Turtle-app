@@ -43,7 +43,7 @@ func (builder *ConversationMessageBuilder)Build()[]byte{
 	return convoMsg.ToBytes()
 }
 
-func (builder *ConversationMessageBuilder)ParseString(message string){
+func (builder *ConversationMessageBuilder)ParseCommand(message string){
 	builder.SetMessage(message)
 	//TODO
 }

@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/openpgp/elgamal"
 	"math/big"
 	"crypto/rand"
+	"errors"
 )
 
 type ServerList struct{
@@ -20,9 +21,9 @@ func NewServerList()(*ServerList)  {
 
 	sli.serverList = make(map[string]*serverEntry)
 
-	sli.serverList["00000000"] = NewServerEntry("00000000", "127.0.0.1:8080", nil, nil)
-	sli.serverList["00000001"] = NewServerEntry("00000001", "127.0.0.1:8082", nil, nil)
-	sli.serverList["00000002"] = NewServerEntry("00000002", "127.0.0.1:8084", nil, nil)
+	sli.serverList["00000000"] = NewServerEntry("00000000", "127.0.0.1:8080", nil, nil, nil)
+	sli.serverList["00000001"] = NewServerEntry("00000001", "127.0.0.1:8082", nil, nil, nil)
+	sli.serverList["00000002"] = NewServerEntry("00000002", "127.0.0.1:8084", nil, nil, nil)
 
 	return sli
 }
@@ -48,23 +49,40 @@ func (sli *ServerList)GetPublicKeyElGamal(name string)(*elgamal.PublicKey){
 	return ret
 }
 
-func (sli *ServerList)GetRandomPath(length int)([]string){
+func (sli *ServerList)GetRandomPath(length int)([]string, error){
+	if length < 1{
+		if length < 0{
+			return nil, errors.New("Invalid path length")
+		}
+		return make([]string, 0), nil
+	}
+
 	path := make([]string, length)
 
 	names := sli.GetServerList()
 
-	var rnd *big.Int
 
-	for i := 0; i < length; i++{
-		rnd, _ = rand.Int(rand.Reader, big.NewInt(int64(len(names))))
+	serversLen := len(names)
+
+	if serversLen < 2{
+		return nil, errors.New("Too few servers to create a path");
+	}
+
+	var rnd *big.Int
+	var err error
+
+	for i := 1; i < length; i++{
+		rnd, err = rand.Int(rand.Reader, big.NewInt(int64(serversLen)))
+		if err != nil {	return nil, err	}
 		path[i] = names[rnd.Int64()]
-		for i > 0 && path[i] == path[i-1]{
-			rnd, _ = rand.Int(rand.Reader, big.NewInt(int64(len(names))))
+		for path[i] == path[i-1]{
+			rnd, err = rand.Int(rand.Reader, big.NewInt(int64(serversLen)))
+			if err != nil {	return nil, err	}
 			path[i] = names[rnd.Int64()]
 		}
 	}
 
-	return path
+	return path, nil
 }
 
 func (sli *ServerList)GetServerList()[]string{
