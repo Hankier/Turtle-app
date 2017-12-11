@@ -1,22 +1,22 @@
 package messageHandler
 
 import (
-	"sessionSender"
 	_"log"
 	"time"
 	"cryptographer"
 	"message"
 	"conversationsHandler"
 	"log"
+	"session/sender"
 )
 
 type MessageHandlerImpl struct{
-	ss            sessionSender.SessionSender
+	ss            sender.Sender
 	convoshandler conversationsHandler.ConversationsHandler
 	crypt         cryptographer.Cryptographer
 }
 
-func New(sessSender sessionSender.SessionSender, convohandler conversationsHandler.ConversationsHandler, crypt cryptographer.Cryptographer)(*MessageHandlerImpl){
+func New(sessSender sender.Sender, convohandler conversationsHandler.ConversationsHandler, crypt cryptographer.Cryptographer)(*MessageHandlerImpl){
 	mhi := new(MessageHandlerImpl)
 	mhi.ss = sessSender
 	mhi.convoshandler = convohandler

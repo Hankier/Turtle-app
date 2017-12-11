@@ -152,7 +152,7 @@ func (cli *Client)SendTo(message string, receiver string, receiverServer string)
 	cli.messageBuilder.
 		SetMsgString(message).
 		SetMsgContentBuilder(convo.MessageBuilder()).
-		SetReceiverKeyHandler(convo.Encrypter()).
+		SetReceiverEncrypter(convo.Encrypter()).
 		SetReceiver(receiver).SetReceiverServer(receiverServer).
 		SetPath(cli.currentPath)
 

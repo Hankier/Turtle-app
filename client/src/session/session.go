@@ -7,7 +7,6 @@ import (
 	"sender"
 	"receiver"
 	"messageHandler"
-	"sessionHandler"
 	"message"
 	"session/handler"
 )
