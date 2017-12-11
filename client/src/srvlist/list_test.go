@@ -1,4 +1,4 @@
-package serverList
+package srvlist
 
 import (
 	"testing"
@@ -7,9 +7,9 @@ import (
 )
 
 func TestServerList_GetRandomPath(t *testing.T) {
-	sli := NewServerList()
+	sli := New()
 	var path []string
-	sli.serverList = make(map[string]*serverEntry)
+	sli.list = make(map[string]*serverEntry)
 
 	path_len := 25;
 
@@ -21,7 +21,7 @@ func TestServerList_GetRandomPath(t *testing.T) {
 		t.Fail()
 	}
 
-	sli.serverList["0"] = NewServerEntry("0", "0", nil, nil)
+	sli.list["0"] = New("0", "0", nil, nil)
 
 
 	_, err = sli.GetRandomPath(path_len)
@@ -32,7 +32,7 @@ func TestServerList_GetRandomPath(t *testing.T) {
 		t.Fail()
 	}
 
-	sli.serverList["1"] = NewServerEntry("1", "1", nil, nil)
+	sli.list["1"] = New("1", "1", nil, nil)
 
 	_, err = sli.GetRandomPath(path_len)
 
@@ -46,7 +46,7 @@ func TestServerList_GetRandomPath(t *testing.T) {
 
 	for k := 2; k < 1000; k++{
 		kstring = string(k)
-		sli.serverList[kstring] = NewServerEntry(kstring, kstring, nil, nil)
+		sli.list[kstring] = New(kstring, kstring, nil, nil)
 		rnd := rand.Intn(path_len)
 		path, err = sli.GetRandomPath(rnd)
 		if rnd > 0{
