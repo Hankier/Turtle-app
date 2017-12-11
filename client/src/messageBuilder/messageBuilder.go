@@ -1,12 +1,10 @@
 package messageBuilder
 
 import (
-	"serverList"
 	"cryptographer"
 	"message"
 	"errors"
 	"conversationMessageBuilder"
-	"receiverKeyHandler"
 	"srvlist"
 )
 
@@ -50,7 +48,7 @@ func (msgb *MessageBuilder) SetReceiver(rcvr string) (*MessageBuilder) {
 	return msgb
 }
 
-func(msgb *MessageBuilder) SetReceiverKeyHandler (handler cryptographer.Encrypter)(*MessageBuilder){
+func(msgb *MessageBuilder) SetReceiverEncrypter (handler cryptographer.Encrypter)(*MessageBuilder){
 	msgb.receiverEncrypter = handler
 	return msgb
 }
