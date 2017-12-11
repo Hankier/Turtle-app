@@ -2,7 +2,7 @@ package client
 
 import (
 	"session"
-	"serverList"
+	"srvlist"
 	"log"
 	"net"
 	"messageHandler"
@@ -17,7 +17,7 @@ import (
 )
 
 type Client struct{
-	srvList        *serverList.ServerList
+	srvList        *srvlist.ServerList
 	sess           *session.Session
 	cmdListener	   *commandsListener.CommandsListener
 	nodeCrypto     cryptographer.Cryptographer
@@ -33,10 +33,10 @@ func NewClient(name string)(*Client){
 	cli := new(Client)
 
 	cli.myName = name
-	cli.srvList = serverList.NewServerList()
+	cli.srvList = srvlist.New()
 	cli.nodeCrypto = cryptographer.New()
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
-	cli.messageBuilder = messageBuilder.New(cli.srvList)
+	cli.messageBuilder = messageBuilder.NewMessageBuilder(cli.srvList)
 	cli.messageBuilder.SetMyName(cli.myName)
 	cli.cmdListener = commandsListener.New(cli, cli.textReceiver)
 	cli.conversations = make(map[string]*conversation.Conversation)
@@ -152,7 +152,7 @@ func (cli *Client)SendTo(message string, receiver string, receiverServer string)
 	cli.messageBuilder.
 		SetMsgString(message).
 		SetMsgContentBuilder(convo.MessageBuilder()).
-		SetReceiverKeyHandler(convo.ReceiverKeyHandler()).
+		SetReceiverKeyHandler(convo.Encrypter()).
 		SetReceiver(receiver).SetReceiverServer(receiverServer).
 		SetPath(cli.currentPath)
 
