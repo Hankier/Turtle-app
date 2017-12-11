@@ -39,7 +39,7 @@ func (builder *ConversationMessageBuilder)SetInitData(){
 }
 
 func (builder *ConversationMessageBuilder)Build()[]byte{
-	convoMsg := conversationMessage.NewConversationMessage(builder.messageType, builder.encType, builder.messageContent)
+	convoMsg := conversationMessage.New(builder.messageType, builder.encType, builder.messageContent)
 	return convoMsg.ToBytes()
 }
 

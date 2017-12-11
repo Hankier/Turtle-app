@@ -8,7 +8,7 @@ import (
 func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Message){
 	//log.Print("DEBUG Received DEFAULT from: " + from)
 
-	handler.sessSender.SendInstant(message.NewMessageOK())
+	handler.ss.SendInstant(message.NewMessageOK())
 
 	if len(msg.GetMessageContent()) < 8{
 		log.Print("Unexpected message end")
@@ -20,20 +20,20 @@ func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Messag
 
 	//log.Print("DEBUG DEFAULT content: " + (string)(content))
 
-	handler.convosHandler.ReceiveMessage(content, receiver, receiverServer)
+	handler.convoshandler.ReceiveMessage(content, receiver, receiverServer)
 
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
 }
 
 func (handler *MessageHandlerImpl)handleOK(from string, msg *message.Message){
-	handler.sessSender.UnlockSending()
+	handler.ss.UnlockSending()
 }
 
 func (handler *MessageHandlerImpl)handlePING(from string, msg *message.Message){
 	msgOk := new(message.Message)
 	msgOk.SetMessageType(message.OK)
 	msgOk.SetMessageContent(make([]byte,0))
-	handler.sessSender.SendInstant(msgOk)
+	handler.ss.SendInstant(msgOk)
 
 	//TODO real PING
 	log.Print("RECEIVED PING")

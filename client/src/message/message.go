@@ -19,7 +19,7 @@ type Message struct{
 	messageContent []byte
 }
 
-func NewMessage(msgT TYPE, encT cryptographer.TYPE, msgc []byte)(*Message){
+func New(msgT TYPE, encT cryptographer.TYPE, msgc []byte)(*Message){
 	msg := new(Message)
 	msg.messageContent = msgc
 	msg.messageType = msgT

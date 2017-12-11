@@ -11,50 +11,50 @@ import (
 const LOOP_TIME = time.Second
 
 type SenderImpl struct{
-	socket net.Conn
-	messages [][]byte
-	messagesMutex *sync.Mutex
-	canSend bool
-	canSendMutex *sync.Mutex
-	stopped bool
+	socket       net.Conn
+	msgs         [][]byte
+	msgsmutex    *sync.Mutex
+	cansend      bool
+	cansendmutex *sync.Mutex
+	stopped      bool
 }
 
-func NewSenderImpl(socket net.Conn)(*SenderImpl){
+func New(socket net.Conn)(*SenderImpl){
 	sender := new(SenderImpl)
 
 	sender.socket = socket
-	sender.messages = make([][]byte, 0, 10)
-	sender.messagesMutex = &sync.Mutex{}
-	sender.canSend = true
-	sender.canSendMutex = &sync.Mutex{}
+	sender.msgs = make([][]byte, 0, 10)
+	sender.msgsmutex = &sync.Mutex{}
+	sender.cansend = true
+	sender.cansendmutex = &sync.Mutex{}
 	sender.stopped = false
 
 	return sender
 }
 
-func (sender *SenderImpl)Loop(wg *sync.WaitGroup){
+func (s *SenderImpl)Loop(wg *sync.WaitGroup){
 	defer wg.Done()
 
-	writer := bufio.NewWriter(sender.socket)
+	writer := bufio.NewWriter(s.socket)
 
-	for !sender.stopped{
-		sender.canSendMutex.Lock()
-		if !sender.canSend{
-			sender.canSendMutex.Unlock()
+	for !s.stopped{
+		s.cansendmutex.Lock()
+		if !s.cansend {
+			s.cansendmutex.Unlock()
 		} else {
-			sender.canSendMutex.Unlock()
-			sender.messagesMutex.Lock()
-			if len(sender.messages) > 0{
-				sender.canSend = false
-				messagesCopy := sender.messages[:]
-				sender.messages = sender.messages[:0]
-				sender.messagesMutex.Unlock()
+			s.cansendmutex.Unlock()
+			s.msgsmutex.Lock()
+			if len(s.msgs) > 0{
+				s.cansend = false
+				messagesCopy := s.msgs[:]
+				s.msgs = s.msgs[:0]
+				s.msgsmutex.Unlock()
 
 				packet := messagesToSingle(messagesCopy)
 				writer.Write(packet)
 				writer.Flush()
 			} else {
-				sender.messagesMutex.Unlock()
+				s.msgsmutex.Unlock()
 			}
 		}
 		time.Sleep(LOOP_TIME)
@@ -69,27 +69,27 @@ func messagesToSingle(bytes [][]byte)([]byte){
 	return result
 }
 
-func (sender *SenderImpl)Stop(){
-	sender.stopped = true
+func (s *SenderImpl)Stop(){
+	s.stopped = true
 }
 
-func (sender *SenderImpl)Send(msg *message.Message){
+func (s *SenderImpl)Send(msg *message.Message){
 
 	bytes := msg.ToBytes()
 	bytes = addSizeToBytes(bytes)
 
-	sender.messagesMutex.Lock()
-	sender.messages = append(sender.messages, bytes)
-	sender.messagesMutex.Unlock()
+	s.msgsmutex.Lock()
+	s.msgs = append(s.msgs, bytes)
+	s.msgsmutex.Unlock()
 }
 
-func (sender *SenderImpl)SendInstant(msg *message.Message){
+func (s *SenderImpl)SendInstant(msg *message.Message){
 	bytes := msg.ToBytes()
 	bytes = addSizeToBytes(bytes)
-	sender.socket.Write(bytes)
+	s.socket.Write(bytes)
 }
 
-func (sender *SenderImpl)UnlockSending(){
-	sender.canSend = true
+func (s *SenderImpl)UnlockSending(){
+	s.cansend = true
 }
 

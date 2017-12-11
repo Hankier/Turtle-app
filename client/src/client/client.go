@@ -34,11 +34,11 @@ func NewClient(name string)(*Client){
 
 	cli.myName = name
 	cli.srvList = serverList.NewServerList()
-	cli.nodeCrypto = cryptographer.NewNodeCrypto()
+	cli.nodeCrypto = cryptographer.New()
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
-	cli.messageBuilder = messageBuilder.NewMessageBuilder(cli.srvList)
+	cli.messageBuilder = messageBuilder.New(cli.srvList)
 	cli.messageBuilder.SetMyName(cli.myName)
-	cli.cmdListener = commandsListener.NewCommandsListener(cli, cli.textReceiver)
+	cli.cmdListener = commandsListener.New(cli, cli.textReceiver)
 	cli.conversations = make(map[string]*conversation.Conversation)
 
 	return cli
@@ -52,9 +52,9 @@ func (cli *Client)CreateSession(name string, socket net.Conn){
 	if cli.sess != nil{
 		cli.RemoveSession()
 	}
-	msgHandler := messageHandler.NewMessageHandlerImpl(cli, cli, cli.nodeCrypto)
+	msgHandler := messageHandler.New(cli, cli, cli.nodeCrypto)
 
-	sess := session.NewSession(socket, name, msgHandler, cli)
+	sess := session.New(socket, name, msgHandler, cli)
 
 	go sess.Start()
 	cli.sess = sess

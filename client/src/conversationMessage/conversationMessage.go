@@ -14,55 +14,55 @@ const (
 )
 
 type ConversationMessage struct{
-	messageType TYPE
-	encType commonKeyProtocol.TYPE
-	messageContent []byte
+	msgtype    TYPE
+	enctype    commonKeyProtocol.TYPE
+	msgcontent []byte
 }
 
-func NewConversationMessage(messageType TYPE, encType commonKeyProtocol.TYPE, content []byte)*ConversationMessage{
+func New(msgtype TYPE, enctype commonKeyProtocol.TYPE, content []byte)*ConversationMessage{
 	convoMsg := new(ConversationMessage)
-	convoMsg.messageType = messageType
-	convoMsg.encType = encType
-	convoMsg.messageContent = content
+	convoMsg.msgtype = msgtype
+	convoMsg.enctype = enctype
+	convoMsg.msgcontent = content
 	return convoMsg
 }
 
-func FromBytes(bytes []byte)(*ConversationMessage, error){
+func FromBytes(content []byte)(*ConversationMessage, error){
 	//no previous name and type
-	if len(bytes) < 1{
+	if len(content) < 1{
 		return nil, errors.New("Too few bytes to create a ConversationMessage")
 	}
 	msg := new(ConversationMessage)
 
-	msg.messageType = (TYPE)(bytes[0])
-	msg.encType = (commonKeyProtocol.TYPE)(bytes[1])
-	msg.messageContent = append([]byte(nil), bytes[2:]...)
+	msg.msgtype = (TYPE)(content[0])
+	msg.enctype = (commonKeyProtocol.TYPE)(content[1])
+	msg.msgcontent = append([]byte(nil), content[2:]...)
 
 	return msg, nil
 }
 
 func (msg *ConversationMessage)ToBytes()[]byte{
 
-	length := len(msg.messageContent) + 2 //+SIZE +TYPE +ENC TYPE
-	bytes := make([]byte, length)
+	length := len(msg.msgcontent) + 2 //+SIZE +TYPE +ENC TYPE
+	content := make([]byte, length)
 
-	bytes[0] = (byte)(msg.messageType)
-	bytes[1] = (byte)(msg.encType)
-	for i := 0; i < len(msg.messageContent); i++{
-		bytes[i + 2] = msg.messageContent[i]
+	content[0] = (byte)(msg.msgtype)
+	content[1] = (byte)(msg.enctype)
+	for i := 0; i < len(msg.msgcontent); i++{
+		content[i + 2] = msg.msgcontent[i]
 	}
 
-	return bytes
+	return content
 }
 
 func (msg *ConversationMessage)GetMessageType()TYPE{
-	return msg.messageType
+	return msg.msgtype
 }
 
 func (msg *ConversationMessage)GetEncryptionType()commonKeyProtocol.TYPE{
-	return msg.encType
+	return msg.enctype
 }
 
 func (msg *ConversationMessage)GetMessageContent()[]byte{
-	return msg.messageContent
+	return msg.msgcontent
 }

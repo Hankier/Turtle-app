@@ -22,11 +22,11 @@ func NewConversation(textReceiver textReceiver.TextReceiver, name string, server
 	convo := new(Conversation)
 	convo.name = name
 	convo.server = server
-	convo.commonKeyProtocol = commonKeyProtocol.NewCommonKeyProtocolImpl()
-	convo.receiverKeyHandler = receiverKeyHandler.NewReceiverKeyHandlerImpl()
+	convo.commonKeyProtocol = commonKeyProtocol.New()
+	convo.receiverKeyHandler = receiverKeyHandler.New()
 	convo.textReceiver = textReceiver
 	convo.convoMessageBuilder = conversationMessageBuilder.NewConversationMessageBuilder(convo.commonKeyProtocol)
-	convo.convoMessageHandler = conversationMessageHandler.NewConversationMessageHandlerImpl(convo.commonKeyProtocol, convo.receiverKeyHandler, convo.textReceiver)
+	convo.convoMessageHandler = conversationMessageHandler.New(convo.commonKeyProtocol, convo.receiverKeyHandler, convo.textReceiver)
 	return convo
 }
 

@@ -12,41 +12,41 @@ import (
 )
 
 type Session struct{
-	name string
-	socket net.Conn
-	sender *sender.SenderImpl
-	receiver *receiver.Receiver
-	handler sessionHandler.SessionHandler
-	wgS *sync.WaitGroup
-	wgR *sync.WaitGroup
+	name     string
+	socket   net.Conn
+	sender   *sender.SenderImpl
+	recver   *receiver.Receiver
+	handler  sessionHandler.SessionHandler
+	wgSender *sync.WaitGroup
+	wgRecver *sync.WaitGroup
 }
 
-func NewSession(socket net.Conn, name string, messageHandler messageHandler.MessageHandler, handler sessionHandler.SessionHandler)(*Session){
-	session := new(Session)
+func New(socket net.Conn, name string, messageHandler messageHandler.MessageHandler, handler sessionHandler.SessionHandler)(*Session){
+	s := new(Session)
 
-	session.name = name
-	session.socket = socket
-	session.sender = sender.NewSenderImpl(socket)
-	session.receiver = receiver.NewReceiver(name, socket, messageHandler)
-	session.handler = handler
-	session.wgS = &sync.WaitGroup{}
-	session.wgS.Add(1)
-	session.wgR = &sync.WaitGroup{}
-	session.wgR.Add(1)
+	s.name = name
+	s.socket = socket
+	s.sender = sender.New(socket)
+	s.recver = receiver.New(name, socket, messageHandler)
+	s.handler = handler
+	s.wgSender = &sync.WaitGroup{}
+	s.wgSender.Add(1)
+	s.wgRecver = &sync.WaitGroup{}
+	s.wgRecver.Add(1)
 
-	return session
+	return s
 }
 
 func (session *Session)Start(){
 	defer session.socket.Close()
 	log.Print("Starting session: " + session.name)
 
-	go session.sender.Loop(session.wgS)
-	go session.receiver.Loop(session.wgR)
+	go session.sender.Loop(session.wgSender)
+	go session.recver.Loop(session.wgRecver)
 
-	session.wgR.Wait()
+	session.wgRecver.Wait()
 	session.sender.Stop()
-	session.wgS.Wait()
+	session.wgSender.Wait()
 
 	session.handler.RemoveSession()
 
