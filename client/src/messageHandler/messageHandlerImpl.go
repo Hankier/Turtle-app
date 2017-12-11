@@ -1,29 +1,35 @@
 package messageHandler
 
 import (
-	"sessionsSender"
-	"cryptographer"
 	_"log"
 	"time"
+	"cryptographer"
 	"message"
+	"conversationsHandler"
 	"log"
+	"session/sender"
 )
 
 type MessageHandlerImpl struct{
-	sessSender  sessionsSender.SessionsSender
-	cryptograph cryptographer.Cryptographer
+	ss            sender.Sender
+	convoshandler conversationsHandler.ConversationsHandler
+	crypt         cryptographer.Cryptographer
 }
 
-func NewMessageHandlerImpl(sessSender sessionsSender.SessionsSender, decrypter cryptographer.Cryptographer)(*MessageHandlerImpl){
+func New(sessSender sender.Sender, convohandler conversationsHandler.ConversationsHandler, crypt cryptographer.Cryptographer)(*MessageHandlerImpl){
 	mhi := new(MessageHandlerImpl)
-	mhi.sessSender = sessSender
-	mhi.cryptograph = decrypter
+	mhi.ss = sessSender
+	mhi.convoshandler = convohandler
+	mhi.crypt = crypt
 	return mhi
 }
 
 func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
-	msg, err := message.FromBytes(bytes);
-	if  err != nil{
+	//log.Print("Handling bytes " + string(bytes))
+
+	msg, err := message.FromBytes(bytes)
+
+	if err != nil{
 		log.Print(err)
 		return
 	}
@@ -33,7 +39,7 @@ func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
 }
 
 func (handler *MessageHandlerImpl)handle(from string, msg *message.Message){
-	decrypted, err := handler.cryptograph.Decrypt(msg.GetEncType(), msg.GetMessageContent())
+	decrypted, err := handler.crypt.Decrypt(msg.GetEncType(), msg.GetMessageContent())
 	if err != nil{
 		log.Print(err.Error())
 		return

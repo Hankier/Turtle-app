@@ -12,15 +12,15 @@ import (
 
 type Receiver struct{
 	sessionName string
-	socket net.Conn
-	messageHandler messageHandler.MessageHandler
+	socket      net.Conn
+	msghandler  messageHandler.MessageHandler
 }
 
-func NewReceiver(sessionName string, socket net.Conn, messageHandler messageHandler.MessageHandler)(*Receiver){
+func New(name string, socket net.Conn, msghandler messageHandler.MessageHandler)(*Receiver){
 	recv := new(Receiver)
-	recv.sessionName = sessionName
+	recv.sessionName = name
 	recv.socket = socket
-	recv.messageHandler = messageHandler
+	recv.msghandler = msghandler
 
 	return recv
 }
@@ -41,6 +41,9 @@ func (recv *Receiver)Loop(wg *sync.WaitGroup){
 		_, err = io.ReadFull(reader, bytes)
 		if err != nil{log.Print("Receiver " + err.Error());break}
 
-		recv.messageHandler.HandleBytes(recv.sessionName, bytes)
+		//log.Print("DEBUG Received from: " + recv.sessionName)
+		//log.Print("DEBUG Received msg: " + (string)(bytes))
+
+		recv.msghandler.HandleBytes(recv.sessionName, bytes)
 	}
 }
