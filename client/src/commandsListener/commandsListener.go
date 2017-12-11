@@ -87,8 +87,12 @@ func (cmdl *CommandsListener)execCmd(cmd string){
 						if err != nil {
 							cmdl.textrecv.Print("Error: ", err.Error())
 						} else {
-							path := cmdl.ui.ChooseNewPath(length)
-							cmdl.textrecv.Print("new path", strings.Join(path, " "))
+							path, err := cmdl.ui.ChooseNewPath(length)
+							if err != nil{
+								cmdl.textrecv.Print("new path", err.Error())
+							} else {
+								cmdl.textrecv.Print("new path", strings.Join(path, " "))
+							}
 						}
 					} else {
 						cmdl.textrecv.Print("error", "usage: new path length")
