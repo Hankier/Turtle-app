@@ -33,6 +33,7 @@ func (cmdl *CommandsListener)Listen(){
 			cmdl.run = false
 		} else {
 			cmdl.execCmd(text)
+
 		}
 	}
 }
