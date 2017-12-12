@@ -36,7 +36,7 @@ func NewClient(name string)(*Client){
 	cli.srvList = srvlist.New()
 	cli.nodeCrypto = crypt.New()
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
-	cli.messageBuilder = messageBuilder.NewMessageBuilder(cli.srvList)
+	cli.messageBuilder = messageBuilder.New(cli.srvList)
 	cli.messageBuilder.SetMyName(cli.myName)
 	cli.cmdListener = commandsListener.New(cli, cli.textReceiver)
 	cli.conversations = make(map[string]*conversation.Conversation)
@@ -106,10 +106,13 @@ func (cli *Client)ChooseNewPath(length int)([]string, error){
 }
 
 func (cli *Client)ConnectToServer(name string)error{
-	socket, err := net.Dial("tcp", cli.srvList.GetServerIpPort(name))
-	if err != nil {
-		return err
-	}
+
+	srvPort, err := cli.srvList.GetServerIpPort(name)
+	if err != nil {	return err	}
+
+	socket, err := net.Dial("tcp", srvPort)
+	if err != nil {	return err	}
+
 	socket.Write([]byte(cli.myName))
 	cli.messageBuilder.SetMyServer(name)
 	cli.CreateSession(name, socket)
