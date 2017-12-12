@@ -39,12 +39,19 @@ func (sli *ServerList)GetServerList()[]string{
 func (sli *ServerList)AddServerToList(ip_port string, pk []byte)(*ServerList){
 	next_free := int(len(sli.list))
 	t := strconv.Itoa(next_free)
-  //TODO change next_name setting 
+  //TODO change next_name setting
 	next_name := "0000000" + t
 
 	sli.listmutex.Lock()
 	sli.list[next_name] = entry.New(next_name, ip_port, pk)
 	sli.listmutex.Unlock()
+
+	return sli
+}
+
+
+func (sli *ServerList)RemoveServerToList(name string)(*ServerList){
+	//TODO
 
 	return sli
 }
