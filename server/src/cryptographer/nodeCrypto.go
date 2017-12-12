@@ -12,7 +12,7 @@ type NodeCrypto struct{
 	publicKeyElGamal   *elgamal.PublicKey
 }
 
-func NewNodeCrypto()(*NodeCrypto){
+func New()(*NodeCrypto){
 	nodeCrypto := new(NodeCrypto)
 
 	var privateKeyRSA *rsa.PrivateKey
