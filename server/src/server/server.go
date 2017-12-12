@@ -6,7 +6,7 @@ import (
 	"cryptographer"
 	"log"
 	"net"
-	"serverEntry"
+	"srvlist"
 	"session"
 	"messageHandler"
 	"message"
@@ -16,7 +16,7 @@ type Server struct{
 	sessions map[string]*session.Session
 	clientListener *connectionListener.ConnectionListener
 	serverListener *connectionListener.ConnectionListener
-	serverList map[string]*serverEntry.ServerEntry
+	serverList *srvlist.ServerList
 	serverCrypto *cryptographer.NodeCrypto
 	wg sync.WaitGroup
 	myName string
@@ -31,15 +31,10 @@ func NewServer(name string)(*Server){
 
 	//TODO Downloading server list from DA
 
-	srv.serverList = make(map[string]*serverEntry.ServerEntry)
+	srv.serverList = srvlist.New()
 
-	pk := make([]byte, 256)
-
-	srv.serverList["00000000"] = serverEntry.NewServerEntry("00000000", "127.0.0.1:8081", pk)
-	srv.serverList["00000001"] = serverEntry.NewServerEntry("00000001", "127.0.0.1:8083", pk)
-	srv.serverList["00000002"] = serverEntry.NewServerEntry("00000002", "127.0.0.1:8085", pk)
 	srv.wg.Add(2)
-	srv.serverCrypto = cryptographer.NewNodeCrypto();
+	srv.serverCrypto = cryptographer.New();
 	return srv
 }
 
@@ -101,19 +96,26 @@ func (srv *Server)Start(clientPort, serverPort string)error{
 }
 
 func (srv *Server)connectToServer(name string)bool{
-	if server, ok := srv.serverList[name]; ok{
-		socket, err := net.Dial("tcp", server.Ip_port)
-		if err != nil {
-			log.Print("Error connecting to server " + name + " " + err.Error())
-			return false
-		}
-		socket.Write([]byte(srv.myName))
+
+	if ipport, ok := srv.serverList.GetServerIpPort(name); ok == nil{
+		socket, err := srv.dialAndSendName(name, ipport)
+		if err != nil {return false}
 		srv.CreateSession(name, socket)
 		log.Print("Succesfully connected to " + name)
 		return true
 	}
 	log.Print("No server on list " + name)
 	return false
+}
+
+func (srv *Server)dialAndSendName(name, ipport string)(net.Conn, error){
+	socket, err := net.Dial("tcp", ipport)
+	if err != nil {
+		log.Print("Error connecting to server " + name + " " + err.Error())
+		return nil, err
+	}
+	socket.Write([]byte(srv.myName))
+	return socket, nil
 }
 
 func (srv *Server)CreateSession(name string, socket net.Conn){
