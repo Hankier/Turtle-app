@@ -2,11 +2,11 @@ package messageBuilder
 
 import (
 	"testing"
-	"cryptographer"
+	"crypt"
 	"message"
 	"fmt"
 	"bytes"
-	"conversationMessageBuilder"
+	"conversation/msg/builder"
 	"commonKeyProtocol"
 	"srvlist"
 )
@@ -33,7 +33,7 @@ func TestMessageBuilder_Build(t *testing.T) {
 
 	path := []string{"00000001", "00000002"}
 
-	convoBuilder := conversationMessageBuilder.NewConversationMessageBuilder(&commonKeyProtocol.CommonKeyProtocolImpl{})
+	convoBuilder := builder.New(&commonKeyProtocol.CommonKeyProtocolImpl{})
 
 	msg,_ :=
 		msgb.SetMsgString(msgString).
@@ -41,7 +41,7 @@ func TestMessageBuilder_Build(t *testing.T) {
 		SetReceiverEncrypter(nil).
 		SetReceiver("recvrecv").
 		SetReceiverServer("recvserv").
-		SetEncType(cryptographer.PLAIN).
+		SetEncType(crypt.PLAIN).
 		SetMsgType(message.DEFAULT).
 		SetPath(path).
 		Build()

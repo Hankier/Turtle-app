@@ -1,4 +1,4 @@
-package conversationMessage
+package msg
 
 import (
 	"commonKeyProtocol"

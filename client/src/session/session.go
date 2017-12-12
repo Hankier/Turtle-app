@@ -4,24 +4,24 @@ import (
 	"net"
 	"sync"
 	"log"
-	"sender"
-	"receiver"
+	"session/sender"
+	"session/receiver"
 	"messageHandler"
 	"message"
-	"session/handler"
+	"sessionHandler"
 )
 
 type Session struct{
 	name     string
 	socket   net.Conn
 	sender   *sender.SenderImpl
-	recver   *receiver.Receiver
-	handler  handler.Handler
+	recver   *receiver.ReceiverImpl
+	handler  sessionHandler.Handler
 	wgSender *sync.WaitGroup
 	wgRecver *sync.WaitGroup
 }
 
-func New(socket net.Conn, name string, messageHandler messageHandler.MessageHandler, handler handler.Handler)(*Session){
+func New(socket net.Conn, name string, messageHandler messageHandler.MessageHandler, handler sessionHandler.Handler)(*Session){
 	s := new(Session)
 
 	s.name = name

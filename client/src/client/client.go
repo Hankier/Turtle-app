@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 	"messageHandler"
-	"cryptographer"
+	"crypt"
 	"errors"
 	"message"
 	"textReceiver"
@@ -19,10 +19,10 @@ import (
 type Client struct{
 	srvList        *srvlist.ServerList
 	sess           *session.Session
-	cmdListener	   *commandsListener.CommandsListener
-	nodeCrypto     cryptographer.Cryptographer
+	cmdListener    *commandsListener.CommandsListener
+	nodeCrypto     crypt.Cryptographer
 	currentPath    []string
-	convosMutex	   sync.Mutex
+	convosMutex    sync.Mutex
 	conversations  map[string]*conversation.Conversation
 	messageBuilder *messageBuilder.MessageBuilder
 	textReceiver   textReceiver.TextReceiver
@@ -34,7 +34,7 @@ func NewClient(name string)(*Client){
 
 	cli.myName = name
 	cli.srvList = srvlist.New()
-	cli.nodeCrypto = cryptographer.New()
+	cli.nodeCrypto = crypt.New()
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
 	cli.messageBuilder = messageBuilder.NewMessageBuilder(cli.srvList)
 	cli.messageBuilder.SetMyName(cli.myName)
@@ -127,7 +127,7 @@ func (cli *Client)CreateConversation(receiver string, receiverServer string) (co
 	cli.convosMutex.Lock()
 	convo, ok := cli.conversations[name]
 	if !ok{
-		convo = conversation.NewConversation(cli.textReceiver, receiver, receiverServer)
+		convo = conversation.New(cli.textReceiver, receiver, receiverServer)
 		cli.conversations[name] = convo
 	} else {
 		err = errors.New("conversation already exists")

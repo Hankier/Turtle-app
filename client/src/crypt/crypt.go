@@ -1,4 +1,4 @@
-package cryptographer
+package crypt
 
 import (
 	"crypto/rsa"

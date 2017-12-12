@@ -3,7 +3,7 @@ package receiverEncrypter
 import "crypto/rsa"
 import (
 	"golang.org/x/crypto/openpgp/elgamal"
-	"cryptographer"
+	"crypt"
 	"encoding/pem"
 	"math/big"
 	"crypto/x509"
@@ -19,12 +19,12 @@ func New()(*ReceiverEncrypterImpl){
 	return new(ReceiverEncrypterImpl)
 }
 
-func (recv *ReceiverEncrypterImpl)SetKey(enctype cryptographer.TYPE, keydata []byte){
+func (recv *ReceiverEncrypterImpl)SetKey(enctype crypt.TYPE, keydata []byte){
 	switch enctype {
-	case cryptographer.RSA:
+	case crypt.RSA:
 		recv.setRSA(keydata)
 		break
-	case cryptographer.ELGAMAL:
+	case crypt.ELGAMAL:
 		recv.setElGamal(keydata)
 		break
 	}
@@ -62,14 +62,14 @@ func (recv *ReceiverEncrypterImpl)setElGamal(keyData []byte){
 	recv.pubElGamal = publicKeyElGamal
 }
 
-func (recv *ReceiverEncrypterImpl)Encrypt(encType cryptographer.TYPE, msg []byte)([]byte, error){
+func (recv *ReceiverEncrypterImpl)Encrypt(encType crypt.TYPE, msg []byte)([]byte, error){
 	switch encType {
-	case cryptographer.PLAIN:
+	case crypt.PLAIN:
 		return msg, nil
-	case cryptographer.RSA:
-		return cryptographer.EncryptRSA(recv.pubRSA, msg)
-	case cryptographer.ELGAMAL:
-		return cryptographer.EncryptElGamal(recv.pubElGamal, msg)
+	case crypt.RSA:
+		return crypt.EncryptRSA(recv.pubRSA, msg)
+	case crypt.ELGAMAL:
+		return crypt.EncryptElGamal(recv.pubElGamal, msg)
 	}
 
 	return msg, nil

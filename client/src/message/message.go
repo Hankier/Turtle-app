@@ -1,7 +1,7 @@
 package message
 
 import (
-	"cryptographer"
+	"crypt"
 	"errors"
 )
 
@@ -15,11 +15,11 @@ const (
 
 type Message struct{
 	messageType    TYPE
-	encType        cryptographer.TYPE
+	encType        crypt.TYPE
 	messageContent []byte
 }
 
-func New(msgT TYPE, encT cryptographer.TYPE, msgc []byte)(*Message){
+func New(msgT TYPE, encT crypt.TYPE, msgc []byte)(*Message){
 	msg := new(Message)
 	msg.messageContent = msgc
 	msg.messageType = msgT
@@ -30,7 +30,7 @@ func New(msgT TYPE, encT cryptographer.TYPE, msgc []byte)(*Message){
 func (msg *Message)GetMessageType() TYPE{
 	return msg.messageType
 }
-func (msg *Message)GetEncType() cryptographer.TYPE{
+func (msg *Message)GetEncType() crypt.TYPE{
 	return msg.encType
 }
 func (msg *Message)GetMessageContent() []byte{
@@ -40,7 +40,7 @@ func (msg *Message)GetMessageContent() []byte{
 func (msg *Message)SetMessageType(messageType TYPE){
 	msg.messageType = messageType
 }
-func (msg *Message)SetEncType(encType cryptographer.TYPE){
+func (msg *Message)SetEncType(encType crypt.TYPE){
 	msg.encType = encType
 }
 func (msg *Message)SetMessageContent(messageContent []byte){
@@ -55,7 +55,7 @@ func FromBytes(bytes []byte)(*Message, error){
 	msg := new(Message)
 
 	msg.messageType = (TYPE)(bytes[0])
-	msg.encType = (cryptographer.TYPE)(bytes[1])
+	msg.encType = (crypt.TYPE)(bytes[1])
 	msg.messageContent = append([]byte(nil), bytes[2:]...)
 
 	return msg, nil
@@ -75,7 +75,7 @@ func (msg *Message)ToBytes()[]byte{
 
 func NewMessageOK()(*Message){
 	msg := new(Message)
-	msg.encType = cryptographer.PLAIN;
+	msg.encType = crypt.PLAIN;
 	msg.messageType = OK;
 
 	return msg;

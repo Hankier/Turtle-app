@@ -1,4 +1,4 @@
-package conversationMessageHandler
+package handler
 
 func (convMHI *ConversationMessageHandlerImpl)handleDEFAULT(from string, bytes []byte){
 	convMHI.textrecv.Print(from, string(bytes))
