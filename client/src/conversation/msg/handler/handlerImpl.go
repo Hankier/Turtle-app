@@ -1,10 +1,10 @@
-package conversationMessageHandler
+package handler
 
 import (
 	"commonKeyProtocol"
 	"receiverEncrypter"
 	"textReceiver"
-	"conversationMessage"
+	"conversation/msg"
 	"log"
 )
 
@@ -23,29 +23,29 @@ func New(ckp commonKeyProtocol.CommonKeyProtocol, rkh *receiverEncrypter.Receive
 }
 
 func (convMHI *ConversationMessageHandlerImpl)HandleBytes(from string, bytes []byte){
-	msg, err := conversationMessage.FromBytes(bytes)
+	message, err := msg.FromBytes(bytes)
 
 	if err != nil{
 		log.Print(err)
 		return
 	}
-	convMHI.handle(from, msg)
+	convMHI.handle(from, message)
 }
 
-func (convMHI *ConversationMessageHandlerImpl)handle(from string, msg *conversationMessage.ConversationMessage){
+func (convMHI *ConversationMessageHandlerImpl)handle(from string, message *msg.ConversationMessage){
 
-	decrypted, err := convMHI.ckp.Decrypt(msg.GetEncryptionType(), msg.GetMessageContent())
+	decrypted, err := convMHI.ckp.Decrypt(message.GetEncryptionType(), message.GetMessageContent())
 	if err != nil{
 		log.Print(err)
 		return
 	}
 
-	switch msg.GetMessageType() {
-	case conversationMessage.DEFAULT:
+	switch message.GetMessageType() {
+	case msg.DEFAULT:
 		convMHI.handleDEFAULT(from, decrypted)
-	case conversationMessage.COMMON_KEY_PROTOCOL:
+	case msg.COMMON_KEY_PROTOCOL:
 		convMHI.handleCOMMON_KEY_PROTOCOL(decrypted)
-	case conversationMessage.INIT_DATA:
+	case msg.INIT_DATA:
 		convMHI.handleINIT_DATA(decrypted)
 	}
 }

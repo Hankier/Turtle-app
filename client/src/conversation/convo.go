@@ -4,9 +4,9 @@ import(
 	"commonKeyProtocol"
 	"receiverEncrypter"
 	"textReceiver"
-	"conversationMessageHandler"
-	"conversationMessageBuilder"
-	"cryptographer"
+	"conversation/msg/handler"
+	"conversation/msg/builder"
+	"crypt"
 )
 
 type Conversation struct{
@@ -15,19 +15,19 @@ type Conversation struct{
 	commonKeyProtocol   commonKeyProtocol.CommonKeyProtocol
 	receiverEncrypter   *receiverEncrypter.ReceiverEncrypterImpl
 	textReceiver        textReceiver.TextReceiver
-	convoMessageBuilder *conversationMessageBuilder.ConversationMessageBuilder
-	convoMessageHandler conversationMessageHandler.ConversationMessageHandler
+	convoMessageBuilder *builder.ConversationMessageBuilder
+	convoMessageHandler handler.ConversationMessageHandler
 }
 
-func NewConversation(textReceiver textReceiver.TextReceiver, name string, server string)*Conversation{
+func New(textReceiver textReceiver.TextReceiver, name string, server string)*Conversation{
 	convo := new(Conversation)
 	convo.name = name
 	convo.server = server
 	convo.commonKeyProtocol = commonKeyProtocol.New()
 	convo.receiverEncrypter = receiverEncrypter.New()
 	convo.textReceiver = textReceiver
-	convo.convoMessageBuilder = conversationMessageBuilder.NewConversationMessageBuilder(convo.commonKeyProtocol)
-	convo.convoMessageHandler = conversationMessageHandler.New(convo.commonKeyProtocol, convo.receiverEncrypter, convo.textReceiver)
+	convo.convoMessageBuilder = builder.New(convo.commonKeyProtocol)
+	convo.convoMessageHandler = handler.New(convo.commonKeyProtocol, convo.receiverEncrypter, convo.textReceiver)
 	return convo
 }
 
@@ -35,10 +35,10 @@ func (convo *Conversation)Receive(msg []byte){
 	convo.convoMessageHandler.HandleBytes(convo.name + " " + convo.server, msg)
 }
 
-func (convo *Conversation)MessageBuilder()*conversationMessageBuilder.ConversationMessageBuilder{
+func (convo *Conversation)MessageBuilder()*builder.ConversationMessageBuilder{
 	return convo.convoMessageBuilder
 }
 
-func (convo *Conversation) Encrypter()cryptographer.Encrypter{
+func (convo *Conversation) Encrypter() crypt.Encrypter{
 	return convo.receiverEncrypter
 }

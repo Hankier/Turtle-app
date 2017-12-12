@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"crypto/rand"
 	"errors"
-	"cryptographer"
+	"crypt"
 	"srvlist/entry"
 )
 
@@ -35,7 +35,7 @@ func (sli *ServerList)GetServerIpPort(name string)(string){
 	return ret
 }
 
-func (sli *ServerList)GetEncrypter(name string)(cryptographer.Encrypter){
+func (sli *ServerList)GetEncrypter(name string)(crypt.Encrypter){
 	sli.listmutex.Lock()
 	ret := sli.list[name].Encrypter
 	sli.listmutex.Unlock()

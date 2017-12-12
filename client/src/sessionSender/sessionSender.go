@@ -1,8 +1,8 @@
-package sender
+package sessionSender
 
 import "message"
 
-type Sender interface{
+type SessionSender interface{
 	Send(msg *message.Message)error
 	SendInstant(msg *message.Message)error
 	UnlockSending()

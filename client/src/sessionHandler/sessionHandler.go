@@ -1,4 +1,4 @@
-package handler
+package sessionHandler
 
 
 import "net"
