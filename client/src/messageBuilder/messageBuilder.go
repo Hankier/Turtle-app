@@ -22,24 +22,15 @@ type MessageBuilder struct{
 	myName            string
 }
 
-func NewMessageBuilder(sl *srvlist.ServerList)(*MessageBuilder){
+func New(myName string, sl *srvlist.ServerList)(*MessageBuilder){
 	msgb := new(MessageBuilder)
 	msgb.srvList = sl
+	msgb.myName = myName
 	return msgb
 }
 
-func (msgb *MessageBuilder)SetMyServer(ms string)(*MessageBuilder){
+func (msgb *MessageBuilder) SetMyCurrentServer(ms string)(*MessageBuilder){
 	msgb.myServer = ms
-	return msgb
-}
-
-func (msgb *MessageBuilder)SetMyName(ms string)(*MessageBuilder){
-	msgb.myName = ms
-	return msgb
-}
-
-func (msgb *MessageBuilder)SetPath(srve []string)(*MessageBuilder){
-	msgb.path = srve
 	return msgb
 }
 
@@ -55,6 +46,11 @@ func(msgb *MessageBuilder) SetReceiverEncrypter (handler crypt.Encrypter)(*Messa
 
 func (msgb *MessageBuilder) SetReceiverServer(rcvrsrv string) (*MessageBuilder) {
 	msgb.receiverServer = rcvrsrv
+	return msgb
+}
+
+func (msgb *MessageBuilder)SetPath(srve []string)(*MessageBuilder){
+	msgb.path = srve
 	return msgb
 }
 

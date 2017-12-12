@@ -12,8 +12,8 @@ import (
 )
 
 func TestMessageBuilder_Build(t *testing.T) {
-	msgb := NewMessageBuilder(srvlist.New())
-	msgb.SetMyName("10000000").SetMyServer("00000000")
+	msgb := New("10000000", srvlist.New())
+	msgb.SetMyCurrentServer("00000000")
 
 	expected := ([]byte)("  00000002  00000001  recvserv  recvrecv  0000000010000000  abcd")
 	expected[0] = 0
