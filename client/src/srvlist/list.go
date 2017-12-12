@@ -28,49 +28,64 @@ func New()(*ServerList)  {
 	return sli
 }
 
-func (sli *ServerList)GetServerIpPort(name string)(string){
+func (sli *ServerList)GetServerIpPort(name string)(string, error){
+
 	sli.listmutex.Lock()
-	ret := sli.list[name].Ipport
+	ret, ok := sli.list[name];
 	sli.listmutex.Unlock()
-	return ret
+
+	if  ok{
+		return ret.Ipport, nil
+	}
+
+	return "", errors.New("no such server on the list")
 }
 
-func (sli *ServerList)GetEncrypter(name string)(crypt.Encrypter){
+func (sli *ServerList)GetEncrypter(name string)(crypt.Encrypter, error){
 	sli.listmutex.Lock()
-	ret := sli.list[name].Encrypter
+	entry, ok := sli.list[name]
 	sli.listmutex.Unlock()
-	return ret
+
+	if ok{
+		return entry.Encrypter, nil
+	}
+	return nil, errors.New("no such server on the list")
 }
 
 func (sli *ServerList)GetRandomPath(length int)([]string, error){
 	if length < 1{
 		if length < 0{
-			return nil, errors.New("Invalid path length")
+			return nil, errors.New("invalid path length")
 		}
 		return make([]string, 0), nil
 	}
 
 	path := make([]string, length)
 
+	//no need for mutex, GetServerList is thread-safe
 	names := sli.GetServerList()
-
 
 	serversLen := len(names)
 
 	if serversLen < 2{
-		return nil, errors.New("Too few servers to create a path");
+		return nil, errors.New("too few servers to create a path");
 	}
 
 	var rnd *big.Int
 	var err error
 
 	for i := 0; i < length; i++{
+
 		rnd, err = rand.Int(rand.Reader, big.NewInt(int64(serversLen)))
 		if err != nil {	return nil, err	}
+
 		path[i] = names[rnd.Int64()]
+
 		for i > 0 && path[i] == path[i-1]{
+
 			rnd, err = rand.Int(rand.Reader, big.NewInt(int64(serversLen)))
 			if err != nil {	return nil, err	}
+
 			path[i] = names[rnd.Int64()]
 		}
 	}

@@ -105,10 +105,13 @@ func (cli *Client)ChooseNewPath(length int)([]string, error){
 }
 
 func (cli *Client)ConnectToServer(name string)error{
-	socket, err := net.Dial("tcp", cli.srvList.GetServerIpPort(name))
-	if err != nil {
-		return err
-	}
+
+	srvPort, err := cli.srvList.GetServerIpPort(name)
+	if err != nil {	return err	}
+
+	socket, err := net.Dial("tcp", srvPort)
+	if err != nil {	return err	}
+
 	socket.Write([]byte(cli.myName))
 	cli.messageBuilder.SetMyCurrentServer(name)
 	cli.CreateSession(name, socket)
