@@ -1,4 +1,4 @@
-package sender
+package session
 
 import (
 	"testing"
