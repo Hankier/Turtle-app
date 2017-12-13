@@ -1,9 +1,9 @@
-package sessionHandler
-
+package sessions
 
 import "net"
 
 type Handler interface{
 	CreateSession(name string, socket net.Conn)
-	RemoveSession()
+	RemoveSession(name string)
+	GetActiveSessions()[]string
 }
