@@ -1,11 +1,11 @@
-package conversation
+package convo
 
 import(
 	"commonKeyProtocol"
 	"receiverEncrypter"
 	"textReceiver"
-	"conversation/msg/handler"
-	"conversation/msg/builder"
+	"convos/msg/handler"
+	"convos/msg/builder"
 	"crypt"
 )
 

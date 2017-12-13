@@ -1,4 +1,4 @@
-package messageBuilder
+package builder
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"message"
 	"fmt"
 	"bytes"
-	"conversation/msg/builder"
+	"convos/msg/builder"
 	"commonKeyProtocol"
 	"srvlist"
 )

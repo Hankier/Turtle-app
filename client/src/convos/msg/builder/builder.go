@@ -1,7 +1,7 @@
 package builder
 
 import (
-	"conversation/msg"
+	"convos/msg"
 	"commonKeyProtocol"
 )
 

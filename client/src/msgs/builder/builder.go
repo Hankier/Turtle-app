@@ -1,14 +1,15 @@
-package messageBuilder
+package builder
 
 import (
 	"crypt"
 	"message"
 	"errors"
-	"conversation/msg/builder"
+	"convos/msg/builder"
 	"srvlist"
+	"msgs/msg"
 )
 
-type MessageBuilder struct{
+type Builder struct{
 	path              []string
 	receiver          string
 	receiverServer    string
@@ -16,65 +17,65 @@ type MessageBuilder struct{
 	convoBuilder      *builder.ConversationMessageBuilder
 	receiverEncrypter crypt.Encrypter
 	msgString         string
-	msgType           message.TYPE
+	msgType           msg.TYPE
 	encType           crypt.TYPE
 	myServer          string
 	myName            string
 }
 
-func New(myName string, sl *srvlist.ServerList)(*MessageBuilder){
-	msgb := new(MessageBuilder)
+func New(myName string, sl *srvlist.ServerList)(*Builder){
+	msgb := new(Builder)
 	msgb.srvList = sl
 	msgb.myName = myName
 	return msgb
 }
 
-func (msgb *MessageBuilder) SetMyCurrentServer(ms string)(*MessageBuilder){
+func (msgb *Builder) SetMyCurrentServer(ms string)(*Builder){
 	msgb.myServer = ms
 	return msgb
 }
 
-func (msgb *MessageBuilder) SetReceiver(rcvr string) (*MessageBuilder) {
+func (msgb *Builder) SetReceiver(rcvr string) (*Builder) {
 	msgb.receiver = rcvr
 	return msgb
 }
 
-func(msgb *MessageBuilder) SetReceiverEncrypter (handler crypt.Encrypter)(*MessageBuilder){
+func(msgb *Builder) SetReceiverEncrypter (handler crypt.Encrypter)(*Builder){
 	msgb.receiverEncrypter = handler
 	return msgb
 }
 
-func (msgb *MessageBuilder) SetReceiverServer(rcvrsrv string) (*MessageBuilder) {
+func (msgb *Builder) SetReceiverServer(rcvrsrv string) (*Builder) {
 	msgb.receiverServer = rcvrsrv
 	return msgb
 }
 
-func (msgb *MessageBuilder)SetPath(srve []string)(*MessageBuilder){
+func (msgb *Builder)SetPath(srve []string)(*Builder){
 	msgb.path = srve
 	return msgb
 }
 
-func(msgb *MessageBuilder) SetMsgType (p message.TYPE)(*MessageBuilder){
+func(msgb *Builder) SetMsgType (p message.TYPE)(*Builder){
 	msgb.msgType = p
 	return msgb
 }
 
-func(msgb *MessageBuilder) SetMsgString (content string)(*MessageBuilder){
+func(msgb *Builder) SetMsgString (content string)(*Builder){
 	msgb.msgString = content
 	return msgb
 }
 
-func(msgb *MessageBuilder) SetMsgContentBuilder (builder *builder.ConversationMessageBuilder)(*MessageBuilder){
+func(msgb *Builder) SetMsgContentBuilder (builder *builder.ConversationMessageBuilder)(*Builder){
 	msgb.convoBuilder = builder
 	return msgb
 }
 
-func (msgb *MessageBuilder) SetEncType(p crypt.TYPE)(*MessageBuilder){
+func (msgb *Builder) SetEncType(p crypt.TYPE)(*Builder){
 	msgb.encType = p
 	return msgb
 }
 
-func (msgb *MessageBuilder)Build()(*message.Message, error){
+func (msgb *Builder)Build()(*message.Message, error){
 
 	if len(msgb.path) > 0{
 		if msgb.path[0] == msgb.receiverServer{
@@ -159,7 +160,7 @@ func (msgb *MessageBuilder)Build()(*message.Message, error){
 	return msg, nil
 }
 
-func (msgb *MessageBuilder)createPiece(pieceContent []byte, enc crypt.Encrypter)(*message.Message, error){
+func (msgb *Builder)createPiece(pieceContent []byte, enc crypt.Encrypter)(*message.Message, error){
 	var piece *message.Message
 	var encElGamal []byte
 	var encRSA []byte

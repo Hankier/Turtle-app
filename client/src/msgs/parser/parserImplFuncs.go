@@ -1,11 +1,11 @@
-package messageHandler
+package parser
 
 import (
 	"log"
 	"message"
 )
 
-func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Message){
+func (handler *ParserImpl)handleDEFAULT(from string, msg *message.Message){
 	//log.Print("DEBUG Received DEFAULT from: " + from)
 
 	handler.ss.SendInstant(message.NewMessageOK())
@@ -25,11 +25,11 @@ func (handler *MessageHandlerImpl)handleDEFAULT(from string, msg *message.Messag
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
 }
 
-func (handler *MessageHandlerImpl)handleOK(from string, msg *message.Message){
+func (handler *ParserImpl)handleOK(from string, msg *message.Message){
 	handler.ss.UnlockSending()
 }
 
-func (handler *MessageHandlerImpl)handlePING(from string, msg *message.Message){
+func (handler *ParserImpl)handlePING(from string, msg *message.Message){
 	msgOk := new(message.Message)
 	msgOk.SetMessageType(message.OK)
 	msgOk.SetMessageContent(make([]byte,0))

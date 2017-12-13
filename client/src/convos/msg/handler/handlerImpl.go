@@ -4,7 +4,7 @@ import (
 	"commonKeyProtocol"
 	"receiverEncrypter"
 	"textReceiver"
-	"conversation/msg"
+	"convos/msg"
 	"log"
 )
 

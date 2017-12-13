@@ -1,4 +1,4 @@
-package messageHandler
+package parser
 
 import (
 	_"log"
@@ -7,24 +7,24 @@ import (
 	"message"
 	"conversationsHandler"
 	"log"
-	"sessionSender"
+	"sessions/sender"
 )
 
-type MessageHandlerImpl struct{
-	ss            sessionSender.SessionSender
+type ParserImpl struct{
+	ss            sender.SessionSender
 	convoshandler conversationsHandler.ConversationsHandler
 	crypt         crypt.Cryptographer
 }
 
-func New(sessSender sessionSender.SessionSender, convohandler conversationsHandler.ConversationsHandler, crypt crypt.Cryptographer)(*MessageHandlerImpl){
-	mhi := new(MessageHandlerImpl)
+func New(sessSender sender.SessionSender, convohandler conversationsHandler.ConversationsHandler, crypt crypt.Cryptographer)(*ParserImpl){
+	mhi := new(ParserImpl)
 	mhi.ss = sessSender
 	mhi.convoshandler = convohandler
 	mhi.crypt = crypt
 	return mhi
 }
 
-func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
+func (handler *ParserImpl)HandleBytes(from string, bytes []byte){
 	//log.Print("Handling bytes " + string(bytes))
 
 	msg, err := message.FromBytes(bytes)
@@ -38,7 +38,7 @@ func (handler *MessageHandlerImpl)HandleBytes(from string, bytes []byte){
 	handler.handle(from, msg)
 }
 
-func (handler *MessageHandlerImpl)handle(from string, msg *message.Message){
+func (handler *ParserImpl)handle(from string, msg *message.Message){
 	decrypted, err := handler.crypt.Decrypt(msg.GetEncType(), msg.GetMessageContent())
 	if err != nil{
 		log.Print(err.Error())
