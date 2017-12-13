@@ -1,7 +1,7 @@
-package commandsListener
+package cmdsListener
 
 import (
-	"userInterface"
+	"client"
 	"textReceiver"
 	"bufio"
 	"os"
@@ -10,12 +10,12 @@ import (
 )
 
 type CommandsListener struct{
-	ui       userInterface.UserInterface
+	ui       client.UserInterface
 	textrecv textReceiver.TextReceiver
 	run      bool
 }
 
-func New(ui userInterface.UserInterface, textrecv textReceiver.TextReceiver)(*CommandsListener){
+func New(ui client.UserInterface, textrecv textReceiver.TextReceiver)(*CommandsListener){
 	cmdl := new(CommandsListener)
 	cmdl.ui = ui
 	cmdl.textrecv = textrecv
@@ -33,7 +33,6 @@ func (cmdl *CommandsListener)Listen(){
 			cmdl.run = false
 		} else {
 			cmdl.execCmd(text)
-
 		}
 	}
 }

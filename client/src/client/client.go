@@ -1,7 +1,7 @@
 package client
 
 import (
-	"session"
+	"sessions"
 	"srvlist"
 	"log"
 	"net"
@@ -10,10 +10,11 @@ import (
 	"errors"
 	"message"
 	"textReceiver"
-	"conversation"
+	"convos"
 	"messageBuilder"
 	"sync"
 	"commandsListener"
+	"sessions/session"
 )
 
 type Client struct{
@@ -23,8 +24,7 @@ type Client struct{
 	nodeCrypto     crypt.Cryptographer
 	currentPath    []string
 	convosMutex    sync.Mutex
-	conversations  map[string]*conversation.Conversation
-	messageBuilder *messageBuilder.MessageBuilder
+	messageBuilder *messageBuilder.Builder
 	textReceiver   textReceiver.TextReceiver
 	myName         string
 }
@@ -38,31 +38,13 @@ func NewClient(name string)(*Client){
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
 	cli.messageBuilder = messageBuilder.New(cli.myName, cli.srvList)
 	cli.cmdListener = commandsListener.New(cli, cli.textReceiver)
-	cli.conversations = make(map[string]*conversation.Conversation)
+	cli.conversations = make(map[string]*convos.Conversation)
 
 	return cli
 }
 
 func (cli *Client)Start(){
 	cli.cmdListener.Listen()
-}
-
-func (cli *Client)CreateSession(name string, socket net.Conn){
-	if cli.sess != nil{
-		cli.RemoveSession()
-	}
-	msgHandler := messageHandler.New(cli, cli, cli.nodeCrypto)
-
-	sess := session.New(socket, name, msgHandler, cli)
-
-	go sess.Start()
-	cli.sess = sess
-	//TODO thread safe
-}
-
-func (cli *Client)RemoveSession(){
-	cli.sess.DeleteSession()
-	cli.sess = nil
 }
 
 func (cli *Client)Send(msg *message.Message)error{
@@ -121,21 +103,6 @@ func (cli *Client)ConnectToServer(name string)error{
 
 func (cli *Client)GetServerList()[]string{
 	return cli.srvList.GetServerList()
-}
-
-func (cli *Client)CreateConversation(receiver string, receiverServer string) (convo *conversation.Conversation, err error){
-	name := receiverServer + receiver
-
-	cli.convosMutex.Lock()
-	convo, ok := cli.conversations[name]
-	if !ok{
-		convo = conversation.New(cli.textReceiver, receiver, receiverServer)
-		cli.conversations[name] = convo
-	} else {
-		err = errors.New("conversation already exists")
-	}
-	cli.convosMutex.Unlock()
-	return convo, err
 }
 
 func (cli *Client)SendTo(message string, receiver string, receiverServer string)error{
