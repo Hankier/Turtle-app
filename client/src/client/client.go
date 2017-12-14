@@ -30,7 +30,7 @@ func New(name string)(*Client){
 
 	cli.srvList = srvlist.New()
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
-	cli.convosContr = convos.New(cli.textReceiver)
+	cli.convosContr = convos.New(cli.textReceiver, cli)
 	cli.sessionsContr = sessions.New(cli.convosContr)
 	cli.msgsBuilder = builder.New(cli.srvList, cli.convosContr, cli)
 	cli.commandsListener = cmdsListener.New(cli, cli.textReceiver)
