@@ -6,7 +6,7 @@ import (
 	"errors"
 	"textReceiver"
 	"crypt"
-	"log"
+	"client/credentials"
 )
 
 type Controller struct{
@@ -16,13 +16,14 @@ type Controller struct{
 	}
 
 	textRecver textReceiver.TextReceiver
+	credHolder credentials.CredentialsHolder
 }
 
-func New(textRecver textReceiver.TextReceiver)(*Controller){
+func New(textRecver textReceiver.TextReceiver, credHolder credentials.CredentialsHolder)(*Controller){
 	c := new(Controller)
 	c.conversations.data = make(map[string]*convo.Conversation)
 	c.textRecver = textRecver
-
+	c.credHolder = credHolder
 	return c
 }
 
@@ -32,10 +33,8 @@ func (c *Controller)CreateConversation(server string, name string)(err error){
 	c.conversations.Lock()
 	conv, ok := c.conversations.data[convoname]
 	if !ok{
-		conv = convo.New(c.textRecver, server, name)
+		conv = convo.New(server, name, c.textRecver, c.credHolder)
 		c.conversations.data[convoname] = conv
-		log.Println(c.conversations.data[convoname])
-		log.Println(convoname)
 	} else {
 		err = errors.New("conversation already exists")
 	}
@@ -56,8 +55,14 @@ func (c *Controller)GetActiveConversations()[]*struct{
 }
 
 func (c *Controller)OnReceive(from string, content []byte){
-	//TODO CHECK IF EXISTS
-	c.conversations.data[from].Receive(content)
+	server := from[0:8]
+	name := from[8:16]
+	conv, ok := c.conversations.data[from]
+	if !ok{
+		c.CreateConversation(server, name)
+		conv, _ = c.conversations.data[from]
+	}
+	conv.Receive(content)
 }
 
 func (c *Controller)BuildMessageContent(server string, name string, command string, encType crypt.TYPE)([]byte, error){
@@ -66,15 +71,11 @@ func (c *Controller)BuildMessageContent(server string, name string, command stri
 	var content []byte
 	var err error
 
-	c.conversations.Lock()
 	conv, ok := c.conversations.data[convoname]
-	log.Println(c.conversations.data[convoname])
-	log.Println(convoname)
-	if ok{
-		content = conv.BuildMessageContent(command)
-	} else {
-		err = errors.New("conversation do not exist")
+	if !ok{
+		c.CreateConversation(server, name)
+		conv, _ = c.conversations.data[convoname]
 	}
-	c.conversations.Unlock()
+	content = conv.BuildMessageContent(command, encType)
 	return content, err
 }
