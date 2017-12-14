@@ -1,9 +1,9 @@
-package commonKeyProtocol
+package key
 
 import (
 	"github.com/Nik-U/pbc"
 )
-type CommonKeyProtocolImpl struct{
+type CommonKeyImpl struct{
 	pairing                  *pbc.Pairing
 	gen                      *pbc.Element //g
 	sessionGen               *pbc.Element //g dash
@@ -20,14 +20,14 @@ type CommonKeyProtocolImpl struct{
 	sessionCommonKey         *pbc.Element //K
 }
 
-func New()(*CommonKeyProtocolImpl){
+func New()(*CommonKeyImpl){
 	//TODO
-	ckpi := new(CommonKeyProtocolImpl)
+	ckpi := new(CommonKeyImpl)
 
 	return ckpi;
 }
 
-func (ckpi *CommonKeyProtocolImpl)Decrypt(encType TYPE, bytes []byte)([]byte, error){
+func (ckpi *CommonKeyImpl)Decrypt(encType TYPE, bytes []byte)([]byte, error){
 	switch encType {
 	case PLAIN:
 		return bytes, nil
@@ -37,14 +37,14 @@ func (ckpi *CommonKeyProtocolImpl)Decrypt(encType TYPE, bytes []byte)([]byte, er
 	return bytes, nil
 }
 
-func (ckpi *CommonKeyProtocolImpl)decryptSymmetric(bytes []byte)([]byte, error){
+func (ckpi *CommonKeyImpl)decryptSymmetric(bytes []byte)([]byte, error){
 	//TODO
 	return nil, nil
 }
-func (ckpi *CommonKeyProtocolImpl)SetCommonKeyData(part int, bytes []byte){
+func (ckpi *CommonKeyImpl)SetCommonKeyData(part int, bytes []byte){
 	//TODO
 }
-func (ckpi *CommonKeyProtocolImpl)GetCommonKeyData(part int)([]byte){
+func (ckpi *CommonKeyImpl)GetCommonKeyData(part int)([]byte){
 	//TODO
 	return nil
 }

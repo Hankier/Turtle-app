@@ -1,21 +1,20 @@
 package convo
 
 import(
-	"commonKeyProtocol"
-	"receiverEncrypter"
 	"textReceiver"
-	"convos/msg/handler"
-	"convos/msg/builder"
-	"crypt"
+	"convos/convo/msg/handler"
+	"convos/convo/msg/builder"
+	"convos/convo/key"
+	"convos/convo/encrypter"
 )
 
 type Conversation struct{
 	name                string
 	server              string
-	commonKeyProtocol   commonKeyProtocol.CommonKeyProtocol
-	receiverEncrypter   *receiverEncrypter.ReceiverEncrypterImpl
+	commonKeyProtocol   key.CommonKey
+	receiverEncrypter   encrypter.Encrypter
 	textReceiver        textReceiver.TextReceiver
-	convoMessageBuilder *builder.ConversationMessageBuilder
+	convoMessageBuilder *builder.BuilderImpl
 	convoMessageHandler handler.ConversationMessageHandler
 }
 
@@ -35,10 +34,7 @@ func (convo *Conversation)Receive(msg []byte){
 	convo.convoMessageHandler.HandleBytes(convo.name + " " + convo.server, msg)
 }
 
-func (convo *Conversation)MessageBuilder()*builder.ConversationMessageBuilder{
-	return convo.convoMessageBuilder
-}
-
-func (convo *Conversation) Encrypter() crypt.Encrypter{
-	return convo.receiverEncrypter
+func (convo *Conversation)BuildMessageContent(command string)[]byte{
+	convo.convoMessageBuilder.ParseCommand(command)
+	return convo.convoMessageBuilder.Build()
 }
