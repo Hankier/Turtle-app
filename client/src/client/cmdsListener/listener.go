@@ -104,17 +104,17 @@ func (cmdl *Listener)execCmd(cmd string){
 			break
 		case "send":
 			if len(cmds) > 2 {
-				receiver := cmds[1]
-				receiverServer := cmds[2]
+				receiverServer := cmds[1]
+				receiver := cmds[2]
 				message := strings.Join(cmds[3:], " ")
-				err := cmdl.ui.SendTo(message, receiver, receiverServer)
+				err := cmdl.ui.SendTo(message, receiverServer, receiver)
 				if err != nil {
 					cmdl.textrecv.Print("Error: ", err.Error())
 				} else {
 					cmdl.textrecv.Print("Message sent to ", cmds[1]+" "+cmds[2])
 				}
 			} else {
-				cmdl.textrecv.Print("error", "usage: send receiver receiverServer message")
+				cmdl.textrecv.Print("error", "usage: send receiverServer receiver message")
 			}
 			break
 		case "exit":
