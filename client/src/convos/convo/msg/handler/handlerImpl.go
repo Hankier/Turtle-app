@@ -4,17 +4,17 @@ import (
 	"commonKeyProtocol"
 	"receiverEncrypter"
 	"textReceiver"
-	"convos/msg"
+	"convos/convo/msgvo/msg"
 	"log"
 )
 
 type ConversationMessageHandlerImpl struct{
 	ckp      commonKeyProtocol.CommonKeyProtocol
-	rkh      *receiverEncrypter.ReceiverEncrypterImpl
+	rkh      *receiverEncrypter.EncrypterImpl
 	textrecv textReceiver.TextReceiver
 }
 
-func New(ckp commonKeyProtocol.CommonKeyProtocol, rkh *receiverEncrypter.ReceiverEncrypterImpl, textrecv textReceiver.TextReceiver)(*ConversationMessageHandlerImpl){
+func New(ckp commonKeyProtocol.CommonKeyProtocol, rkh *receiverEncrypter.EncrypterImpl, textrecv textReceiver.TextReceiver)(*ConversationMessageHandlerImpl){
 	convMHI := new(ConversationMessageHandlerImpl)
 	convMHI.ckp = ckp
 	convMHI.rkh = rkh

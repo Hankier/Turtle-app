@@ -55,3 +55,17 @@ func (c *Controller)OnReceive(name string, content []byte){
 	//TODO CHECK IF EXISTS
 	c.conversations.data[name].Receive(content)
 }
+
+func (c *Controller)BuildMessageContent(server string, name string, command string)(content []byte, err error){
+	convoname := server + name
+
+	c.conversations.Lock()
+	conv, ok := c.conversations.data[convoname]
+	if ok{
+		content = conv.BuildMessageContent(command)
+	} else {
+		err = errors.New("conversation do not exist")
+	}
+	c.conversations.Unlock()
+	return content, err
+}

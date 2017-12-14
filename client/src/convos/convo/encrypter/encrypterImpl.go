@@ -1,4 +1,4 @@
-package receiverEncrypter
+package encrypter
 
 import "crypto/rsa"
 import (
@@ -10,16 +10,16 @@ import (
 	"log"
 )
 
-type ReceiverEncrypterImpl struct{
+type EncrypterImpl struct{
 	pubRSA     *rsa.PublicKey
 	pubElGamal *elgamal.PublicKey
 }
 
-func New()(*ReceiverEncrypterImpl){
-	return new(ReceiverEncrypterImpl)
+func New()(*EncrypterImpl){
+	return new(EncrypterImpl)
 }
 
-func (recv *ReceiverEncrypterImpl)SetKey(enctype crypt.TYPE, keydata []byte){
+func (recv *EncrypterImpl)SetKey(enctype crypt.TYPE, keydata []byte){
 	switch enctype {
 	case crypt.RSA:
 		recv.setRSA(keydata)
@@ -30,7 +30,7 @@ func (recv *ReceiverEncrypterImpl)SetKey(enctype crypt.TYPE, keydata []byte){
 	}
 }
 
-func (recv *ReceiverEncrypterImpl)setRSA(keydata []byte){
+func (recv *EncrypterImpl)setRSA(keydata []byte){
 	//todo public key
 	block, _ := pem.Decode(keydata)
 
@@ -47,7 +47,7 @@ func (recv *ReceiverEncrypterImpl)setRSA(keydata []byte){
 	}
 }
 
-func (recv *ReceiverEncrypterImpl)setElGamal(keyData []byte){
+func (recv *EncrypterImpl)setElGamal(keyData []byte){
 	publicKeyElGamal := &elgamal.PublicKey{}
 
 	block, keyData := pem.Decode(keyData)
@@ -62,7 +62,7 @@ func (recv *ReceiverEncrypterImpl)setElGamal(keyData []byte){
 	recv.pubElGamal = publicKeyElGamal
 }
 
-func (recv *ReceiverEncrypterImpl)Encrypt(encType crypt.TYPE, msg []byte)([]byte, error){
+func (recv *EncrypterImpl)Encrypt(encType crypt.TYPE, msg []byte)([]byte, error){
 	switch encType {
 	case crypt.PLAIN:
 		return msg, nil

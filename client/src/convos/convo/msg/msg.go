@@ -1,8 +1,8 @@
 package msg
 
 import (
-	"commonKeyProtocol"
 	"errors"
+	"convos/convo/key"
 )
 
 type TYPE byte
@@ -15,11 +15,11 @@ const (
 
 type ConversationMessage struct{
 	msgtype    TYPE
-	enctype    commonKeyProtocol.TYPE
+	enctype    key.TYPE
 	msgcontent []byte
 }
 
-func New(msgtype TYPE, enctype commonKeyProtocol.TYPE, content []byte)*ConversationMessage{
+func New(msgtype TYPE, enctype key.TYPE, content []byte)*ConversationMessage{
 	convoMsg := new(ConversationMessage)
 	convoMsg.msgtype = msgtype
 	convoMsg.enctype = enctype
@@ -35,7 +35,7 @@ func FromBytes(content []byte)(*ConversationMessage, error){
 	msg := new(ConversationMessage)
 
 	msg.msgtype = (TYPE)(content[0])
-	msg.enctype = (commonKeyProtocol.TYPE)(content[1])
+	msg.enctype = (key.TYPE)(content[1])
 	msg.msgcontent = append([]byte(nil), content[2:]...)
 
 	return msg, nil
@@ -59,7 +59,7 @@ func (msg *ConversationMessage)GetMessageType()TYPE{
 	return msg.msgtype
 }
 
-func (msg *ConversationMessage)GetEncryptionType()commonKeyProtocol.TYPE{
+func (msg *ConversationMessage)GetEncryptionType()key.TYPE{
 	return msg.enctype
 }
 
