@@ -7,7 +7,8 @@ import (
 	"bytes"
 	"msgs/msg"
 	"srvlist"
-	"client"
+	"client/credentials"
+	"convos/msgsBuilder"
 )
 
 type MockCredsHandler struct{
@@ -29,11 +30,31 @@ func NewMCH(name, serv string)(*MockCredsHandler){
 	return mch
 }
 
+
+type MockConvMsgBuilder struct{
+}
+
+func NewMCMB()(*MockConvMsgBuilder){
+	mcmb := new(MockConvMsgBuilder)
+	return mcmb
+}
+
+func (mcmb *MockConvMsgBuilder)BuildMessageContent(server string, name string, command string, encType crypt.TYPE)([]byte, error){
+	ret := []byte(server + name)
+	ret = append(ret, 0)
+	ret = append(ret, 0)
+	ret = append(ret, []byte(command)...)
+	return ret, nil
+}
+
 func TestMessageBuilder_Build(t *testing.T) {
-	var mch client.CredentialsHolder
+	var mch credentials.CredentialsHolder
 	mch = NewMCH("10000000", "00000000")
 
-	msgb := New(srvlist.New(), , mch)
+	var mcmb msgsBuilder.MessageBuilder
+	mcmb = NewMCMB()
+
+	msgb := New(srvlist.New(), mcmb, mch)
 
 	expected := ([]byte)("  00000002  00000001  recvserv  recvrecv  0000000010000000  abcd")
 	expected[0] = 0
@@ -50,7 +71,6 @@ func TestMessageBuilder_Build(t *testing.T) {
 	expected[59] = 0
 
 	msgString := "abcd"
-	cmd := "message " + msgString
 
 	path := []string{"recvserv", "00000001", "00000002", "00000000"}
 
@@ -63,7 +83,7 @@ func TestMessageBuilder_Build(t *testing.T) {
 		SetEncType(crypt.PLAIN).
 		SetMsgType(msg.DEFAULT).
 		SetPath(path).
-		SetCommand(cmd).
+		SetCommand(msgString).
 		Build()
 	fmt.Println(string(msg.ToBytes()))
 	fmt.Println(string(expected))

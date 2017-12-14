@@ -93,7 +93,8 @@ func (msgb *Builder)Build()(*msg.Message, error){
 
 	msgPieces := make([][]byte, len(msgb.path) + 2)
 
-	msgContent, err := msgb.convosMsgBuilder.BuildMessageContent(msgb.receiverServer, msgb.receiver, msgb.command, msgb.encType)
+
+	msgContent, err := msgb.convosMsgBuilder.BuildMessageContent(myServer, msgb.credHolder.GetName(), msgb.command, msgb.encType)
 	if err != nil{	return nil, err	}
 
 	var piece *msg.Message
