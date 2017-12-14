@@ -38,19 +38,20 @@ func NewServer(name string)(*Server){
 	return srv
 }
 
-func checkIfNameIsServer(name string)bool{
-	if name[0] == '0'{
-		return true;
-	}else {
-		return false
+func (s *Server)checkIfNameIsServer(name string)bool{
+	for _, server := range s.serverList.GetServerList(){
+		if server == name{
+			return true
+		}
 	}
+	return false
 }
 
 func (srv *Server)SendTo(name string, msg *message.Message){
 	if sess, ok := srv.sessions[name]; ok {
 		sess.Send(msg)
 	}else{
-		if checkIfNameIsServer(name) {
+		if srv.checkIfNameIsServer(name) {
 			if srv.connectToServer(name){
 				srv.SendTo(name, msg)
 			}
@@ -62,7 +63,7 @@ func (srv *Server)SendInstantTo(name string, msg *message.Message){
 	if sess, ok := srv.sessions[name]; ok {
 		sess.SendInstant(msg)
 	}else{
-		if checkIfNameIsServer(name) {
+		if srv.checkIfNameIsServer(name) {
 			if srv.connectToServer(name){
 				srv.SendTo(name, msg)
 			}
