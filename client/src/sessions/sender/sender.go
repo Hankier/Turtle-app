@@ -1,4 +1,4 @@
-package sessions
+package sender
 
 type Sender interface{
 	Send(name string, content []byte)error

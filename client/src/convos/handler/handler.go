@@ -1,4 +1,4 @@
-package convos
+package handler
 
 type Handler interface{
 	CreateConversation(server string, name string)

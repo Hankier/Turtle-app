@@ -52,9 +52,9 @@ func (c *Controller)GetActiveConversations()[]*struct{
 	return nil
 }
 
-func (c *Controller)OnReceive(name string, content []byte){
+func (c *Controller)OnReceive(from string, content []byte){
 	//TODO CHECK IF EXISTS
-	c.conversations.data[name].Receive(content)
+	c.conversations.data[from].Receive(content)
 }
 
 func (c *Controller)BuildMessageContent(server string, name string, command string, encType crypt.TYPE)([]byte, error){

@@ -1,5 +1,5 @@
 package handler
 
-type ConversationMessageHandler interface{
+type Handler interface{
 	HandleBytes(from string, bytes []byte)
 }

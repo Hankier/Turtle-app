@@ -5,19 +5,19 @@ import (
 	"time"
 	"crypt"
 	"log"
-	"sessions"
 	"convos"
 	"msgs/msg"
 	"msgs/parser/decrypter"
+	"sessions/sender"
 )
 
 type ParserImpl struct{
-	sender        sessions.Sender
+	sender        sender.Sender
 	receiver      convos.Receiver
 	dec 		  crypt.Decrypter
 }
 
-func New(sender sessions.Sender, receiver convos.Receiver)(*ParserImpl){
+func New(sender sender.Sender, receiver convos.Receiver)(Parser){
 	mhi := new(ParserImpl)
 	mhi.sender = sender
 	mhi.receiver = receiver
@@ -25,7 +25,7 @@ func New(sender sessions.Sender, receiver convos.Receiver)(*ParserImpl){
 	return mhi
 }
 
-func (pars *ParserImpl)HandleBytes(from string, bytes []byte){
+func (pars *ParserImpl)ParseBytes(from string, bytes []byte){
 	//log.Print("Handling bytes " + string(bytes))
 
 	message, err := msg.FromBytes(bytes)

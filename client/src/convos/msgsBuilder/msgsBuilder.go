@@ -1,4 +1,4 @@
-package convos
+package msgsBuilder
 
 import "crypt"
 
