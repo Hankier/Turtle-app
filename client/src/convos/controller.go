@@ -51,11 +51,9 @@ func (c *Controller)GetActiveConversations()[]*struct{
 	return nil
 }
 
-func (c *Controller)OnReceive(server string, name string, content []byte){
-	convoname := server + name
-
+func (c *Controller)OnReceive(from string, content []byte){
 	//TODO CHECK IF EXISTS
-	c.conversations.data[convoname].Receive(content)
+	c.conversations.data[from].Receive(content)
 }
 
 func (c *Controller)BuildMessageContent(server string, name string, command string)(content []byte, err error){

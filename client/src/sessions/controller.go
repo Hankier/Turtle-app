@@ -40,11 +40,11 @@ func (c *Controller)GetActiveSessions()[]string{
 	return nil
 }
 
-func (c *Controller)OnReceive(name string, content []byte){
-	c.msgsParser.ParseBytes(name, content)
+func (c *Controller)OnReceive(from string, content []byte){
+	c.msgsParser.ParseBytes(from, content)
 }
 
-func (c *Controller)SendTo(name string, content []byte)error{
+func (c *Controller)Send(name string, content []byte)error{
 	if sess, ok := c.sessions[name]; ok {
 		sess.Send(content)
 	}else{
@@ -53,7 +53,7 @@ func (c *Controller)SendTo(name string, content []byte)error{
 	return nil
 }
 
-func (c *Controller)SendInstantTo(name string, content []byte)error{
+func (c *Controller)SendInstant(name string, content []byte)error{
 	if sess, ok := c.sessions[name]; ok {
 		sess.SendInstant(content)
 	}else{

@@ -4,15 +4,11 @@ import (
 	"srvlist"
 	"log"
 	"net"
-	"errors"
 	"textReceiver"
 	"sync"
-	"client/cmdsListener"
-	"sessions/session"
 	"msgs/builder"
 	"sessions"
 	"convos"
-	"msgs/parser"
 )
 
 type Client struct{
@@ -21,7 +17,6 @@ type Client struct{
 	srvList        *srvlist.ServerList
 	sessionsContr  *sessions.Controller
 	convosContr	   *convos.Controller
-	cmdListener    *cmdsListener.Listener
 	currentPath    []string
 	convosMutex    sync.Mutex
 	msgsBuilder    *builder.Builder
@@ -38,7 +33,6 @@ func New(name string)(*Client){
 	cli.convosContr = convos.New(cli.textReceiver)
 	cli.sessionsContr = sessions.New(cli.convosContr)
 	cli.msgsBuilder = builder.New(cli, cli.srvList)
-	cli.cmdListener = cmdsListener.New(cli, cli.textReceiver)
 
 	return cli
 }
@@ -113,19 +107,7 @@ func (cli *Client)SendTo(message string, receiver string, receiverServer string)
 	return nil
 }
 
-func (cli *Client)ReceiveMessage(content []byte, receiver string, receiverServer string)error{
-	name := receiverServer + receiver
-	cli.convosMutex.Lock()
-	convo, ok := cli.conversations[name]
-	cli.convosMutex.Unlock()
-	if !ok{
-		newConvo, err := cli.CreateConversation(receiver, receiverServer)
-		if err != nil{
-			return err
-		}
-		convo = newConvo
-	}
-	convo.Receive(content)
-	return nil
+func (cli *Client)OnReceive(from string, content []byte){
+	cli.convosContr.OnReceive(from, content)
 }
 

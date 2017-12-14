@@ -11,22 +11,23 @@ import(
 type Conversation struct{
 	name                string
 	server              string
-	commonKeyProtocol   key.CommonKey
-	receiverEncrypter   encrypter.Encrypter
+
+	commonKey   key.CommonKey
+	encrypter   encrypter.Encrypter
 	textReceiver        textReceiver.TextReceiver
 	convoMessageBuilder *builder.BuilderImpl
-	convoMessageHandler handler.ConversationMessageHandler
+	convoMessageHandler handler.Handler
 }
 
 func New(textReceiver textReceiver.TextReceiver, name string, server string)*Conversation{
 	convo := new(Conversation)
 	convo.name = name
 	convo.server = server
-	convo.commonKeyProtocol = commonKeyProtocol.New()
-	convo.receiverEncrypter = receiverEncrypter.New()
+	convo.commonKey = key.New()
+	convo.encrypter = encrypter.New()
 	convo.textReceiver = textReceiver
-	convo.convoMessageBuilder = builder.New(convo.commonKeyProtocol)
-	convo.convoMessageHandler = handler.New(convo.commonKeyProtocol, convo.receiverEncrypter, convo.textReceiver)
+	convo.convoMessageBuilder = builder.New(convo.commonKey)
+	convo.convoMessageHandler = handler.New(convo.commonKey, convo.encrypter, convo.textReceiver)
 	return convo
 }
 

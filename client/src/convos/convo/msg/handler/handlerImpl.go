@@ -1,28 +1,28 @@
 package handler
 
 import (
-	"commonKeyProtocol"
-	"receiverEncrypter"
 	"textReceiver"
-	"convos/convo/msgvo/msg"
+	"convos/convo/msg"
 	"log"
+	"convos/convo/key"
+	"convos/convo/encrypter"
 )
 
-type ConversationMessageHandlerImpl struct{
-	ckp      commonKeyProtocol.CommonKeyProtocol
-	rkh      *receiverEncrypter.EncrypterImpl
-	textrecv textReceiver.TextReceiver
+type HandlerImpl struct{
+	commonKey key.CommonKey
+	enc       encrypter.Encrypter
+	textrecv  textReceiver.TextReceiver
 }
 
-func New(ckp commonKeyProtocol.CommonKeyProtocol, rkh *receiverEncrypter.EncrypterImpl, textrecv textReceiver.TextReceiver)(*ConversationMessageHandlerImpl){
-	convMHI := new(ConversationMessageHandlerImpl)
-	convMHI.ckp = ckp
-	convMHI.rkh = rkh
+func New(commonKey key.CommonKey, enc encrypter.Encrypter, textrecv textReceiver.TextReceiver)(*HandlerImpl){
+	convMHI := new(HandlerImpl)
+	convMHI.commonKey = commonKey
+	convMHI.enc = enc
 	convMHI.textrecv = textrecv
 	return convMHI
 }
 
-func (convMHI *ConversationMessageHandlerImpl)HandleBytes(from string, bytes []byte){
+func (convMHI *HandlerImpl)HandleBytes(from string, bytes []byte){
 	message, err := msg.FromBytes(bytes)
 
 	if err != nil{
@@ -32,9 +32,9 @@ func (convMHI *ConversationMessageHandlerImpl)HandleBytes(from string, bytes []b
 	convMHI.handle(from, message)
 }
 
-func (convMHI *ConversationMessageHandlerImpl)handle(from string, message *msg.ConversationMessage){
+func (convMHI *HandlerImpl)handle(from string, message *msg.ConversationMessage){
 
-	decrypted, err := convMHI.ckp.Decrypt(message.GetEncryptionType(), message.GetMessageContent())
+	decrypted, err := convMHI.commonKey.Decrypt(message.GetEncryptionType(), message.GetMessageContent())
 	if err != nil{
 		log.Print(err)
 		return

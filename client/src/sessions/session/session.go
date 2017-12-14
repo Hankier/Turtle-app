@@ -4,7 +4,8 @@ import (
 	"net"
 	"sync"
 	"log"
-	"sessions"
+	"sessions/receiver"
+	"sessions/handler"
 )
 
 type Session struct{
@@ -19,12 +20,12 @@ type Session struct{
 	stopped bool
 
 	wgRecver *sync.WaitGroup
-	sessionsRecver sessions.Receiver
+	sessionsRecver receiver.Receiver
 
-	handler  sessions.Handler
+	handler  handler.Handler
 }
 
-func New(socket net.Conn, name string, sessionsRecver sessions.Receiver, handler sessions.Handler)(*Session){
+func New(socket net.Conn, name string, sessionsRecver receiver.Receiver, handler handler.Handler)(*Session){
 	s := new(Session)
 
 	s.name = name
