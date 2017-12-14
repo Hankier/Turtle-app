@@ -51,9 +51,7 @@ func (c *Controller)GetActiveConversations()[]*struct{
 	return nil
 }
 
-func (c *Controller)OnReceive(server string, name string, content []byte){
-	convoname := server + name
-
+func (c *Controller)OnReceive(name string, content []byte){
 	//TODO CHECK IF EXISTS
-	c.conversations.data[convoname].Receive(content)
+	c.conversations.data[name].Receive(content)
 }

@@ -9,7 +9,6 @@ import (
 	"convos"
 	"msgs/msg"
 	"msgs/parser/decrypter"
-	"client"
 )
 
 type ParserImpl struct{

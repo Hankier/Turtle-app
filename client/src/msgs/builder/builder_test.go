@@ -3,17 +3,38 @@ package builder
 import (
 	"testing"
 	"crypt"
-	"message"
 	"fmt"
 	"bytes"
 	"convos/msg/builder"
 	"commonKeyProtocol"
 	"srvlist"
+	"client"
 )
 
+type MockCredsHandler struct{
+	myname string
+	myserver string
+}
+
+func (mch *MockCredsHandler)GetName()string{
+	return mch.myname
+}
+func (mch *MockCredsHandler)GetCurrentServer()(string, error){
+	return mch.myserver, nil
+}
+
+func NewMCH(name, serv string)(*MockCredsHandler){
+	mch := new(MockCredsHandler)
+	mch.myname = name
+	mch.myserver = serv
+	return mch
+}
+
 func TestMessageBuilder_Build(t *testing.T) {
-	msgb := New("10000000", srvlist.New())
-	msgb.SetMyCurrentServer("00000000")
+	var mch client.CredentialsHolder
+	mch = NewMCH("10000000", "00000000")
+
+	msgb := New(mch, srvlist.New())
 
 	expected := ([]byte)("  00000002  00000001  recvserv  recvrecv  0000000010000000  abcd")
 	expected[0] = 0
@@ -33,11 +54,11 @@ func TestMessageBuilder_Build(t *testing.T) {
 
 	path := []string{"00000001", "00000002"}
 
-	convoBuilder := builder.New(&commonKeyProtocol.CommonKeyProtocolImpl{})
+	//convoBuilder := builder.New(&commonKeyProtocol.CommonKeyProtocolImpl{})
 
 	msg,_ :=
 		msgb.SetMsgString(msgString).
-		SetMsgContentBuilder(convoBuilder).
+		SetMsgContent([]byte(msgString)).
 		SetReceiverEncrypter(nil).
 		SetReceiver("recvrecv").
 		SetReceiverServer("recvserv").

@@ -5,27 +5,28 @@ import (
 	"errors"
 	"srvlist"
 	"msgs/msg"
+	"convos/msg/builder"
 	"client"
 )
 
 type Builder struct{
-	credHolder client.CredentialsHolder
 	srvList           *srvlist.ServerList
-
 	path              []string
 	receiver          string
 	receiverServer    string
 	receiverEncrypter crypt.Encrypter
-	msgString         string
 	msgType           msg.TYPE
 	encType           crypt.TYPE
-	content			  []byte
+	content           []byte
+	convoMsgBuilder   builder.ConversationMessageBuilder
+	credHolder        client.CredentialsHolder
 }
 
-func New(credHolder client.CredentialsHolder, sl *srvlist.ServerList)(*Builder){
+func New(sl *srvlist.ServerList, convMsgBuilder builder.ConversationMessageBuilder, cred client.CredentialsHolder)(*Builder){
 	msgb := new(Builder)
 	msgb.srvList = sl
-	msgb.credHolder = credHolder
+	msgb.convoMsgBuilder = convMsgBuilder
+	msgb.credHolder = cred
 	return msgb
 }
 
@@ -49,10 +50,6 @@ func(msgb *Builder) SetMsgType (p msg.TYPE)(*Builder){
 	return msgb
 }
 
-func(msgb *Builder) SetMsgString (content string)(*Builder){
-	msgb.msgString = content
-	return msgb
-}
 
 func(msgb *Builder) SetMsgContent (content []byte)(*Builder){
 	msgb.content = content
@@ -66,7 +63,11 @@ func (msgb *Builder) SetEncType(p crypt.TYPE)(*Builder){
 
 func (msgb *Builder)Build()(*msg.Message, error){
 
-	myServer := msgb.credHolder.GetCurrentServer()
+	var err error
+
+	myServer,err := msgb.credHolder.GetCurrentServer()
+	if err != nil{	return nil, err	}
+
 	myName := msgb.credHolder.GetName()
 
 	if len(msgb.path) > 0{
@@ -101,7 +102,7 @@ func (msgb *Builder)Build()(*msg.Message, error){
 
 	var encElGamal []byte
 	var encRSA []byte
-	var err error
+
 
 	switch(msgb.encType){
 	case crypt.PLAIN:
