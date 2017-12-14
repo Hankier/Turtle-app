@@ -8,11 +8,9 @@ import (
 	"textReceiver"
 	"sync"
 	"client/cmdsListener"
-	"sessions/session"
 	"msgs/builder"
 	"sessions"
 	"convos"
-	"msgs/parser"
 )
 
 type Client struct{
@@ -55,9 +53,7 @@ func (cli *Client)ChooseNewPath(length int)([]string, error){
 	var err error
 	cli.currentPath, err = cli.srvList.GetRandomPath(length)
 
-	if err != nil{
-		return nil, err
-	}
+	if err != nil{ return nil, err	}
 
 	return cli.currentPath, nil
 }
@@ -129,3 +125,15 @@ func (cli *Client)ReceiveMessage(content []byte, receiver string, receiverServer
 	return nil
 }
 
+
+func (cli *Client)GetName()string{
+	return cli.myName
+}
+
+func (cli *Client)GetCurrentServer()(string, error){
+	sessionsNames := cli.sessionsContr.GetActiveSessions()
+	if len(sessionsNames) < 1{
+		return "", errors.New("no active session")
+	}
+	return sessionsNames[0], nil
+}
