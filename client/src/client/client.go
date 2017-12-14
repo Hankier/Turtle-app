@@ -1,74 +1,50 @@
 package client
 
 import (
-	"sessions"
 	"srvlist"
 	"log"
 	"net"
-	"messageHandler"
-	"crypt"
 	"errors"
-	"message"
 	"textReceiver"
-	"convos"
-	"messageBuilder"
 	"sync"
-	"commandsListener"
+	"client/cmdsListener"
 	"sessions/session"
+	"msgs/builder"
+	"sessions"
+	"convos"
+	"msgs/parser"
 )
 
 type Client struct{
+	myName         string
+
 	srvList        *srvlist.ServerList
-	sess           *session.Session
-	cmdListener    *commandsListener.CommandsListener
-	nodeCrypto     crypt.Cryptographer
+	sessionsContr  *sessions.Controller
+	convosContr	   *convos.Controller
+	cmdListener    *cmdsListener.Listener
 	currentPath    []string
 	convosMutex    sync.Mutex
-	messageBuilder *messageBuilder.Builder
+	msgsBuilder    *builder.Builder
 	textReceiver   textReceiver.TextReceiver
-	myName         string
 }
 
-func NewClient(name string)(*Client){
+func New(name string)(*Client){
 	cli := new(Client)
 
 	cli.myName = name
+
 	cli.srvList = srvlist.New()
-	cli.nodeCrypto = crypt.New()
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
-	cli.messageBuilder = messageBuilder.New(cli.myName, cli.srvList)
-	cli.cmdListener = commandsListener.New(cli, cli.textReceiver)
-	cli.conversations = make(map[string]*convos.Conversation)
+	cli.convosContr = convos.New(cli.textReceiver)
+	cli.sessionsContr = sessions.New(cli.convosContr)
+	cli.msgsBuilder = builder.New(cli, cli.srvList)
+	cli.cmdListener = cmdsListener.New(cli, cli.textReceiver)
 
 	return cli
 }
 
 func (cli *Client)Start(){
 	cli.cmdListener.Listen()
-}
-
-func (cli *Client)Send(msg *message.Message)error{
-	if cli.sess != nil{
-		cli.sess.Send(msg)
-		return nil
-	}else{
-		log.Println("Not connected to any server\n");
-		return errors.New("NOT CONNECTED")
-	}
-}
-
-func (cli *Client)SendInstant(msg *message.Message)error{
-	if cli.sess != nil{
-		cli.sess.SendInstant(msg)
-		return nil
-	}else{
-		log.Println("Not connected to any server\n");
-		return errors.New("NOT CONNECTED")
-	}
-}
-
-func (cli *Client)UnlockSending(){
-	cli.sess.UnlockSending()
 }
 
 func (cli *Client)GetCurrentPath() []string{
@@ -95,7 +71,7 @@ func (cli *Client)ConnectToServer(name string)error{
 	if err != nil {	return err	}
 
 	socket.Write([]byte(cli.myName))
-	cli.messageBuilder.SetMyCurrentServer(name)
+	cli.msgsBuilder.SetMyCurrentServer(name)
 	cli.CreateSession(name, socket)
 	log.Print("Succesfully connected to " + name)
 	return nil
@@ -118,7 +94,7 @@ func (cli *Client)SendTo(message string, receiver string, receiverServer string)
 		}
 		convo = newConvo
 	}
-	cli.messageBuilder.
+	cli.msgsBuilder.
 		SetMsgString(message).
 		SetMsgContentBuilder(convo.MessageBuilder()).
 		SetReceiverEncrypter(convo.Encrypter()).
