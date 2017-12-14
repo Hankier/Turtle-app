@@ -5,7 +5,7 @@ import (
 	"errors"
 	"srvlist"
 	"msgs/msg"
-	"convos/msg/builder"
+	"convos"
 	"client"
 )
 
@@ -18,14 +18,15 @@ type Builder struct{
 	msgType           msg.TYPE
 	encType           crypt.TYPE
 	content           []byte
-	convoMsgBuilder   builder.ConversationMessageBuilder
+	convosMsgBuilder  convos.MessageBuilder
 	credHolder        client.CredentialsHolder
+	command			  string
 }
 
-func New(sl *srvlist.ServerList, convMsgBuilder builder.ConversationMessageBuilder, cred client.CredentialsHolder)(*Builder){
+func New(sl *srvlist.ServerList, convMsgBuilder convos.MessageBuilder, cred client.CredentialsHolder)(*Builder){
 	msgb := new(Builder)
 	msgb.srvList = sl
-	msgb.convoMsgBuilder = convMsgBuilder
+	msgb.convosMsgBuilder = convMsgBuilder
 	msgb.credHolder = cred
 	return msgb
 }
@@ -34,6 +35,7 @@ func (msgb *Builder) SetReceiver(rcvr string) (*Builder) {
 	msgb.receiver = rcvr
 	return msgb
 }
+
 
 func (msgb *Builder) SetReceiverServer(rcvrsrv string) (*Builder) {
 	msgb.receiverServer = rcvrsrv
@@ -61,14 +63,17 @@ func (msgb *Builder) SetEncType(p crypt.TYPE)(*Builder){
 	return msgb
 }
 
+func (msgb *Builder) SetCommand(cmd string)(*Builder)  {
+	msgb.command = cmd
+	return msgb
+}
+
 func (msgb *Builder)Build()(*msg.Message, error){
 
 	var err error
 
 	myServer,err := msgb.credHolder.GetCurrentServer()
 	if err != nil{	return nil, err	}
-
-	myName := msgb.credHolder.GetName()
 
 	if len(msgb.path) > 0{
 		if msgb.path[0] == msgb.receiverServer{
@@ -88,9 +93,8 @@ func (msgb *Builder)Build()(*msg.Message, error){
 
 	msgPieces := make([][]byte, len(msgb.path) + 2)
 
-	msgContent := ([]byte)(myServer)
-	msgContent = append(msgContent, ([]byte)(myName)...)
-	msgContent = append(msgContent, ([]byte)(msgb.content)...)
+	msgContent, err := msgb.convosMsgBuilder.BuildMessageContent(msgb.receiverServer, msgb.receiver, msgb.command, msgb.encType)
+	if err != nil{	return nil, err	}
 
 	var piece *msg.Message
 

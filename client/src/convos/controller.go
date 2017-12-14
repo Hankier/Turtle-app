@@ -5,6 +5,7 @@ import (
 	"sync"
 	"errors"
 	"textReceiver"
+	"crypt"
 )
 
 type Controller struct{
@@ -56,7 +57,7 @@ func (c *Controller)OnReceive(name string, content []byte){
 	c.conversations.data[name].Receive(content)
 }
 
-func (c *Controller)BuildMessageContent(server string, name string, command string)(content []byte, err error){
+func (c *Controller)BuildMessageContent(server string, name string, command string, encType crypt.TYPE)([]byte, error){
 	convoname := server + name
 
 	c.conversations.Lock()
