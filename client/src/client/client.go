@@ -13,7 +13,6 @@ import (
 
 type Client struct{
 	myName         string
-
 	srvList        *srvlist.ServerList
 	sessionsContr  *sessions.Controller
 	convosContr	   *convos.Controller

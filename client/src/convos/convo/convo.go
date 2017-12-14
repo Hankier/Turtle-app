@@ -11,9 +11,8 @@ import(
 type Conversation struct{
 	name                string
 	server              string
-
-	commonKey   key.CommonKey
-	encrypter   encrypter.Encrypter
+	commonKey   		key.CommonKey
+	encrypter   		encrypter.Encrypter
 	textReceiver        textReceiver.TextReceiver
 	convoMessageBuilder *builder.BuilderImpl
 	convoMessageHandler handler.Handler
