@@ -6,6 +6,7 @@ import (
 	"errors"
 	"textReceiver"
 	"crypt"
+	"log"
 )
 
 type Controller struct{
@@ -33,6 +34,8 @@ func (c *Controller)CreateConversation(server string, name string)(err error){
 	if !ok{
 		conv = convo.New(c.textRecver, server, name)
 		c.conversations.data[convoname] = conv
+		log.Println(c.conversations.data[convoname])
+		log.Println(convoname)
 	} else {
 		err = errors.New("conversation already exists")
 	}
@@ -65,6 +68,8 @@ func (c *Controller)BuildMessageContent(server string, name string, command stri
 
 	c.conversations.Lock()
 	conv, ok := c.conversations.data[convoname]
+	log.Println(c.conversations.data[convoname])
+	log.Println(convoname)
 	if ok{
 		content = conv.BuildMessageContent(command)
 	} else {
