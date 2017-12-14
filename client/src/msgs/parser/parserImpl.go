@@ -4,30 +4,34 @@ import (
 	_"log"
 	"time"
 	"crypt"
-	"message"
-	"conversationsHandler"
 	"log"
-	"sessions/sender"
+	"sessions"
+	"convos"
+	"msgs/msg"
+	"msgs/parser/decrypter"
+	"client"
 )
 
 type ParserImpl struct{
-	ss            sender.SessionSender
-	convoshandler conversationsHandler.ConversationsHandler
-	crypt         crypt.Cryptographer
+	credHolder	  client.CredentialsHolder
+	sender        sessions.Sender
+	receiver      convos.Receiver
+	dec 		  crypt.Decrypter
 }
 
-func New(sessSender sender.SessionSender, convohandler conversationsHandler.ConversationsHandler, crypt crypt.Cryptographer)(*ParserImpl){
+func New(sender sessions.Sender, receiver convos.Receiver, holder client.CredentialsHolder)(*ParserImpl){
 	mhi := new(ParserImpl)
-	mhi.ss = sessSender
-	mhi.convoshandler = convohandler
-	mhi.crypt = crypt
+	mhi.sender = sender
+	mhi.receiver = receiver
+	mhi.credHolder = holder
+	mhi.dec = decrypter.New()
 	return mhi
 }
 
-func (handler *ParserImpl)HandleBytes(from string, bytes []byte){
+func (pars *ParserImpl)HandleBytes(from string, bytes []byte){
 	//log.Print("Handling bytes " + string(bytes))
 
-	msg, err := message.FromBytes(bytes)
+	message, err := msg.FromBytes(bytes)
 
 	if err != nil{
 		log.Print(err)
@@ -35,26 +39,26 @@ func (handler *ParserImpl)HandleBytes(from string, bytes []byte){
 	}
 	//TODO remove debug delay
 	time.Sleep(time.Second)
-	handler.handle(from, msg)
+	pars.handle(from, message)
 }
 
-func (handler *ParserImpl)handle(from string, msg *message.Message){
-	decrypted, err := handler.crypt.Decrypt(msg.GetEncType(), msg.GetMessageContent())
+func (pars *ParserImpl)handle(from string, message *msg.Message){
+	decrypted, err := pars.dec.Decrypt(message.GetEncType(), message.GetMessageContent())
 	if err != nil{
 		log.Print(err.Error())
 		return
 	}
-	msg.SetMessageContent(decrypted)
+	message.SetMessageContent(decrypted)
 
-	switch msg.GetMessageType(){
-	case message.DEFAULT:
-		handler.handleDEFAULT(from, msg)
+	switch message.GetMessageType(){
+	case msg.DEFAULT:
+		pars.handleDEFAULT(from, message)
 		break
-	case message.OK:
-		handler.handleOK(from, msg)
+	case msg.OK:
+		pars.handleOK(from, message)
 		break
-	case message.PING:
-		handler.handlePING(from, msg)
+	case msg.PING:
+		pars.handlePING(from, message)
 		break
 	}
 }
