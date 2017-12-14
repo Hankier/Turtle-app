@@ -5,10 +5,10 @@ import (
 	"log"
 	"net"
 	"textReceiver"
-	"sync"
 	"msgs/builder"
 	"sessions"
 	"convos"
+	"errors"
 )
 
 type Client struct{
@@ -18,7 +18,6 @@ type Client struct{
 	sessionsContr  *sessions.Controller
 	convosContr	   *convos.Controller
 	currentPath    []string
-	convosMutex    sync.Mutex
 	msgsBuilder    *builder.Builder
 	textReceiver   textReceiver.TextReceiver
 }
@@ -32,13 +31,9 @@ func New(name string)(*Client){
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
 	cli.convosContr = convos.New(cli.textReceiver)
 	cli.sessionsContr = sessions.New(cli.convosContr)
-	cli.msgsBuilder = builder.New(cli, cli.srvList)
+	cli.msgsBuilder = builder.New(cli.srvList, cli.convosContr, cli)
 
 	return cli
-}
-
-func (cli *Client)Start(){
-	cli.cmdListener.Listen()
 }
 
 func (cli *Client)GetCurrentPath() []string{
@@ -65,8 +60,11 @@ func (cli *Client)ConnectToServer(name string)error{
 	if err != nil {	return err	}
 
 	socket.Write([]byte(cli.myName))
-	cli.msgsBuilder.SetMyCurrentServer(name)
-	cli.CreateSession(name, socket)
+	activeSessions := cli.sessionsContr.GetActiveSessions()
+	for i := 0; i < len(activeSessions); i++{
+		cli.sessionsContr.RemoveSession(activeSessions[i])
+	}
+	cli.sessionsContr.CreateSession(name, socket)
 	log.Print("Succesfully connected to " + name)
 	return nil
 }
@@ -75,32 +73,23 @@ func (cli *Client)GetServerList()[]string{
 	return cli.srvList.GetServerList()
 }
 
-func (cli *Client)SendTo(message string, receiver string, receiverServer string)error{
-	name := receiverServer + receiver
+func (cli *Client)SendTo(receiverServer string, receiver string, command string)error{
 
-	cli.convosMutex.Lock()
-	convo, ok := cli.conversations[name]
-	cli.convosMutex.Unlock()
-	if !ok{
-		newConvo, err := cli.CreateConversation(receiver, receiverServer)
-		if err != nil{
-			return err
-		}
-		convo = newConvo
-	}
-	cli.msgsBuilder.
-		SetMsgString(message).
-		SetMsgContentBuilder(convo.MessageBuilder()).
-		SetReceiverEncrypter(convo.Encrypter()).
+	cli.msgsBuilder.SetCommand(command).
 		SetReceiver(receiver).SetReceiverServer(receiverServer).
 		SetPath(cli.currentPath)
 
-	msg, err := cli.messageBuilder.Build()
+	message, err := cli.msgsBuilder.Build()
 	if err != nil {
 		return err
 	}
 
-	err = cli.Send(msg)
+	currentServer, err := cli.GetCurrentServer()
+	if err != nil {
+		return err
+	}
+
+	err = cli.sessionsContr.Send(currentServer, message.ToBytes())
 	if err != nil {
 		return err
 	}
