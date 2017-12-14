@@ -51,14 +51,14 @@ func (s *Session)Start(){
 	defer s.socket.Close()
 	log.Print("Starting session: " + s.name)
 
-	go s.SendLoop(s.wgSender)
-	go s.ReceiveLoop(s.wgRecver)
+	go s.SendLoop()
+	go s.ReceiveLoop()
 
 	s.wgRecver.Wait()
-	s.sender.Stop()
+	s.Stop()
 	s.wgSender.Wait()
 
-	s.handler.RemoveSession()
+	s.handler.RemoveSession(s.GetName())
 
 	log.Print("Session ended: " + s.name)
 }
