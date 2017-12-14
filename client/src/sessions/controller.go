@@ -4,8 +4,8 @@ import (
 	"sessions/session"
 	"msgs/parser"
 	"net"
-	"convos"
 	"errors"
+	"convos/receiver"
 )
 
 type Controller struct{
@@ -13,7 +13,7 @@ type Controller struct{
 	msgsParser parser.Parser
 }
 
-func New(convosRecver convos.Receiver)(*Controller){
+func New(convosRecver receiver.Receiver)(*Controller){
 	c := new(Controller)
 	c.sessions = make(map[string]*session.Session)
 	c.msgsParser = parser.New(c, convosRecver)
