@@ -13,17 +13,15 @@ import (
 )
 
 type ParserImpl struct{
-	credHolder	  client.CredentialsHolder
 	sender        sessions.Sender
 	receiver      convos.Receiver
 	dec 		  crypt.Decrypter
 }
 
-func New(sender sessions.Sender, receiver convos.Receiver, holder client.CredentialsHolder)(*ParserImpl){
+func New(sender sessions.Sender, receiver convos.Receiver)(*ParserImpl){
 	mhi := new(ParserImpl)
 	mhi.sender = sender
 	mhi.receiver = receiver
-	mhi.credHolder = holder
 	mhi.dec = decrypter.New()
 	return mhi
 }
