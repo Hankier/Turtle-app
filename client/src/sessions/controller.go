@@ -5,19 +5,18 @@ import (
 	"msgs/parser"
 	"net"
 	"convos"
+	"errors"
 )
 
 type Controller struct{
 	sessions   map[string]*session.Session
-	convosRecver convos.Receiver
 	msgsParser parser.Parser
 }
 
-func New(msgsParser parser.Parser)(*Controller){
+func New(convosRecver convos.Receiver)(*Controller){
 	c := new(Controller)
 	c.sessions = make(map[string]*session.Session)
-
-	c.msgsParser = msgsParser
+	c.msgsParser = parser.New(c, convosRecver)
 	return c
 }
 
@@ -43,5 +42,32 @@ func (c *Controller)GetActiveSessions()[]string{
 
 func (c *Controller)OnReceive(name string, content []byte){
 	c.msgsParser.ParseBytes(name, content)
+}
+
+func (c *Controller)SendTo(name string, content []byte)error{
+	if sess, ok := c.sessions[name]; ok {
+		sess.Send(content)
+	}else{
+		return errors.New("wrong session name")
+	}
+	return nil
+}
+
+func (c *Controller)SendInstantTo(name string, content []byte)error{
+	if sess, ok := c.sessions[name]; ok {
+		sess.SendInstant(content)
+	}else{
+		return errors.New("wrong session name")
+	}
+	return nil
+}
+
+func (c *Controller)UnlockSending(name string)error{
+	if sess, ok := c.sessions[name]; ok {
+		sess.UnlockSending()
+	}else{
+		return errors.New("wrong session name")
+	}
+	return nil
 }
 
