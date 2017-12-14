@@ -1,11 +1,20 @@
 package textReceiver
 
-import "log"
+import (
+	"fmt"
+	"strings"
+)
+
+const (
+	MAX_TYPE_LEN = 10
+)
 
 type TextReceiverImpl struct{
 
 }
 
 func (*TextReceiverImpl)Print(from string, text string){
-	log.Print("Received from: " + from + " message: " + text)
+	paddinglen := 10 - len(from)
+	if paddinglen < 0 {paddinglen = 0}
+	fmt.Println("type: " + from + strings.Repeat(" ", paddinglen) + " - message: " + text)
 }

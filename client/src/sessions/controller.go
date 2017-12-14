@@ -35,9 +35,13 @@ func (c *Controller)RemoveSession(name string){
 }
 
 func (c *Controller)GetActiveSessions()[]string{
-	//TODO
-
-	return nil
+	activeSessions := make([]string, len(c.sessions))
+	i := 0
+	for name, _ := range c.sessions{
+		activeSessions[i] = name
+		i++
+	}
+	return activeSessions
 }
 
 func (c *Controller)OnReceive(from string, content []byte){

@@ -1,21 +1,21 @@
 package cmdsListener
 
 import (
-	"client"
 	"textReceiver"
 	"bufio"
 	"os"
 	"strings"
 	"strconv"
+	"client/ui"
 )
 
 type Listener struct{
-	ui       client.UserInterface
+	ui       ui.UserInterface
 	textrecv textReceiver.TextReceiver
 	run      bool
 }
 
-func New(ui client.UserInterface, textrecv textReceiver.TextReceiver)(*Listener){
+func New(ui ui.UserInterface, textrecv textReceiver.TextReceiver)(*Listener){
 	cmdl := new(Listener)
 	cmdl.ui = ui
 	cmdl.textrecv = textrecv
@@ -41,7 +41,7 @@ func (cmdl *Listener)execCmd(cmd string){
 	cmds := strings.Fields(cmd)
 	cmdl.textrecv.Print("command", cmd)
 
-	if len(cmds) > 1 {
+	if len(cmds) > 0 {
 		switch cmds[0] {
 		case "get":
 			if len(cmds) > 1 {
@@ -72,7 +72,7 @@ func (cmdl *Listener)execCmd(cmd string){
 				switch cmds[1] {
 				case "convo":
 					if len(cmds) > 3 {
-						_, err := cmdl.ui.CreateConversation(cmds[2], cmds[3])
+						err := cmdl.ui.CreateConversation(cmds[2], cmds[3])
 						if err != nil {
 							cmdl.textrecv.Print("Error: ", err.Error())
 						} else {
@@ -107,7 +107,7 @@ func (cmdl *Listener)execCmd(cmd string){
 				receiverServer := cmds[1]
 				receiver := cmds[2]
 				message := strings.Join(cmds[3:], " ")
-				err := cmdl.ui.SendTo(message, receiverServer, receiver)
+				err := cmdl.ui.SendTo(receiverServer, receiver, message)
 				if err != nil {
 					cmdl.textrecv.Print("Error: ", err.Error())
 				} else {
@@ -120,6 +120,8 @@ func (cmdl *Listener)execCmd(cmd string){
 		case "exit":
 			cmdl.run = false
 			break
+		default:
+			cmdl.textrecv.Print("error", "avaiable cmds: get connect new send exit")
 		}
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"sessions"
 	"convos"
 	"errors"
+	"cmdsListener"
 )
 
 type Client struct{
@@ -20,6 +21,7 @@ type Client struct{
 	currentPath    []string
 	msgsBuilder    *builder.Builder
 	textReceiver   textReceiver.TextReceiver
+	commandsListener *cmdsListener.Listener
 }
 
 func New(name string)(*Client){
@@ -32,8 +34,13 @@ func New(name string)(*Client){
 	cli.convosContr = convos.New(cli.textReceiver)
 	cli.sessionsContr = sessions.New(cli.convosContr)
 	cli.msgsBuilder = builder.New(cli.srvList, cli.convosContr, cli)
+	cli.commandsListener = cmdsListener.New(cli, cli.textReceiver)
 
 	return cli
+}
+
+func (cli *Client)Start(){
+	cli.commandsListener.Listen()
 }
 
 func (cli *Client)GetCurrentPath() []string{
@@ -100,6 +107,9 @@ func (cli *Client)OnReceive(from string, content []byte){
 	cli.convosContr.OnReceive(from, content)
 }
 
+func (cli *Client)CreateConversation(receiverServer string, receiver string) (err error){
+	return cli.convosContr.CreateConversation(receiverServer, receiver)
+}
 
 func (cli *Client)GetName()string{
 	return cli.myName
