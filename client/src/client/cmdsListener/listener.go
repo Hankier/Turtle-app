@@ -9,14 +9,14 @@ import (
 	"strconv"
 )
 
-type CommandsListener struct{
+type Listener struct{
 	ui       client.UserInterface
 	textrecv textReceiver.TextReceiver
 	run      bool
 }
 
-func New(ui client.UserInterface, textrecv textReceiver.TextReceiver)(*CommandsListener){
-	cmdl := new(CommandsListener)
+func New(ui client.UserInterface, textrecv textReceiver.TextReceiver)(*Listener){
+	cmdl := new(Listener)
 	cmdl.ui = ui
 	cmdl.textrecv = textrecv
 	cmdl.run = true
@@ -24,7 +24,7 @@ func New(ui client.UserInterface, textrecv textReceiver.TextReceiver)(*CommandsL
 	return cmdl
 }
 
-func (cmdl *CommandsListener)Listen(){
+func (cmdl *Listener)Listen(){
 	reader := bufio.NewReader(os.Stdin)
 
 	for cmdl.run{
@@ -37,7 +37,7 @@ func (cmdl *CommandsListener)Listen(){
 	}
 }
 
-func (cmdl *CommandsListener)execCmd(cmd string){
+func (cmdl *Listener)execCmd(cmd string){
 	cmds := strings.Fields(cmd)
 	cmdl.textrecv.Print("command", cmd)
 
