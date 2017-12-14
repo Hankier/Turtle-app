@@ -2,46 +2,35 @@ package builder
 
 import (
 	"crypt"
-	"message"
 	"errors"
-	"convos/msg/builder"
 	"srvlist"
 	"msgs/msg"
+	"client"
 )
 
 type Builder struct{
+	credHolder client.CredentialsHolder
+	srvList           *srvlist.ServerList
+
 	path              []string
 	receiver          string
 	receiverServer    string
-	srvList           *srvlist.ServerList
-	convoBuilder      *builder.ConversationMessageBuilder
 	receiverEncrypter crypt.Encrypter
 	msgString         string
 	msgType           msg.TYPE
 	encType           crypt.TYPE
-	myServer          string
-	myName            string
+	content			  []byte
 }
 
-func New(myName string, sl *srvlist.ServerList)(*Builder){
+func New(credHolder client.CredentialsHolder, sl *srvlist.ServerList)(*Builder){
 	msgb := new(Builder)
 	msgb.srvList = sl
-	msgb.myName = myName
-	return msgb
-}
-
-func (msgb *Builder) SetMyCurrentServer(ms string)(*Builder){
-	msgb.myServer = ms
+	msgb.credHolder = credHolder
 	return msgb
 }
 
 func (msgb *Builder) SetReceiver(rcvr string) (*Builder) {
 	msgb.receiver = rcvr
-	return msgb
-}
-
-func(msgb *Builder) SetReceiverEncrypter (handler crypt.Encrypter)(*Builder){
-	msgb.receiverEncrypter = handler
 	return msgb
 }
 
@@ -55,7 +44,7 @@ func (msgb *Builder)SetPath(srve []string)(*Builder){
 	return msgb
 }
 
-func(msgb *Builder) SetMsgType (p message.TYPE)(*Builder){
+func(msgb *Builder) SetMsgType (p msg.TYPE)(*Builder){
 	msgb.msgType = p
 	return msgb
 }
@@ -65,8 +54,8 @@ func(msgb *Builder) SetMsgString (content string)(*Builder){
 	return msgb
 }
 
-func(msgb *Builder) SetMsgContentBuilder (builder *builder.ConversationMessageBuilder)(*Builder){
-	msgb.convoBuilder = builder
+func(msgb *Builder) SetMsgContent (content []byte)(*Builder){
+	msgb.content = content
 	return msgb
 }
 
@@ -75,7 +64,10 @@ func (msgb *Builder) SetEncType(p crypt.TYPE)(*Builder){
 	return msgb
 }
 
-func (msgb *Builder)Build()(*message.Message, error){
+func (msgb *Builder)Build()(*msg.Message, error){
+
+	myServer := msgb.credHolder.GetCurrentServer()
+	myName := msgb.credHolder.GetName()
 
 	if len(msgb.path) > 0{
 		if msgb.path[0] == msgb.receiverServer{
@@ -84,25 +76,24 @@ func (msgb *Builder)Build()(*message.Message, error){
 	}
 
 	if len(msgb.path) > 1{
-		if msgb.path[len(msgb.path)-1] == msgb.myServer{
+		if msgb.path[len(msgb.path)-1] == myServer{
 			msgb.path = msgb.path[:len(msgb.path)-1]
 		}
 	}
 
-	if len(msgb.path) == 1 && (msgb.path[0] == msgb.receiverServer || msgb.path[0] == msgb.myServer){
+	if len(msgb.path) == 1 && (msgb.path[0] == msgb.receiverServer || msgb.path[0] == myServer){
 		msgb.path = make([]string, 0)
 	}
 
 	msgPieces := make([][]byte, len(msgb.path) + 2)
 
-	msgb.convoBuilder.ParseCommand(msgb.msgString)
-	msgContent := ([]byte)(msgb.myServer)
-	msgContent = append(msgContent, ([]byte)(msgb.myName)...)
-	msgContent = append(msgContent, ([]byte)(msgb.convoBuilder.Build())...)
+	msgContent := ([]byte)(myServer)
+	msgContent = append(msgContent, ([]byte)(myName)...)
+	msgContent = append(msgContent, ([]byte)(msgb.content)...)
 
-	var piece *message.Message
+	var piece *msg.Message
 
-	piece = message.New(msgb.msgType, msgb.encType, msgContent)
+	piece = msg.New(msgb.msgType, msgb.encType, msgContent)
 
 	msgPieces[0] = ([]byte)(msgb.receiver)
 	msgPieces[0] = append(msgPieces[0], piece.ToBytes()...)
@@ -114,26 +105,23 @@ func (msgb *Builder)Build()(*message.Message, error){
 
 	switch(msgb.encType){
 	case crypt.PLAIN:
-		piece = message.New(msgb.msgType, msgb.encType, msgPieces[0])
+		piece = msg.New(msgb.msgType, msgb.encType, msgPieces[0])
 	case crypt.ELGAMAL:
 		encElGamal, err = msgb.receiverEncrypter.Encrypt(crypt.ELGAMAL, msgPieces[0])
 		if err != nil{	return nil, err	}
 
-		piece = message.New(msgb.msgType, msgb.encType, encElGamal)
+		piece = msg.New(msgb.msgType, msgb.encType, encElGamal)
 	case crypt.RSA:
 		encRSA, err = msgb.receiverEncrypter.Encrypt(crypt.RSA, msgPieces[0])
 		if err != nil{	return nil, err	}
 
-		piece = message.New(msgb.msgType, msgb.encType, encRSA)
+		piece = msg.New(msgb.msgType, msgb.encType, encRSA)
 	default:
 		return nil, errors.New("INVALID ENCRYPTION TYPE")
 	}
 
-
 	msgPieces[1] = ([]byte)(msgb.receiverServer)
 	msgPieces[1] = append(msgPieces[1], piece.ToBytes()...)
-
-
 
 	var srvEncrypter crypt.Encrypter
 
@@ -148,37 +136,37 @@ func (msgb *Builder)Build()(*message.Message, error){
 		msgPieces[i+2] = append(msgPieces[i+2], piece.ToBytes()...)
 	}
 
-	var msg *message.Message
+	var message *msg.Message
 
 
-	srvEncrypter, err = msgb.srvList.GetEncrypter(msgb.myServer)
+	srvEncrypter, err = msgb.srvList.GetEncrypter(myServer)
 	if err != nil{	return nil, err	}
 
-	msg, err = msgb.createPiece(msgPieces[len(msgb.path) + 1], srvEncrypter)
+	message, err = msgb.createPiece(msgPieces[len(msgb.path) + 1], srvEncrypter)
 	if err != nil{	return nil, err	}
 
-	return msg, nil
+	return message, nil
 }
 
-func (msgb *Builder)createPiece(pieceContent []byte, enc crypt.Encrypter)(*message.Message, error){
-	var piece *message.Message
+func (msgb *Builder)createPiece(pieceContent []byte, enc crypt.Encrypter)(*msg.Message, error){
+	var piece *msg.Message
 	var encElGamal []byte
 	var encRSA []byte
 	var err error
 
 	switch msgb.encType {
 	case crypt.PLAIN:
-		piece = message.New(msgb.msgType, msgb.encType, pieceContent)
+		piece = msg.New(msgb.msgType, msgb.encType, pieceContent)
 	case crypt.ELGAMAL:
 		encElGamal, err = enc.Encrypt(crypt.ELGAMAL, pieceContent)
 		if err != nil{	return nil, err	}
 
-		piece = message.New(msgb.msgType, msgb.encType, encElGamal)
+		piece = msg.New(msgb.msgType, msgb.encType, encElGamal)
 	case crypt.RSA:
 		encRSA, err = enc.Encrypt(crypt.RSA, pieceContent)
 		if err != nil{	return nil, err	}
 
-		piece = message.New(msgb.msgType, msgb.encType, encRSA)
+		piece = msg.New(msgb.msgType, msgb.encType, encRSA)
 	default:
 		return nil, errors.New("INVALID ENCRYPTION TYPE")
 	}
