@@ -60,6 +60,9 @@ func (c *Controller)OnReceive(from string, content []byte){
 func (c *Controller)BuildMessageContent(server string, name string, command string, encType crypt.TYPE)([]byte, error){
 	convoname := server + name
 
+	var content []byte
+	var err error
+
 	c.conversations.Lock()
 	conv, ok := c.conversations.data[convoname]
 	if ok{

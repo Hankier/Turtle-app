@@ -5,8 +5,8 @@ import (
 	"errors"
 	"srvlist"
 	"msgs/msg"
-	"convos"
-	"client"
+	"convos/msgsBuilder"
+	"client/credentials"
 )
 
 type Builder struct{
@@ -18,12 +18,12 @@ type Builder struct{
 	msgType           msg.TYPE
 	encType           crypt.TYPE
 	content           []byte
-	convosMsgBuilder  convos.MessageBuilder
-	credHolder        client.CredentialsHolder
+	convosMsgBuilder  msgsBuilder.MessageBuilder
+	credHolder        credentials.CredentialsHolder
 	command			  string
 }
 
-func New(sl *srvlist.ServerList, convMsgBuilder convos.MessageBuilder, cred client.CredentialsHolder)(*Builder){
+func New(sl *srvlist.ServerList, convMsgBuilder msgsBuilder.MessageBuilder, cred credentials.CredentialsHolder)(*Builder){
 	msgb := new(Builder)
 	msgb.srvList = sl
 	msgb.convosMsgBuilder = convMsgBuilder
