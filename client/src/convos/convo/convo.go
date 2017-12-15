@@ -13,13 +13,12 @@ import(
 type Conversation struct{
 	name                string
 	server              string
-
-	commonKey    key.CommonKey
-	encrypter    encrypter.Encrypter
-	textReceiver textReceiver.TextReceiver
-	msgBuilder   *builder.BuilderImpl
-	msgHandler   handler.Handler
-	credHolder   credentials.CredentialsHolder
+	commonKey    		key.CommonKey
+	encrypter    		encrypter.Encrypter
+	textReceiver 		textReceiver.TextReceiver
+	msgBuilder   		*builder.BuilderImpl
+	msgHandler   		handler.Handler
+	credHolder   		credentials.CredentialsHolder
 }
 
 func New(name string, server string, textReceiver textReceiver.TextReceiver, holder credentials.CredentialsHolder)*Conversation{
