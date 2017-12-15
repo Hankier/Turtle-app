@@ -6,13 +6,13 @@ import (
 	"golang.org/x/crypto/openpgp/elgamal"
 )
 
-type ClientDecrypterImpl struct{
+type DecrypterImpl struct{
 	privRSA           *rsa.PrivateKey
 	privElGamal *elgamal.PrivateKey
 }
 
-func New()(*ClientDecrypterImpl){
-	nc := new(ClientDecrypterImpl)
+func New()(*DecrypterImpl){
+	nc := new(DecrypterImpl)
 
 	var privRSA *rsa.PrivateKey
 
@@ -36,7 +36,7 @@ func New()(*ClientDecrypterImpl){
 	return nc
 }
 
-func (nc *ClientDecrypterImpl)Decrypt(encType crypt.TYPE, bytes []byte) ([]byte, error){
+func (nc *DecrypterImpl)Decrypt(encType crypt.TYPE, bytes []byte) ([]byte, error){
 	switch encType {
 	case crypt.PLAIN:
 		return bytes, nil

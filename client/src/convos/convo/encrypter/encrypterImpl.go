@@ -31,7 +31,6 @@ func (recv *EncrypterImpl)SetKey(enctype crypt.TYPE, keydata []byte){
 }
 
 func (recv *EncrypterImpl)setRSA(keydata []byte){
-	//todo public key
 	block, _ := pem.Decode(keydata)
 
 	pubRSA, err := x509.ParsePKCS1PrivateKey(block.Bytes)
