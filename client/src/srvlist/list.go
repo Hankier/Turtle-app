@@ -7,6 +7,7 @@ import (
 	"errors"
 	"crypt"
 	"srvlist/entry"
+	"strconv"
 )
 
 type ServerList struct{
@@ -43,11 +44,11 @@ func (sli *ServerList)GetServerIpPort(name string)(string, error){
 
 func (sli *ServerList)GetEncrypter(name string)(crypt.Encrypter, error){
 	sli.listmutex.Lock()
-	entry, ok := sli.list[name]
+	entr, ok := sli.list[name]
 	sli.listmutex.Unlock()
 
 	if ok{
-		return entry.Encrypter, nil
+		return entr.Encrypter, nil
 	}
 	return nil, errors.New("no such server on the list")
 }
@@ -59,9 +60,6 @@ func (sli *ServerList)GetRandomPath(length int)([]string, error){
 		}
 		return make([]string, 0), nil
 	}
-
-	path := make([]string, length)
-
 	//no need for mutex, GetServerList is thread-safe
 	names := sli.GetServerList()
 
@@ -71,26 +69,42 @@ func (sli *ServerList)GetRandomPath(length int)([]string, error){
 		return nil, errors.New("too few servers to create a path");
 	}
 
+	path := make([]*big.Int, length)
+
 	var rnd *big.Int
 	var err error
 
-	for i := 0; i < length; i++{
+	srvListLen := big.NewInt(int64(serversLen))
 
-		rnd, err = rand.Int(rand.Reader, big.NewInt(int64(serversLen)))
+	rnd, err = rand.Int(rand.Reader, srvListLen)
+	if err != nil {	return nil, err	}
+
+	path[0] = rnd
+
+	bigOne := big.NewInt(1)
+	srvListLenWithoutLast := big.NewInt(int64(serversLen - 1))
+
+	for i := 1; i < length; i++{
+
+		rnd, err = rand.Int(rand.Reader, srvListLenWithoutLast)
 		if err != nil {	return nil, err	}
 
-		path[i] = names[rnd.Int64()]
+		lastPlusOne := new(big.Int).Add(path[i-1], bigOne)
+		rnd.Add(rnd, lastPlusOne)
+		rnd.Mod(rnd, srvListLen)
 
-		for i > 0 && path[i] == path[i-1]{
-
-			rnd, err = rand.Int(rand.Reader, big.NewInt(int64(serversLen)))
-			if err != nil {	return nil, err	}
-
-			path[i] = names[rnd.Int64()]
-		}
+		path[i] = rnd
 	}
 
-	return path, nil
+	pathStr := make([]string, len(path))
+
+	for i := 0; i < len(path); i++{
+		t, _ := strconv.Atoi(path[i].String())
+		name := names[t]
+		pathStr[i] = name
+	}
+
+	return pathStr, nil
 }
 
 func (sli *ServerList)GetServerList()[]string{
