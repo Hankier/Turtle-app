@@ -12,17 +12,29 @@ import (
 	"cmdsListener"
 )
 
+/*
+Client class implementing UserInterface, (sessions)Receiver, (conversation)Receiver and CredentialHolder interfaces
+Main class of the program
+*/
 type Client struct{
-	myName         string
-	srvList        *srvlist.ServerList
-	sessionsContr  *sessions.Controller
-	convosContr	   *convos.Controller
-	currentPath    []string
-	msgsBuilder    *builder.Builder
-	textReceiver   textReceiver.TextReceiver
-	commandsListener *cmdsListener.Listener
+	myName         string					//name of self
+	srvList        *srvlist.ServerList		//serverList object for operations on servers
+	sessionsContr  *sessions.Controller		//controller for operations on sessions
+	convosContr	   *convos.Controller		//controller for operations on conversations
+	currentPath    []string					//slice of server names representing current path to send messages by
+	msgsBuilder    *builder.Builder			//builder object for creating ready-to-send messages to send
+	textReceiver   textReceiver.TextReceiver//text receiver to forward to controllers
+	commandsListener *cmdsListener.Listener	//listener handling given commands
 }
 
+//New is a constructor
+//Creates Client with a given name
+//Initializes empty textReceiver Object,
+//serverList created via its constructor
+//conversationsController crated via its constructor, with created textReceiver and self (as CredentialsHolder) as parameters
+//sessionsController created via its constructor, with created convosContr as parameter
+//messageBuilder created via its constructor, with serverList, convosContr and self (as CredentialsHolder) as parameters
+//commandsListener created via its constructor, with self(as UserInterface) and textReceiver as parameters
 func New(name string)(*Client){
 	cli := new(Client)
 
@@ -38,14 +50,19 @@ func New(name string)(*Client){
 	return cli
 }
 
+//Starts listening for commands
 func (cli *Client)Start(){
 	cli.commandsListener.Listen()
 }
 
+//GetCurrentPath eturns a slice of server names as strings representing consecutive nodes of path in reverse order
 func (cli *Client)GetCurrentPath() []string{
 	return cli.currentPath
 }
 
+//ChooseNewPath generates a new random path and assigns it as a current path
+//Returns nil and error if serverList object encountered a problem generating a path
+//Returns generated path and nil if all went well
 func (cli *Client)ChooseNewPath(length int)([]string, error){
 	var err error
 	cli.currentPath, err = cli.srvList.GetRandomPath(length)
@@ -57,6 +74,11 @@ func (cli *Client)ChooseNewPath(length int)([]string, error){
 	return cli.currentPath, nil
 }
 
+//ConnectToServer tries to connect to server of a given name and writes self's name to it
+//Removes all active sessions
+//Furthermore it creates a new session with the server it newly connected to
+//Returns error if there is no server named as required or there are problems with connection
+//Returns nil if all went well
 func (cli *Client)ConnectToServer(name string)error{
 
 	srvPort, err := cli.srvList.GetServerIpPort(name)
@@ -75,10 +97,17 @@ func (cli *Client)ConnectToServer(name string)error{
 	return nil
 }
 
+//GetServerList returns a slice of all known server names as strings
 func (cli *Client)GetServerList()[]string{
 	return cli.srvList.GetServerList()
 }
 
+//SendTo tries to send a message specified in a command to a receiver which should be connected to given receiverServer
+//Returns error in case:
+// -builder object encountered a problem creating a ready-to-send message from given parameters
+// -client is not connected to any server
+// -sessionsController encountered a problem sending message
+//Return nil if all went well
 func (cli *Client)SendTo(receiverServer string, receiver string, command string)error{
 
 	cli.msgsBuilder.SetCommand(command).
@@ -102,18 +131,24 @@ func (cli *Client)SendTo(receiverServer string, receiver string, command string)
 	return nil
 }
 
+//OnReceive passes received content from another server to convosController method OnReceive
 func (cli *Client)OnReceive(from string, content []byte){
 	cli.convosContr.OnReceive(from, content)
 }
 
+//CreateConversation passes given parameters to convosController CreateConversation method
+//Returns error accordingly to that function
 func (cli *Client)CreateConversation(receiverServer string, receiver string) (err error){
 	return cli.convosContr.CreateConversation(receiverServer, receiver)
 }
 
+//GetName returns client's name
 func (cli *Client)GetName()string{
 	return cli.myName
 }
 
+//GetCurrentServer returns name of a server client is currently connected to
+//Returns empty string and an error if client is not connected to any server
 func (cli *Client)GetCurrentServer()(string, error){
 	sessionsNames := cli.sessionsContr.GetActiveSessions()
 	if len(sessionsNames) < 1{

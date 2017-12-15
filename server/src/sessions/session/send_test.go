@@ -2,47 +2,47 @@ package session
 
 import (
 	"testing"
-	"message"
+	"msgs/msg"
 	"net"
 	"time"
 	"bytes"
 	_"log"
 )
 
-type SocketMock struct{
+type SendSocketMock struct{
 	writedata []byte
 }
 
-func (s *SocketMock)Read(b []byte) (n int, err error){
+func (s *SendSocketMock)Read(b []byte) (n int, err error){
 	return 0, nil
 }
 
-func (s *SocketMock)Write(b []byte) (n int, err error){
+func (s *SendSocketMock)Write(b []byte) (n int, err error){
 	s.writedata = b
 	return len(b), nil
 }
 
-func (s *SocketMock)Close() error{
+func (s *SendSocketMock)Close() error{
 	return nil
 }
 
-func (s *SocketMock)LocalAddr() net.Addr{
+func (s *SendSocketMock)LocalAddr() net.Addr{
 	return nil
 }
 
-func (s *SocketMock)RemoteAddr() net.Addr{
+func (s *SendSocketMock)RemoteAddr() net.Addr{
 	return nil
 }
 
-func (s *SocketMock)SetDeadline(t time.Time) error{
+func (s *SendSocketMock)SetDeadline(t time.Time) error{
 	return nil
 }
 
-func (s *SocketMock)SetReadDeadline(t time.Time) error{
+func (s *SendSocketMock)SetReadDeadline(t time.Time) error{
 	return nil
 }
 
-func (s *SocketMock)SetWriteDeadline(t time.Time) error{
+func (s *SendSocketMock)SetWriteDeadline(t time.Time) error{
 	return nil
 }
 
@@ -61,11 +61,11 @@ func TestSenderImpl_messagesToSingle(t *testing.T) {
 }
 
 func TestSenderImpl_Send(t *testing.T) {
-	socket := &SocketMock{}
+	socket := &SendSocketMock{}
 	sender := New(socket)
 
-	msg := message.NewMessageOK()
-	sender.Send(msg)
+	msg := msg.NewMessageOK()
+	sender.Send(msg.ToBytes())
 
 	hasmsg := false
 	msgbytes := addSizeToBytes(msg.ToBytes())
@@ -83,11 +83,11 @@ func TestSenderImpl_Send(t *testing.T) {
 }
 
 func TestSenderImpl_SendInstant(t *testing.T) {
-	socket := &SocketMock{}
+	socket := &SendSocketMock{}
 	sender := New(socket)
 
-	msg := message.NewMessageOK()
-	sender.SendInstant(msg)
+	msg := msg.NewMessageOK()
+	sender.SendInstant(msg.ToBytes())
 
 	msgbytes := addSizeToBytes(msg.ToBytes())
 
