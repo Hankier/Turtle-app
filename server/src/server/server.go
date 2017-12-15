@@ -7,13 +7,16 @@ import (
 	"log"
 	"net"
 	"srvlist"
-	"session"
+	"sessions"
 	"messageHandler"
 	"message"
 )
 
 type Server struct{
-	sessions map[string]*session.Session
+	sessions struct{
+		sync.Mutex
+		data map[string]*sessions.Session
+	}
 	clientListener *connectionListener.ConnectionListener
 	serverListener *connectionListener.ConnectionListener
 	serverList *srvlist.ServerList
@@ -25,7 +28,7 @@ type Server struct{
 func NewServer(name string)(*Server){
 	srv := new(Server)
 
-	srv.sessions = make(map[string]*session.Session)
+	srv.sessions.data = make(map[string]*sessions.Session)
 
 	srv.myName = name
 
@@ -48,7 +51,11 @@ func (s *Server)checkIfNameIsServer(name string)bool{
 }
 
 func (srv *Server)SendTo(name string, msg *message.Message){
-	if sess, ok := srv.sessions[name]; ok {
+	srv.sessions.Lock()
+	sess, ok := srv.sessions.data[name];
+	srv.sessions.Unlock()
+
+	if ok {
 		sess.Send(msg)
 	}else{
 		if srv.checkIfNameIsServer(name) {
@@ -60,7 +67,11 @@ func (srv *Server)SendTo(name string, msg *message.Message){
 }
 
 func (srv *Server)SendInstantTo(name string, msg *message.Message){
-	if sess, ok := srv.sessions[name]; ok {
+	srv.sessions.Lock()
+	sess, ok := srv.sessions.data[name]
+	srv.sessions.Unlock()
+
+	if ok {
 		sess.SendInstant(msg)
 	}else{
 		if srv.checkIfNameIsServer(name) {
@@ -72,7 +83,11 @@ func (srv *Server)SendInstantTo(name string, msg *message.Message){
 }
 
 func (srv *Server)UnlockSending(name string){
-	srv.sessions[name].UnlockSending()
+	srv.sessions.Lock()
+	sess := srv.sessions.data[name]
+	srv.sessions.Unlock()
+
+	sess.UnlockSending()
 }
 
 
@@ -122,15 +137,18 @@ func (srv *Server)dialAndSendName(name, ipport string)(net.Conn, error){
 func (srv *Server)CreateSession(name string, socket net.Conn){
 	msgHandler := messageHandler.NewMessageHandlerImpl(srv, srv.serverCrypto)
 
-	sess := session.NewSession(socket, name, msgHandler, srv)
+	sess := sessions.New(socket, name, msgHandler, srv)
 
 	go sess.Start()
-	srv.sessions[name] = sess
-	//TODO thread safe
+
+	srv.sessions.Lock()
+	srv.sessions.data[name] = sess
+	srv.sessions.Unlock()
 }
 
 func (srv *Server)RemoveSession(name string){
-	srv.sessions[name].DeleteSession()
-	delete(srv.sessions, name)
-	//TODO thread safe
+	srv.sessions.Lock()
+	srv.sessions.data[name].DeleteSession()
+	delete(srv.sessions.data, name)
+	srv.sessions.Unlock()
 }
