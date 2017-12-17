@@ -62,7 +62,28 @@ func SaveRSA(privateKeyRSA *rsa.PrivateKey, filename string) (err error){
 		},
 	)
 	err = ioutil.WriteFile(filename,pemdata,0644)
+
+	err = SaveRSAPublic(privateKeyRSA)
+
 	return err
+}
+
+func SaveRSAPublic(privateKeyRSA *rsa.PrivateKey)(error){
+
+	log.Println("xDD")
+
+	PubASN1, err := x509.MarshalPKIXPublicKey(&privateKeyRSA.PublicKey)
+	if err != nil {
+		return err
+	}
+
+	pubBytes := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: PubASN1,
+	})
+
+	ioutil.WriteFile("publicKeyRSA", pubBytes, 0644)
+	return nil
 }
 
 func LoadRSA(filename string) (*rsa.PrivateKey, error){
