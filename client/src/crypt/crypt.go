@@ -63,16 +63,11 @@ func SaveRSA(privateKeyRSA *rsa.PrivateKey, filename string) (err error){
 	)
 	err = ioutil.WriteFile(filename,pemdata,0644)
 
-	err = SaveRSAPublic(privateKeyRSA)
-
 	return err
 }
 
-func SaveRSAPublic(privateKeyRSA *rsa.PrivateKey)(error){
-
-	log.Println("xDD")
-
-	PubASN1, err := x509.MarshalPKIXPublicKey(&privateKeyRSA.PublicKey)
+func SaveRSAPublic(publicKeyRSA *rsa.PublicKey, filename string)(error){
+	PubASN1, err := x509.MarshalPKIXPublicKey(publicKeyRSA)
 	if err != nil {
 		return err
 	}
@@ -82,9 +77,33 @@ func SaveRSAPublic(privateKeyRSA *rsa.PrivateKey)(error){
 		Bytes: PubASN1,
 	})
 
-	ioutil.WriteFile("publicKeyRSA", pubBytes, 0644)
-	return nil
+	err = ioutil.WriteFile(filename, pubBytes, 0644)
+	return err
 }
+func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
+	key, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Print("Error reading public key.")
+		return nil, errors.New("error reading public key")
+	}
+	block, _ := pem.Decode(key)
+
+	publicKeyRSA, err := x509.ParsePKIXPublicKey(block.Bytes)
+
+	if err != nil {
+		log.Print("Failed to parse public key: " + err.Error())
+		return nil, err
+	}
+
+	switch pub := publicKeyRSA.(type){
+	case *rsa.PublicKey:
+		return pub, nil
+	default:
+		return nil, errors.New("error reading public key")
+	}
+}
+
+
 
 func LoadRSA(filename string) (*rsa.PrivateKey, error){
 	key, err := ioutil.ReadFile(filename)
