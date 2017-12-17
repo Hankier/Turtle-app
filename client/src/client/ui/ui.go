@@ -25,6 +25,7 @@ type UserInterface interface{
 	ConnectToServer(name string)error
 
 	GetServerList()([]string)
+	GetServerDetails(name string)([]string)
 
 	CreateConversation(receiver string, receiverServer string) (err error)
 	SendTo(receiverServer string, receiver string, message string)error
