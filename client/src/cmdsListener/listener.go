@@ -13,6 +13,7 @@ type Listener struct{
 	ui       ui.UserInterface
 	textrecv textReceiver.TextReceiver
 	run      bool
+	lastCmd  string
 }
 
 func New(ui ui.UserInterface, textrecv textReceiver.TextReceiver)(*Listener){
@@ -20,6 +21,7 @@ func New(ui ui.UserInterface, textrecv textReceiver.TextReceiver)(*Listener){
 	cmdl.ui = ui
 	cmdl.textrecv = textrecv
 	cmdl.run = true
+	cmdl.lastCmd = ""
 
 	return cmdl
 }
@@ -39,6 +41,13 @@ func (cmdl *Listener)Listen(){
 }
 
 func (cmdl *Listener)execCmd(cmd string){
+	//arrow up
+	if cmd == (string)([]byte{27, 91, 65}){
+		cmd = cmdl.lastCmd
+	}
+
+	cmdl.lastCmd = cmd
+
 	cmds := strings.Fields(cmd)
 	cmdl.textrecv.Print("command", cmd)
 
