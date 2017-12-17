@@ -8,6 +8,7 @@ import (
 	"srvlist"
 	"sessions"
 	"errors"
+	"srvlist/entry"
 )
 
 type Server struct{
@@ -25,6 +26,13 @@ func NewServer(name string)(*Server){
 	srv.myName = name
 	//TODO Downloading server list from DA
 	srv.serverList = srvlist.New()
+	srv.serverList = srvlist.New()
+	//TODO remove debug data
+	serverListMap := make(map[string]*entry.Entry)
+	serverListMap["00000000"] = entry.New("00000000", "127.0.0.1:8080", nil, nil)
+	serverListMap["00000001"] = entry.New("00000001", "127.0.0.1:8082", nil, nil)
+	serverListMap["00000002"] = entry.New("00000002", "127.0.0.1:8084", nil, nil)
+	srv.serverList.SetList(serverListMap)
 	srv.sessionsContr = sessions.New(srv, srv)
 	srv.wg.Add(2)
 	return srv
