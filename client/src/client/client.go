@@ -16,6 +16,7 @@ import (
 	"golang.org/x/crypto/openpgp/elgamal"
 	"crypt"
 	"strconv"
+	"strings"
 )
 
 /*
@@ -48,13 +49,8 @@ func New(name string)(*Client){
 
 	cli.srvList = srvlist.New()
 	//TODO remove debug data
-	serverListMap := make(map[string]*entry.Entry)
+	serverListMap := cli.debugGetServers()
 
-	cli.debugGetServers()
-
-	serverListMap["00000000"] = entry.New("00000000", "127.0.0.1:8080", nil, nil)
-	serverListMap["00000001"] = entry.New("00000001", "127.0.0.1:8082", nil, nil)
-	serverListMap["00000002"] = entry.New("00000002", "127.0.0.1:8084", nil, nil)
 	cli.srvList.SetList(serverListMap)
 
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
@@ -93,14 +89,13 @@ func (cli *Client)debugGetServers()(map[string]*entry.Entry){
 			ipportFile, err := ioutil.ReadFile(currPath + ipportString)
 			if err != nil {	log.Fatal(err) }
 
-			ipport = string(ipportFile)
+			ipport = strings.TrimSpace(string(ipportFile))
 
 			currPath = servPath + name
 
-			privRsa, err := crypt.LoadRSA(currPath + pubRSAString)
-			if err == nil{
-				pubRSA = &privRsa.PublicKey
-			}else {
+			pubRSA, err = crypt.LoadRSAPublic(currPath + pubRSAString)
+			if err != nil{
+				log.Println(err)
 				pubRSA = nil
 			}
 
@@ -119,7 +114,7 @@ func (cli *Client)debugGetServers()(map[string]*entry.Entry){
 		}
 	}
 
-	return nil
+	return srvMap
 }
 
 //Starts listening for commands
@@ -178,10 +173,10 @@ func (cli *Client)GetServerDetails(name string)[]string{
 	details := make([]string, 1)
 	details[0], _ = cli.srvList.GetServerIpPort(name)
 	encrypter, _ := cli.srvList.GetEncrypter(name)
-	rsa := encrypter.GetPublicKeyRSA()
+	rsaKey := encrypter.GetPublicKeyRSA()
 	elg := encrypter.GetPublicKeyElGamal()
-	if rsa != nil{
-		details = append(details, "rsa: " + strconv.Itoa(rsa.E))
+	if rsaKey != nil{
+		details = append(details, "rsa: " + strconv.Itoa(rsaKey.E))
 	}
 	if elg != nil{
 		details = append(details, "elgamal: " + elg.Y.String())
