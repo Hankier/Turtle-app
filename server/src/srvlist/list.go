@@ -18,15 +18,13 @@ type ServerList struct{
 func New()(*ServerList)  {
 	sli := new(ServerList)
 
-	//TODO debug remove hardcoded serverEntry info
-
 	sli.list = make(map[string]*entry.Entry)
 
-	sli.list["00000000"] = entry.New("00000000", "127.0.0.1:8080", nil, nil)
-	sli.list["00000001"] = entry.New("00000001", "127.0.0.1:8082", nil, nil)
-	sli.list["00000002"] = entry.New("00000002", "127.0.0.1:8084", nil, nil)
-
 	return sli
+}
+
+func (sli *ServerList)SetList(list map[string]*entry.Entry){
+	sli.list = list;
 }
 
 func (sli *ServerList)GetServerIpPort(name string)(string, error){

@@ -1,21 +1,22 @@
 package server
 
 import (
-	"connectionListener"
 	"sync"
 	"log"
 	"net"
 	"srvlist"
 	"sessions"
 	"errors"
+	"srvlist/entry"
+	"server/listener"
 )
 
 type Server struct{
 	myName string
 	serverList *srvlist.ServerList
 	sessionsContr *sessions.Controller
-	clientListener *connectionListener.ConnectionListener
-	serverListener *connectionListener.ConnectionListener
+	clientListener *listener.Listener
+	serverListener *listener.Listener
 	wg sync.WaitGroup
 }
 
@@ -25,6 +26,13 @@ func NewServer(name string)(*Server){
 	srv.myName = name
 	//TODO Downloading server list from DA
 	srv.serverList = srvlist.New()
+	srv.serverList = srvlist.New()
+	//TODO remove debug data
+	serverListMap := make(map[string]*entry.Entry)
+	serverListMap["00000000"] = entry.New("00000000", "127.0.0.1:8080", nil, nil)
+	serverListMap["00000001"] = entry.New("00000001", "127.0.0.1:8082", nil, nil)
+	serverListMap["00000002"] = entry.New("00000002", "127.0.0.1:8084", nil, nil)
+	srv.serverList.SetList(serverListMap)
 	srv.sessionsContr = sessions.New(srv, srv)
 	srv.wg.Add(2)
 	return srv
@@ -32,11 +40,11 @@ func NewServer(name string)(*Server){
 
 func (srv *Server)Start(clientPort, serverPort string)error{
 	var err error
-	srv.clientListener, err = connectionListener.NewConnectionListener(clientPort, srv.sessionsContr)
+	srv.clientListener, err = listener.New(clientPort, srv.sessionsContr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv.serverListener, err = connectionListener.NewConnectionListener(serverPort, srv.sessionsContr)
+	srv.serverListener, err = listener.New(serverPort, srv.sessionsContr)
 	if err != nil {
 		log.Fatal(err)
 	}

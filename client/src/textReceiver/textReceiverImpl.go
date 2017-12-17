@@ -13,8 +13,12 @@ type TextReceiverImpl struct{
 
 }
 
-func (*TextReceiverImpl)Print(from string, text string){
-	paddinglen := 10 - len(from)
+func (*TextReceiverImpl)Print(cmd string, text string){
+	const maxcmd = 20
+	if len(cmd) >= maxcmd{
+		cmd = cmd[0:maxcmd]
+	}
+	paddinglen := maxcmd - len(cmd)
 	if paddinglen < 0 {paddinglen = 0}
-	fmt.Println("type: " + from + strings.Repeat(" ", paddinglen) + " - content: " + text)
+	fmt.Println(cmd + strings.Repeat(" ", paddinglen) + ": " + text)
 }
