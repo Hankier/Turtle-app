@@ -20,6 +20,7 @@ func New()(*DecrypterImpl){
 	if err != nil{
 		privRSA = crypt.GenerateRSA()
 		crypt.SaveRSA(privRSA, "privateKeyRSA")
+		crypt.SaveRSAPublic(&privRSA.PublicKey, "publicKeyRSA")
 	}
 	nc.privRSA = privRSA
 
@@ -30,6 +31,7 @@ func New()(*DecrypterImpl){
 	if err != nil{
 		privElGamal = crypt.GenerateElGamal()
 		crypt.SaveElGamal(privElGamal, "privateKeyElGamal")
+		//TODO saving public key
 	}
 	nc.privElGamal = privElGamal
 
