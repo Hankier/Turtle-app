@@ -10,11 +10,15 @@ import (
 	"strconv"
 )
 
+//ServerList class handling operations on server entries thread-safely
 type ServerList struct{
-	listmutex sync.Mutex
-	list      map[string]*entry.Entry
+	listmutex sync.Mutex				//mutex to keep on-list operations thread-safe
+	list      map[string]*entry.Entry	//a map of server entries with names as keys
 }
 
+
+//ServerList constructor
+//Creates a map of server entries with names as keys
 func New()(*ServerList)  {
 	sli := new(ServerList)
 
@@ -29,6 +33,7 @@ func New()(*ServerList)  {
 	return sli
 }
 
+//GetServerIpPort returns a string with with format ip:port of server of given name or an error if there is no server of given name
 func (sli *ServerList)GetServerIpPort(name string)(string, error){
 
 	sli.listmutex.Lock()
@@ -42,6 +47,8 @@ func (sli *ServerList)GetServerIpPort(name string)(string, error){
 	return "", errors.New("no such server on the list")
 }
 
+
+//GetEncrypter returns an encrypter object of server of a given name or an error if there is no server of given name
 func (sli *ServerList)GetEncrypter(name string)(crypt.Encrypter, error){
 	sli.listmutex.Lock()
 	entr, ok := sli.list[name]
@@ -53,6 +60,12 @@ func (sli *ServerList)GetEncrypter(name string)(crypt.Encrypter, error){
 	return nil, errors.New("no such server on the list")
 }
 
+//Generates a cryptographically secure random path and returnes it as a slice of strings representing names of consecutive nodes(servers)
+//Returns mentioned slice and nil if all went well
+//Returns nil and error in the following cases:
+// -path length is smaller than 0
+// -there are less than two servers to generate path from (if path length is longer than 1), because two consecutive servers cannot be same
+// -occurred an error creating crypto/rand number
 func (sli *ServerList)GetRandomPath(length int)([]string, error){
 	if length < 1{
 		if length < 0{
@@ -65,7 +78,7 @@ func (sli *ServerList)GetRandomPath(length int)([]string, error){
 
 	serversLen := len(names)
 
-	if serversLen < 2{
+	if serversLen < 2 && length > 1{
 		return nil, errors.New("too few servers to create a path");
 	}
 
@@ -107,6 +120,7 @@ func (sli *ServerList)GetRandomPath(length int)([]string, error){
 	return pathStr, nil
 }
 
+//GetServerList returns a slice of all known server names
 func (sli *ServerList)GetServerList()[]string{
 	names := make([]string, 0, len(sli.list))
 	sli.listmutex.Lock()
