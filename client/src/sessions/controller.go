@@ -7,6 +7,7 @@ import (
 	"errors"
 	"convos/receiver"
 	"sync"
+	"log"
 )
 
 type Controller struct{
@@ -32,6 +33,7 @@ func (c *Controller)CreateSession(name string, socket net.Conn){
 	c.sessions.Lock()
 	c.sessions.data[name] = sess
 	c.sessions.Unlock()
+	log.Print("Creating session with: " + name)
 }
 
 func (c *Controller)RemoveSession(name string){
@@ -39,6 +41,7 @@ func (c *Controller)RemoveSession(name string){
 	c.sessions.data[name].DeleteSession()
 	delete(c.sessions.data, name)
 	c.sessions.Unlock()
+	log.Print("Removing session with: " + name)
 }
 
 func (c *Controller)GetActiveSessions()[]string{

@@ -131,14 +131,15 @@ func (msgb *Builder)Build()(*msg.Message, error){
 
 	var srvEncrypter crypt.Encrypter
 
-	for i := 0; i < len(msgb.path); i++{
-		srvEncrypter, err = msgb.srvList.GetEncrypter(msgb.path[i])
+	pathLen := len(msgb.path)
+	for i := 0; i < pathLen; i++{
+		srvEncrypter, err = msgb.srvList.GetEncrypter(msgb.path[pathLen - i - 1])
 		if err != nil{	return nil, err	}
 
 		piece, err = msgb.createPiece(msgPieces[i+1], srvEncrypter)
 		if err != nil{	return nil, err	}
 
-		msgPieces[i+2] = ([]byte)(msgb.path[i])
+		msgPieces[i+2] = ([]byte)(msgb.path[pathLen - i - 1])
 		msgPieces[i+2] = append(msgPieces[i+2], piece.ToBytes()...)
 	}
 

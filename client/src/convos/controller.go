@@ -57,6 +57,7 @@ func (c *Controller)GetActiveConversations()[]*struct{
 func (c *Controller)OnReceive(from string, content []byte){
 	server := from[0:8]
 	name := from[8:16]
+	//TODO thread safe
 	conv, ok := c.conversations.data[from]
 	if !ok{
 		c.CreateConversation(server, name)

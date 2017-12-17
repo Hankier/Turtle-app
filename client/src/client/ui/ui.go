@@ -27,5 +27,5 @@ type UserInterface interface{
 	GetServerList()([]string)
 
 	CreateConversation(receiver string, receiverServer string) (err error)
-	SendTo(message string, receiverServer string, receiver string)error
+	SendTo(receiverServer string, receiver string, message string)error
 }
