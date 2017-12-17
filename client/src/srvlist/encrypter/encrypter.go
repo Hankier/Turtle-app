@@ -18,6 +18,14 @@ func New(pubRSA *rsa.PublicKey, pubElGamal *elgamal.PublicKey)(*ServerEncrypterI
 	return enc
 }
 
+func (enc *ServerEncrypterImpl)GetPublicKeyRSA() *rsa.PublicKey{
+	return enc.pubRSA;
+}
+
+func (enc *ServerEncrypterImpl)GetPublicKeyElGamal() *elgamal.PublicKey{
+	return enc.pubElGamal;
+}
+
 func (enc *ServerEncrypterImpl)Encrypt(enctype crypt.TYPE, msg []byte)([]byte, error){
 	switch enctype {
 	case crypt.PLAIN:

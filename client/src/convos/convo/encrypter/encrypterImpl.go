@@ -73,3 +73,11 @@ func (recv *EncrypterImpl)Encrypt(encType crypt.TYPE, msg []byte)([]byte, error)
 
 	return msg, nil
 }
+
+func (enc *EncrypterImpl)GetPublicKeyRSA() *rsa.PublicKey{
+	return enc.pubRSA;
+}
+
+func (enc *EncrypterImpl)GetPublicKeyElGamal() *elgamal.PublicKey{
+	return enc.pubElGamal;
+}
