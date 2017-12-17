@@ -7,6 +7,7 @@ import (
 	"strings"
 	"strconv"
 	"client/ui"
+	"log"
 )
 
 type Listener struct{
@@ -31,8 +32,11 @@ func (cmdl *Listener)Listen(){
 
 	for cmdl.run{
 		text, err := reader.ReadString('\n')
-		text = text[:len(text) - 1] //cut newline
+		if len(text) > 0 {
+			text = text[:len(text) - 1] //cut newline
+		}
 		if err != nil{
+			log.Println(err)
 			cmdl.run = false
 		} else {
 			cmdl.execCmd(text)
