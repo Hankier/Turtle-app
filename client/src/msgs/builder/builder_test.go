@@ -114,19 +114,15 @@ func TestMessageBuilder_BuildNoPath(t *testing.T) {
 	serverlist.SetList(serverListMap)
 	msgb := New(serverlist, mcmb, mch)
 
-	expected := ([]byte)("  00000002  00000001  recvserv  recvrecv  0000000010000000  abcd")
+	expected := ([]byte)("  myserver  myclient  myservermyclient  abcd")
 	expected[0] = 0
 	expected[1] = 0
 	expected[10] = 0
 	expected[11] = 0
 	expected[20] = 0
 	expected[21] = 0
-	expected[30] = 0
-	expected[31] = 0
-	expected[40] = 0
-	expected[41] = 0
-	expected[58] = 0
-	expected[59] = 0
+	expected[38] = 0
+	expected[39] = 0
 
 	msgString := "abcd"
 

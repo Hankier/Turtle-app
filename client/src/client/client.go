@@ -58,6 +58,10 @@ func New(name string)(*Client){
 	return cli
 }
 
+func (cli *Client)debugGetServers()(map[string]*entry.Entry){
+	return nil
+}
+
 //Starts listening for commands
 func (cli *Client)Start(){
 	cli.commandsListener.Listen()
