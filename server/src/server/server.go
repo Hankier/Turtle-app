@@ -1,92 +1,50 @@
 package server
 
 import (
-	"connectionListener"
 	"sync"
-	"cryptographer"
 	"log"
 	"net"
-	"serverEntry"
-	"session"
-	"messageHandler"
-	"message"
+	"srvlist"
+	"sessions"
+	"errors"
+	"srvlist/entry"
+	"server/listener"
 )
 
 type Server struct{
-	sessions map[string]*session.Session
-	clientListener *connectionListener.ConnectionListener
-	serverListener *connectionListener.ConnectionListener
-	serverList map[string]*serverEntry.ServerEntry
-	serverCrypto *cryptographer.NodeCrypto
-	wg sync.WaitGroup
 	myName string
+	serverList *srvlist.ServerList
+	sessionsContr *sessions.Controller
+	clientListener *listener.Listener
+	serverListener *listener.Listener
+	wg sync.WaitGroup
 }
 
 func NewServer(name string)(*Server){
 	srv := new(Server)
 
-	srv.sessions = make(map[string]*session.Session)
-
 	srv.myName = name
-
 	//TODO Downloading server list from DA
-
-	srv.serverList = make(map[string]*serverEntry.ServerEntry)
-
-	pk := make([]byte, 256)
-
-	srv.serverList["00000000"] = serverEntry.NewServerEntry("00000000", "127.0.0.1:8081", pk)
-	srv.serverList["00000001"] = serverEntry.NewServerEntry("00000001", "127.0.0.1:8083", pk)
-	srv.serverList["00000002"] = serverEntry.NewServerEntry("00000002", "127.0.0.1:8085", pk)
+	srv.serverList = srvlist.New()
+	srv.serverList = srvlist.New()
+	//TODO remove debug data
+	serverListMap := make(map[string]*entry.Entry)
+	serverListMap["00000000"] = entry.New("00000000", "127.0.0.1:8080", nil, nil)
+	serverListMap["00000001"] = entry.New("00000001", "127.0.0.1:8082", nil, nil)
+	serverListMap["00000002"] = entry.New("00000002", "127.0.0.1:8084", nil, nil)
+	srv.serverList.SetList(serverListMap)
+	srv.sessionsContr = sessions.New(srv, srv)
 	srv.wg.Add(2)
-	srv.serverCrypto = cryptographer.NewNodeCrypto();
 	return srv
 }
 
-func checkIfNameIsServer(name string)bool{
-	if name[0] == '0'{
-		return true;
-	}else {
-		return false
-	}
-}
-
-func (srv *Server)SendTo(name string, msg *message.Message){
-	if sess, ok := srv.sessions[name]; ok {
-		sess.Send(msg)
-	}else{
-		if checkIfNameIsServer(name) {
-			if srv.connectToServer(name){
-				srv.SendTo(name, msg)
-			}
-		}
-	}
-}
-
-func (srv *Server)SendInstantTo(name string, msg *message.Message){
-	if sess, ok := srv.sessions[name]; ok {
-		sess.SendInstant(msg)
-	}else{
-		if checkIfNameIsServer(name) {
-			if srv.connectToServer(name){
-				srv.SendTo(name, msg)
-			}
-		}
-	}
-}
-
-func (srv *Server)UnlockSending(name string){
-	srv.sessions[name].UnlockSending()
-}
-
-
 func (srv *Server)Start(clientPort, serverPort string)error{
 	var err error
-	srv.clientListener, err = connectionListener.NewConnectionListener(clientPort, srv)
+	srv.clientListener, err = listener.New(clientPort, srv.sessionsContr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv.serverListener, err = connectionListener.NewConnectionListener(serverPort, srv)
+	srv.serverListener, err = listener.New(serverPort, srv.sessionsContr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,34 +58,41 @@ func (srv *Server)Start(clientPort, serverPort string)error{
 	return err
 }
 
-func (srv *Server)connectToServer(name string)bool{
-	if server, ok := srv.serverList[name]; ok{
-		socket, err := net.Dial("tcp", server.Ip_port)
+
+func (srv *Server)ConnectToServer(name string)error{
+
+	if ipport, ok := srv.serverList.GetServerIpPort(name); ok == nil{
+		socket, err := srv.dialAndSendName(name, ipport)
 		if err != nil {
-			log.Print("Error connecting to server " + name + " " + err.Error())
-			return false
+			return err
 		}
-		socket.Write([]byte(srv.myName))
-		srv.CreateSession(name, socket)
+		srv.sessionsContr.CreateSession(name, socket)
 		log.Print("Succesfully connected to " + name)
-		return true
+	} else {
+		return errors.New("no server on list " + name)
 	}
-	log.Print("No server on list " + name)
+	return nil
+}
+
+func (srv *Server)dialAndSendName(name, ipport string)(net.Conn, error){
+	socket, err := net.Dial("tcp", ipport)
+	if err != nil {
+		log.Print("Error connecting to server " + name + " " + err.Error())
+		return nil, err
+	}
+	socket.Write([]byte(srv.myName))
+	return socket, nil
+}
+
+func (srv *Server)checkIfNameIsServer(name string)bool{
+	for _, server := range srv.serverList.GetServerList(){
+		if server == name{
+			return true
+		}
+	}
 	return false
 }
 
-func (srv *Server)CreateSession(name string, socket net.Conn){
-	msgHandler := messageHandler.NewMessageHandlerImpl(srv, srv.serverCrypto)
-
-	sess := session.NewSession(socket, name, msgHandler, srv)
-
-	go sess.Start()
-	srv.sessions[name] = sess
-	//TODO thread safe
-}
-
-func (srv *Server)RemoveSession(name string){
-	srv.sessions[name].DeleteSession()
-	delete(srv.sessions, name)
-	//TODO thread safe
+func (srv *Server)GetName()string{
+	return srv.myName
 }

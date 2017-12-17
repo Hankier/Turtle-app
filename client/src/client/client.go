@@ -1,99 +1,80 @@
 package client
 
 import (
-	"session"
 	"srvlist"
 	"log"
 	"net"
-	"messageHandler"
-	"cryptographer"
-	"errors"
-	"message"
 	"textReceiver"
-	"conversation"
-	"messageBuilder"
-	"sync"
-	"commandsListener"
+	"msgs/builder"
+	"sessions"
+	"convos"
+	"errors"
+	"cmdsListener"
+	"srvlist/entry"
 )
 
+/*
+Client class implementing UserInterface, (sessions)Receiver, (conversation)Receiver and CredentialHolder interfaces
+Main class of the program
+*/
 type Client struct{
-	srvList        *srvlist.ServerList
-	sess           *session.Session
-	cmdListener	   *commandsListener.CommandsListener
-	nodeCrypto     cryptographer.Cryptographer
-	currentPath    []string
-	convosMutex	   sync.Mutex
-	conversations  map[string]*conversation.Conversation
-	messageBuilder *messageBuilder.MessageBuilder
-	textReceiver   textReceiver.TextReceiver
-	myName         string
+	myName         string					//name of self
+	srvList        *srvlist.ServerList		//serverList object for operations on servers
+	sessionsContr  *sessions.Controller		//controller for operations on sessions
+	convosContr	   *convos.Controller		//controller for operations on conversations
+	currentPath    []string					//slice of server names representing current path to send messages by
+	msgsBuilder    *builder.Builder			//builder object for creating ready-to-send messages to send
+	textReceiver   textReceiver.TextReceiver//text receiver to forward to controllers
+	commandsListener *cmdsListener.Listener	//listener handling given commands
 }
 
-func NewClient(name string)(*Client){
+//New is a constructor
+//Creates Client with a given name
+//Initializes empty textReceiver Object,
+//serverList created via its constructor
+//conversationsController crated via its constructor, with created textReceiver and self (as CredentialsHolder) as parameters
+//sessionsController created via its constructor, with created convosContr as parameter
+//messageBuilder created via its constructor, with serverList, convosContr and self (as CredentialsHolder) as parameters
+//commandsListener created via its constructor, with self(as UserInterface) and textReceiver as parameters
+func New(name string)(*Client){
 	cli := new(Client)
 
 	cli.myName = name
+
 	cli.srvList = srvlist.New()
-	cli.nodeCrypto = cryptographer.New()
+	//TODO remove debug data
+	serverListMap := make(map[string]*entry.Entry)
+	serverListMap["00000000"] = entry.New("00000000", "127.0.0.1:8080", nil, nil)
+	serverListMap["00000001"] = entry.New("00000001", "127.0.0.1:8082", nil, nil)
+	serverListMap["00000002"] = entry.New("00000002", "127.0.0.1:8084", nil, nil)
+	cli.srvList.SetList(serverListMap)
+
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
-	cli.messageBuilder = messageBuilder.NewMessageBuilder(cli.srvList)
-	cli.messageBuilder.SetMyName(cli.myName)
-	cli.cmdListener = commandsListener.New(cli, cli.textReceiver)
-	cli.conversations = make(map[string]*conversation.Conversation)
+	cli.convosContr = convos.New(cli.textReceiver, cli)
+	cli.sessionsContr = sessions.New(cli.convosContr)
+	cli.msgsBuilder = builder.New(cli.srvList, cli.convosContr, cli)
+	cli.commandsListener = cmdsListener.New(cli, cli.textReceiver)
 
 	return cli
 }
 
+func (cli *Client)debugGetServers()(map[string]*entry.Entry){
+	return nil
+}
+
+//Starts listening for commands
 func (cli *Client)Start(){
-	cli.cmdListener.Listen()
+	cli.commandsListener.Listen()
 }
 
-func (cli *Client)CreateSession(name string, socket net.Conn){
-	if cli.sess != nil{
-		cli.RemoveSession()
-	}
-	msgHandler := messageHandler.New(cli, cli, cli.nodeCrypto)
-
-	sess := session.New(socket, name, msgHandler, cli)
-
-	go sess.Start()
-	cli.sess = sess
-	//TODO thread safe
-}
-
-func (cli *Client)RemoveSession(){
-	cli.sess.DeleteSession()
-	cli.sess = nil
-}
-
-func (cli *Client)Send(msg *message.Message)error{
-	if cli.sess != nil{
-		cli.sess.Send(msg)
-		return nil
-	}else{
-		log.Println("Not connected to any server\n");
-		return errors.New("NOT CONNECTED")
-	}
-}
-
-func (cli *Client)SendInstant(msg *message.Message)error{
-	if cli.sess != nil{
-		cli.sess.SendInstant(msg)
-		return nil
-	}else{
-		log.Println("Not connected to any server\n");
-		return errors.New("NOT CONNECTED")
-	}
-}
-
-func (cli *Client)UnlockSending(){
-	cli.sess.UnlockSending()
-}
-
+//GetCurrentPath eturns a slice of server names as strings representing consecutive nodes of path in reverse order
 func (cli *Client)GetCurrentPath() []string{
 	return cli.currentPath
 }
 
+//ChooseNewPath generates a new random path and assigns it as a current path
+//Returns nil and error if serverList object encountered a problem generating a path
+//Returns generated path and nil if all went well
 func (cli *Client)ChooseNewPath(length int)([]string, error){
 	var err error
 	cli.currentPath, err = cli.srvList.GetRandomPath(length)
@@ -105,82 +86,85 @@ func (cli *Client)ChooseNewPath(length int)([]string, error){
 	return cli.currentPath, nil
 }
 
+//ConnectToServer tries to connect to server of a given name and writes self's name to it
+//Removes all active sessions
+//Furthermore it creates a new session with the server it newly connected to
+//Returns error if there is no server named as required or there are problems with connection
+//Returns nil if all went well
 func (cli *Client)ConnectToServer(name string)error{
-	socket, err := net.Dial("tcp", cli.srvList.GetServerIpPort(name))
-	if err != nil {
-		return err
-	}
+
+	srvPort, err := cli.srvList.GetServerIpPort(name)
+	if err != nil {	return err	}
+
+	socket, err := net.Dial("tcp", srvPort)
+	if err != nil {	return err	}
+
 	socket.Write([]byte(cli.myName))
-	cli.messageBuilder.SetMyServer(name)
-	cli.CreateSession(name, socket)
+	activeSessions := cli.sessionsContr.GetActiveSessions()
+	for i := 0; i < len(activeSessions); i++{
+		cli.sessionsContr.RemoveSession(activeSessions[i])
+	}
+	cli.sessionsContr.CreateSession(name, socket)
 	log.Print("Succesfully connected to " + name)
 	return nil
 }
 
+//GetServerList returns a slice of all known server names as strings
 func (cli *Client)GetServerList()[]string{
 	return cli.srvList.GetServerList()
 }
 
-func (cli *Client)CreateConversation(receiver string, receiverServer string) (convo *conversation.Conversation, err error){
-	name := receiverServer + receiver
+//SendTo tries to send a message specified in a command to a receiver which should be connected to given receiverServer
+//Returns error in case:
+// -builder object encountered a problem creating a ready-to-send message from given parameters
+// -client is not connected to any server
+// -sessionsController encountered a problem sending message
+//Return nil if all went well
+func (cli *Client)SendTo(receiverServer string, receiver string, command string)error{
 
-	cli.convosMutex.Lock()
-	convo, ok := cli.conversations[name]
-	if !ok{
-		convo = conversation.NewConversation(cli.textReceiver, receiver, receiverServer)
-		cli.conversations[name] = convo
-	} else {
-		err = errors.New("conversation already exists")
-	}
-	cli.convosMutex.Unlock()
-	return convo, err
-}
-
-func (cli *Client)SendTo(message string, receiver string, receiverServer string)error{
-	name := receiverServer + receiver
-
-	cli.convosMutex.Lock()
-	convo, ok := cli.conversations[name]
-	cli.convosMutex.Unlock()
-	if !ok{
-		newConvo, err := cli.CreateConversation(receiver, receiverServer)
-		if err != nil{
-			return err
-		}
-		convo = newConvo
-	}
-	cli.messageBuilder.
-		SetMsgString(message).
-		SetMsgContentBuilder(convo.MessageBuilder()).
-		SetReceiverEncrypter(convo.Encrypter()).
+	cli.msgsBuilder.SetCommand(command).
 		SetReceiver(receiver).SetReceiverServer(receiverServer).
 		SetPath(cli.currentPath)
 
-	msg, err := cli.messageBuilder.Build()
+	message, err := cli.msgsBuilder.Build()
 	if err != nil {
 		return err
 	}
 
-	err = cli.Send(msg)
+	currentServer, err := cli.GetCurrentServer()
+	if err != nil {
+		return err
+	}
+
+	err = cli.sessionsContr.Send(currentServer, message.ToBytes())
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (cli *Client)ReceiveMessage(content []byte, receiver string, receiverServer string)error{
-	name := receiverServer + receiver
-	cli.convosMutex.Lock()
-	convo, ok := cli.conversations[name]
-	cli.convosMutex.Unlock()
-	if !ok{
-		newConvo, err := cli.CreateConversation(receiver, receiverServer)
-		if err != nil{
-			return err
-		}
-		convo = newConvo
-	}
-	convo.Receive(content)
-	return nil
+//OnReceive passes received content from another server to convosController method OnReceive
+func (cli *Client)OnReceive(from string, content []byte){
+	cli.convosContr.OnReceive(from, content)
 }
 
+//CreateConversation passes given parameters to convosController CreateConversation method
+//Returns error accordingly to that function
+func (cli *Client)CreateConversation(receiverServer string, receiver string) (err error){
+	return cli.convosContr.CreateConversation(receiverServer, receiver)
+}
+
+//GetName returns client's name
+func (cli *Client)GetName()string{
+	return cli.myName
+}
+
+//GetCurrentServer returns name of a server client is currently connected to
+//Returns empty string and an error if client is not connected to any server
+func (cli *Client)GetCurrentServer()(string, error){
+	sessionsNames := cli.sessionsContr.GetActiveSessions()
+	if len(sessionsNames) < 1{
+		return "", errors.New("no active session")
+	}
+	return sessionsNames[0], nil
+}
