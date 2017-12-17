@@ -15,6 +15,7 @@ import (
 	"crypto/rsa"
 	"golang.org/x/crypto/openpgp/elgamal"
 	"crypt"
+	"strconv"
 )
 
 /*
@@ -171,6 +172,21 @@ func (cli *Client)ConnectToServer(name string)error{
 //GetServerList returns a slice of all known server names as strings
 func (cli *Client)GetServerList()[]string{
 	return cli.srvList.GetServerList()
+}
+
+func (cli *Client)GetServerDetails(name string)[]string{
+	details := make([]string, 1)
+	details[0], _ = cli.srvList.GetServerIpPort(name)
+	encrypter, _ := cli.srvList.GetEncrypter(name)
+	rsa := encrypter.GetPublicKeyRSA()
+	elg := encrypter.GetPublicKeyElGamal()
+	if rsa != nil{
+		details = append(details, "rsa: " + strconv.Itoa(rsa.E))
+	}
+	if elg != nil{
+		details = append(details, "elgamal: " + elg.Y.String())
+	}
+	return details
 }
 
 //SendTo tries to send a message specified in a command to a receiver which should be connected to given receiverServer

@@ -13,6 +13,7 @@ type Listener struct{
 	ui       ui.UserInterface
 	textrecv textReceiver.TextReceiver
 	run      bool
+	lastCmd  string
 }
 
 func New(ui ui.UserInterface, textrecv textReceiver.TextReceiver)(*Listener){
@@ -20,6 +21,7 @@ func New(ui ui.UserInterface, textrecv textReceiver.TextReceiver)(*Listener){
 	cmdl.ui = ui
 	cmdl.textrecv = textrecv
 	cmdl.run = true
+	cmdl.lastCmd = ""
 
 	return cmdl
 }
@@ -39,25 +41,53 @@ func (cmdl *Listener)Listen(){
 }
 
 func (cmdl *Listener)execCmd(cmd string){
+	//arrow up
+	if cmd == (string)([]byte{27, 91, 65}){
+		cmd = cmdl.lastCmd
+	}
+
+	cmdl.lastCmd = cmd
+
 	cmds := strings.Fields(cmd)
 	cmdl.textrecv.Print("command", cmd)
 
-	if len(cmds) > 0 {
+	cmdnum := len(cmds)
+
+	if cmdnum > 0 {
 		switch cmds[0] {
 		case "get":
-			if len(cmds) > 1 {
+			if cmdnum > 1 {
 				switch cmds[1] {
 				case "path":
 					cmdl.textrecv.Print("path", strings.Join(cmdl.ui.GetCurrentPath(), " "))
 				case "servers":
-					cmdl.textrecv.Print("servers", strings.Join(cmdl.ui.GetServerList(), " "))
+					if cmdnum > 2{
+						if cmds[2] == "details"{
+							details := "\n"
+							serverList := cmdl.ui.GetServerList()
+							for _, server := range serverList {
+								srvDetails := cmdl.ui.GetServerDetails(server)
+								details += server + "\n"
+								for _, srvDetail := range srvDetails{
+									details += srvDetail + "\n"
+								}
+								details += "\n"
+							}
+							cmdl.textrecv.Print("servers details", details)
+						} else {
+							cmdl.textrecv.Print("error", "usage: get servers details")
+						}
+
+					} else {
+						cmdl.textrecv.Print("servers", strings.Join(cmdl.ui.GetServerList(), " "))
+					}
 				}
 			} else {
 				cmdl.textrecv.Print("error", "usage: get path, get servers")
 			}
 			break
 		case "connect":
-			if len(cmds) > 1 {
+			if cmdnum > 1 {
 				err := cmdl.ui.ConnectToServer(cmds[1])
 				if err != nil {
 					cmdl.textrecv.Print("Error: ", "Wrong server")
@@ -69,10 +99,10 @@ func (cmdl *Listener)execCmd(cmd string){
 			}
 			break
 		case "new":
-			if len(cmds) > 1 {
+			if cmdnum > 1 {
 				switch cmds[1] {
 				case "convo":
-					if len(cmds) > 3 {
+					if cmdnum > 3 {
 						err := cmdl.ui.CreateConversation(cmds[2], cmds[3])
 						if err != nil {
 							cmdl.textrecv.Print("Error: ", err.Error())
@@ -83,7 +113,7 @@ func (cmdl *Listener)execCmd(cmd string){
 						cmdl.textrecv.Print("error", "usage: new convo clientName serverName")
 					}
 				case "path":
-					if len(cmds) > 2 {
+					if cmdnum > 2 {
 						length, err := strconv.Atoi(cmds[2])
 						if err != nil {
 							cmdl.textrecv.Print("Error: ", err.Error())
@@ -104,7 +134,7 @@ func (cmdl *Listener)execCmd(cmd string){
 			}
 			break
 		case "send":
-			if len(cmds) > 2 {
+			if cmdnum > 2 {
 				receiverServer := cmds[1]
 				receiver := cmds[2]
 				message := strings.Join(cmds[3:], " ")

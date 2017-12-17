@@ -2,9 +2,11 @@ package serverlist
 
 import (
 	"sync"
-	"../entry"
+	"entry"
 	"strconv"
 	"strings"
+	"errors"
+	"io/ioutil"
 )
 
 type ServerList struct{
@@ -13,13 +15,25 @@ type ServerList struct{
 }
 
 
-func (sli *ServerList)GetServerIpPort(name string)(string){
+func (sli *ServerList)GetServerIpPort(name string)(string, error){
+
 	sli.listmutex.Lock()
-	ret := sli.list[name].Ip_port
+	ret, ok := sli.list[name];
+	sli.listmutex.Unlock()
+
+	if  ok{
+		return ret.Ip_port, nil
+	}
+
+	return "", errors.New("no such server on the list")
+}
+
+func (sli *ServerList)GetServerKey(name string)([]byte){
+	sli.listmutex.Lock()
+	ret := sli.list[name].PublicKey
 	sli.listmutex.Unlock()
 	return ret
 }
-
 
 func (sli *ServerList)GetServerList()[]string{
 	names := make([]string, 0, len(sli.list))
@@ -50,6 +64,17 @@ func (sli *ServerList)RemoveServerFromList(name string)(*ServerList){
 	delete(sli.list, name)
 
 	return sli
+}
+
+func SaveListToFile(sli *ServerList, filename string) (err error) {
+
+	//TODO write list to file
+	//ioutil.WriteFile()
+}
+
+func GetListFromFile(filename string) (sli *ServerList,error) {
+
+	//TODO get list from file
 }
 
 func NewList()(*ServerList)  {
