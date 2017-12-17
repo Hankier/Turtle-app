@@ -29,6 +29,7 @@ func (cmdl *Listener)Listen(){
 
 	for cmdl.run{
 		text, err := reader.ReadString('\n')
+		text = text[:len(text) - 1] //cut newline
 		if err != nil{
 			cmdl.run = false
 		} else {
