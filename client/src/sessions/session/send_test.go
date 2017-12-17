@@ -2,7 +2,7 @@ package session
 
 import (
 	"testing"
-	"message"
+	"msgs/msg"
 	"net"
 	"time"
 	"bytes"
@@ -62,16 +62,17 @@ func TestSenderImpl_messagesToSingle(t *testing.T) {
 
 func TestSenderImpl_Send(t *testing.T) {
 	socket := &SocketMock{}
-	sender := New(socket)
+	sender := New(socket, "", nil, nil)
 
-	msg := message.NewMessageOK()
-	sender.Send(msg)
+
+	msg := msg.NewMessageOK()
+	sender.Send(msg.ToBytes())
 
 	hasmsg := false
 	msgbytes := addSizeToBytes(msg.ToBytes())
 
-	for i := 0; i < len(sender.msgs); i++{
-		if bytes.Compare(sender.msgs[i], msgbytes) == 0{
+	for i := 0; i < len(sender.msgsSent); i++{
+		if bytes.Compare(sender.msgsSent[i], msgbytes) == 0{
 			hasmsg = true
 			break
 		}
@@ -84,10 +85,10 @@ func TestSenderImpl_Send(t *testing.T) {
 
 func TestSenderImpl_SendInstant(t *testing.T) {
 	socket := &SocketMock{}
-	sender := New(socket)
+	sender := New(socket, "", nil, nil)
 
-	msg := message.NewMessageOK()
-	sender.SendInstant(msg)
+	msg := msg.NewMessageOK()
+	sender.SendInstant(msg.ToBytes())
 
 	msgbytes := addSizeToBytes(msg.ToBytes())
 
