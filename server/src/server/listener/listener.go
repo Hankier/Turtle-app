@@ -1,4 +1,4 @@
-package connectionListener
+package listener
 
 import (
 	"net"
@@ -9,13 +9,13 @@ import (
 )
 
 
-type ConnectionListener struct{
+type Listener struct{
 	socket          net.Listener
 	sessionsHandler handler.Handler
 }
 
-func NewConnectionListener(port string, sessionsHandler handler.Handler) (*ConnectionListener, error) {
-	cln := new(ConnectionListener)
+func New(port string, sessionsHandler handler.Handler) (*Listener, error) {
+	cln := new(Listener)
 	port = ":"+port
 	var err error
 	cln.socket, err = net.Listen("tcp", port)
@@ -24,7 +24,7 @@ func NewConnectionListener(port string, sessionsHandler handler.Handler) (*Conne
 }
 
 
-func (cln *ConnectionListener)handleConnection(c net.Conn) {
+func (cln *Listener)handleConnection(c net.Conn) {
 	log.Printf("Client %v connected to port %d", c.RemoteAddr(), cln.socket.Addr().(*net.TCPAddr).Port)
 
 	nameBytes := make([]byte, 8)
@@ -35,7 +35,7 @@ func (cln *ConnectionListener)handleConnection(c net.Conn) {
 	cln.sessionsHandler.CreateSession(name, c)
 }
 
-func (cln *ConnectionListener)Loop(wg sync.WaitGroup) error{
+func (cln *Listener)Loop(wg sync.WaitGroup) error{
 	defer wg.Done()
 	for{
 		for {

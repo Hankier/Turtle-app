@@ -1,7 +1,6 @@
 package server
 
 import (
-	"connectionListener"
 	"sync"
 	"log"
 	"net"
@@ -9,14 +8,15 @@ import (
 	"sessions"
 	"errors"
 	"srvlist/entry"
+	"server/listener"
 )
 
 type Server struct{
 	myName string
 	serverList *srvlist.ServerList
 	sessionsContr *sessions.Controller
-	clientListener *connectionListener.ConnectionListener
-	serverListener *connectionListener.ConnectionListener
+	clientListener *listener.Listener
+	serverListener *listener.Listener
 	wg sync.WaitGroup
 }
 
@@ -40,11 +40,11 @@ func NewServer(name string)(*Server){
 
 func (srv *Server)Start(clientPort, serverPort string)error{
 	var err error
-	srv.clientListener, err = connectionListener.NewConnectionListener(clientPort, srv.sessionsContr)
+	srv.clientListener, err = listener.New(clientPort, srv.sessionsContr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv.serverListener, err = connectionListener.NewConnectionListener(serverPort, srv.sessionsContr)
+	srv.serverListener, err = listener.New(serverPort, srv.sessionsContr)
 	if err != nil {
 		log.Fatal(err)
 	}
