@@ -1,9 +1,7 @@
 package sender
 
-import "message"
-
 type Sender interface{
-	SendTo(name string, msg *message.Message)
-	SendInstantTo(name string, msg *message.Message)
-	UnlockSending(name string)
+	Send(name string, content []byte)error
+	SendInstant(name string, content []byte)error
+	UnlockSending(name string)error
 }

@@ -4,22 +4,22 @@ import (
 	"net"
 	"log"
 	"sync"
-	"sessionHandler"
 	"io"
+	"sessions/handler"
 )
 
 
 type ConnectionListener struct{
 	socket          net.Listener
-	sessionsHandler sessionHandler.SessionHandler
+	sessionsHandler handler.Handler
 }
 
-func NewConnectionListener(port string, handler sessionHandler.SessionHandler) (*ConnectionListener, error) {
+func NewConnectionListener(port string, sessionsHandler handler.Handler) (*ConnectionListener, error) {
 	cln := new(ConnectionListener)
 	port = ":"+port
 	var err error
 	cln.socket, err = net.Listen("tcp", port)
-	cln.sessionsHandler = handler
+	cln.sessionsHandler = sessionsHandler
 	return cln, err
 }
 

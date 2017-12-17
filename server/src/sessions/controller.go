@@ -5,8 +5,10 @@ import (
 	"msgs/parser"
 	"net"
 	"errors"
-	"convos/receiver"
 	"sync"
+	"log"
+	"server/dialer"
+	"server/credentials"
 )
 
 type Controller struct{
@@ -15,12 +17,17 @@ type Controller struct{
 		data map[string]*session.Session
 	}
 	msgsParser parser.Parser
+	serverDialer dialer.Dialer
+	credHolder credentials.CredentialsHolder
 }
 
-func New(convosRecver receiver.Receiver)(*Controller){
+func New(serverDialer dialer.Dialer, credHolder credentials.CredentialsHolder)(*Controller){
 	c := new(Controller)
 	c.sessions.data = make(map[string]*session.Session)
-	c.msgsParser = parser.New(c, convosRecver)
+	c.msgsParser = parser.New(c)
+	c.serverDialer = serverDialer
+	c.credHolder = credHolder
+
 	return c
 }
 
@@ -32,6 +39,7 @@ func (c *Controller)CreateSession(name string, socket net.Conn){
 	c.sessions.Lock()
 	c.sessions.data[name] = sess
 	c.sessions.Unlock()
+	log.Print("Creating session with: " + name)
 }
 
 func (c *Controller)RemoveSession(name string){
@@ -39,6 +47,7 @@ func (c *Controller)RemoveSession(name string){
 	c.sessions.data[name].DeleteSession()
 	delete(c.sessions.data, name)
 	c.sessions.Unlock()
+	log.Print("Removing session with: " + name)
 }
 
 func (c *Controller)GetActiveSessions()[]string{
@@ -60,6 +69,12 @@ func (c *Controller)OnReceive(from string, content []byte){
 }
 
 func (c *Controller)Send(name string, content []byte)error{
+	//sending to myself
+	if name == c.credHolder.GetName(){
+		c.OnReceive(name, content)
+		return nil
+	}
+
 	c.sessions.Lock()
 	sess, ok := c.sessions.data[name]
 	c.sessions.Unlock()
@@ -67,9 +82,20 @@ func (c *Controller)Send(name string, content []byte)error{
 	if ok {
 		sess.Send(content)
 	}else{
-		return errors.New("wrong session name")
+		err := c.serverDialer.ConnectToServer(name)
+		if err != nil {
+			return errors.New("wrong session name")
+		} else {
+			c.sessions.Lock()
+			sess, ok = c.sessions.data[name]
+			c.sessions.Unlock()
+			if ok {
+				sess.Send(content)
+			} else {
+				return errors.New("wrong session name")
+			}
+		}
 	}
-
 
 	return nil
 }

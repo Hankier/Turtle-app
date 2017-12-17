@@ -8,19 +8,16 @@ import (
 	"msgs/msg"
 	"msgs/parser/decrypter"
 	"sessions/sender"
-	"convos/receiver"
 )
 
 type ParserImpl struct{
-	sender        sender.Sender
-	receiver      receiver.Receiver
+	sessSender    sender.Sender
 	dec 		  crypt.Decrypter
 }
 
-func New(sender sender.Sender, receiver receiver.Receiver)(Parser){
+func New(sessSender sender.Sender)(Parser){
 	mhi := new(ParserImpl)
-	mhi.sender = sender
-	mhi.receiver = receiver
+	mhi.sessSender = sessSender
 	mhi.dec = decrypter.New()
 	return mhi
 }

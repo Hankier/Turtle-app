@@ -3,101 +3,40 @@ package server
 import (
 	"connectionListener"
 	"sync"
-	"crypt"
 	"log"
 	"net"
 	"srvlist"
 	"sessions"
-	"messageHandler"
-	"message"
+	"errors"
 )
 
 type Server struct{
-	sessions struct{
-		sync.Mutex
-		data map[string]*sessions.Session
-	}
+	myName string
+	serverList *srvlist.ServerList
+	sessionsContr *sessions.Controller
 	clientListener *connectionListener.ConnectionListener
 	serverListener *connectionListener.ConnectionListener
-	serverList *srvlist.ServerList
-	serverCrypto *crypt.NodeCrypto
 	wg sync.WaitGroup
-	myName string
 }
 
 func NewServer(name string)(*Server){
 	srv := new(Server)
 
-	srv.sessions.data = make(map[string]*sessions.Session)
-
 	srv.myName = name
-
 	//TODO Downloading server list from DA
-
 	srv.serverList = srvlist.New()
-
+	srv.sessionsContr = sessions.New(srv, srv)
 	srv.wg.Add(2)
-	srv.serverCrypto = crypt.New();
 	return srv
 }
 
-func (s *Server)checkIfNameIsServer(name string)bool{
-	for _, server := range s.serverList.GetServerList(){
-		if server == name{
-			return true
-		}
-	}
-	return false
-}
-
-func (srv *Server)SendTo(name string, msg *message.Message){
-	srv.sessions.Lock()
-	sess, ok := srv.sessions.data[name];
-	srv.sessions.Unlock()
-
-	if ok {
-		sess.Send(msg)
-	}else{
-		if srv.checkIfNameIsServer(name) {
-			if srv.connectToServer(name){
-				srv.SendTo(name, msg)
-			}
-		}
-	}
-}
-
-func (srv *Server)SendInstantTo(name string, msg *message.Message){
-	srv.sessions.Lock()
-	sess, ok := srv.sessions.data[name]
-	srv.sessions.Unlock()
-
-	if ok {
-		sess.SendInstant(msg)
-	}else{
-		if srv.checkIfNameIsServer(name) {
-			if srv.connectToServer(name){
-				srv.SendTo(name, msg)
-			}
-		}
-	}
-}
-
-func (srv *Server)UnlockSending(name string){
-	srv.sessions.Lock()
-	sess := srv.sessions.data[name]
-	srv.sessions.Unlock()
-
-	sess.UnlockSending()
-}
-
-
 func (srv *Server)Start(clientPort, serverPort string)error{
 	var err error
-	srv.clientListener, err = connectionListener.NewConnectionListener(clientPort, srv)
+	srv.clientListener, err = connectionListener.NewConnectionListener(clientPort, srv.sessionsContr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv.serverListener, err = connectionListener.NewConnectionListener(serverPort, srv)
+	srv.serverListener, err = connectionListener.NewConnectionListener(serverPort, srv.sessionsContr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,17 +50,20 @@ func (srv *Server)Start(clientPort, serverPort string)error{
 	return err
 }
 
-func (srv *Server)connectToServer(name string)bool{
+
+func (srv *Server)ConnectToServer(name string)error{
 
 	if ipport, ok := srv.serverList.GetServerIpPort(name); ok == nil{
 		socket, err := srv.dialAndSendName(name, ipport)
-		if err != nil {return false}
-		srv.CreateSession(name, socket)
+		if err != nil {
+			return err
+		}
+		srv.sessionsContr.CreateSession(name, socket)
 		log.Print("Succesfully connected to " + name)
-		return true
+	} else {
+		return errors.New("no server on list " + name)
 	}
-	log.Print("No server on list " + name)
-	return false
+	return nil
 }
 
 func (srv *Server)dialAndSendName(name, ipport string)(net.Conn, error){
@@ -134,21 +76,15 @@ func (srv *Server)dialAndSendName(name, ipport string)(net.Conn, error){
 	return socket, nil
 }
 
-func (srv *Server)CreateSession(name string, socket net.Conn){
-	msgHandler := messageHandler.NewMessageHandlerImpl(srv, srv.serverCrypto)
-
-	sess := sessions.New(socket, name, msgHandler, srv)
-
-	go sess.Start()
-
-	srv.sessions.Lock()
-	srv.sessions.data[name] = sess
-	srv.sessions.Unlock()
+func (srv *Server)checkIfNameIsServer(name string)bool{
+	for _, server := range srv.serverList.GetServerList(){
+		if server == name{
+			return true
+		}
+	}
+	return false
 }
 
-func (srv *Server)RemoveSession(name string){
-	srv.sessions.Lock()
-	srv.sessions.data[name].DeleteSession()
-	delete(srv.sessions.data, name)
-	srv.sessions.Unlock()
+func (srv *Server)GetName()string{
+	return srv.myName
 }
