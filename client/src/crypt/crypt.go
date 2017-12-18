@@ -83,7 +83,6 @@ func SaveRSAPublic(publicKeyRSA *rsa.PublicKey, filename string)(error){
 func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
 	key, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Print("Error reading public key.")
 		return nil, errors.New("error reading public key")
 	}
 	block, _ := pem.Decode(key)
@@ -91,7 +90,6 @@ func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
 	publicKeyRSA, err := x509.ParsePKIXPublicKey(block.Bytes)
 
 	if err != nil {
-		log.Print("Failed to parse public key: " + err.Error())
 		return nil, err
 	}
 
