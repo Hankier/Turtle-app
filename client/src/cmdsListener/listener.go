@@ -60,6 +60,15 @@ func (cmdl *Listener)execCmd(cmd string){
 
 	if cmdnum > 0 {
 		switch cmds[0] {
+		//todo remove debug
+		case "d":
+			cmdl.execCmd("connect 00000000")
+			cmdl.execCmd("new convo 00000000 10000000")
+			cmdl.execCmd("set pathenc RSA")
+			cmdl.execCmd("set convokey 00000000 10000000 RSA publicKeyRSA")
+			cmdl.execCmd("new path 5")
+			cmdl.execCmd("send 00000000 10000000 asdf")
+			break
 		case "get":
 			if cmdnum > 1 {
 				switch cmds[1] {
@@ -147,12 +156,15 @@ func (cmdl *Listener)execCmd(cmd string){
 						switch enctype {
 						case "PLAIN":
 							cmdl.ui.SetEncryptionType(crypt.PLAIN)
+							cmdl.textrecv.Print("set pathenc", "PLAIN")
 							break
 						case "RSA":
 							cmdl.ui.SetEncryptionType(crypt.RSA)
+							cmdl.textrecv.Print("set pathenc", "RSA")
 							break
 						case "ELGAMAL":
 							cmdl.ui.SetEncryptionType(crypt.ELGAMAL)
+							cmdl.textrecv.Print("set pathenc", "ELGAMAL")
 							break
 						default:
 							cmdl.textrecv.Print("error", "use [PLAIN|RSA|ELGAMAL]")
