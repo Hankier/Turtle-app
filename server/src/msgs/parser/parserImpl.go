@@ -6,7 +6,7 @@ import (
 	"crypt"
 	"log"
 	"msgs/msg"
-	"msgs/parser/decrypter"
+	"server/decrypter"
 	"sessions/sender"
 )
 
