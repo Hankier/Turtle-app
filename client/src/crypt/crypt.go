@@ -111,8 +111,6 @@ func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
 	}
 }
 
-
-
 func LoadRSA(filename string) (*rsa.PrivateKey, error){
 	key, err := ioutil.ReadFile(filename)
 	if err != nil {
