@@ -51,6 +51,8 @@ func GenerateRSA() *rsa.PrivateKey {
 		log.Fatal(err)
 	}
 
+	log.Print("New RSA keys generated")
+
 	return privateKeyRSA
 }
 
@@ -63,6 +65,9 @@ func SaveRSA(privateKeyRSA *rsa.PrivateKey, filename string) (err error){
 	)
 	err = ioutil.WriteFile(filename,pemdata,0644)
 
+	if err == nil{
+		log.Print("RSA private key saved to file:" + filename)
+	}
 	return err
 }
 
@@ -78,20 +83,23 @@ func SaveRSAPublic(publicKeyRSA *rsa.PublicKey, filename string)(error){
 	})
 
 	err = ioutil.WriteFile(filename, pubBytes, 0644)
+
+	if err == nil {
+		log.Print("RSA public key saved to file:" + filename)
+	}
+
 	return err
 }
 func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
 	key, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Print("Error reading public key.")
-		return nil, errors.New("error reading public key")
+		return nil, errors.New("Crypto.LoadRSAPublic: error reading public key")
 	}
 	block, _ := pem.Decode(key)
 
 	publicKeyRSA, err := x509.ParsePKIXPublicKey(block.Bytes)
 
 	if err != nil {
-		log.Print("Failed to parse public key: " + err.Error())
 		return nil, err
 	}
 
@@ -99,17 +107,14 @@ func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
 	case *rsa.PublicKey:
 		return pub, nil
 	default:
-		return nil, errors.New("error reading public key")
+		return nil, errors.New("Crypto.LoadRSAPublic: error reading public key")
 	}
 }
-
-
 
 func LoadRSA(filename string) (*rsa.PrivateKey, error){
 	key, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Print("Error reading private key.")
-		return nil, errors.New("error reading private key")
+		return nil, errors.New("Crypto.LoadRSA: error reading private key")
 	}
 	block, _ := pem.Decode(key)
 
@@ -138,6 +143,8 @@ func GenerateElGamal() *elgamal.PrivateKey{
 		X: x,
 	}
 	privateKeyElGamal.Y = new(big.Int).Exp(privateKeyElGamal.G, privateKeyElGamal.X, privateKeyElGamal.P)
+
+	log.Print("New ElGamal keys generated")
 
 	return privateKeyElGamal
 }
@@ -168,6 +175,10 @@ func SaveElGamal(privateKeyElGamal *elgamal.PrivateKey, filename string) (err er
 		},
 	)...)
 	err = ioutil.WriteFile(filename,pemdata,0644)
+
+	if err == nil{
+		log.Print("Private ElGamal key saved to: ", filename)
+	}
 	return err
 }
 
@@ -195,16 +206,44 @@ func LoadElGamal(filename string) (*elgamal.PrivateKey, error){
 }
 
 func DecryptRSA(privateKey *rsa.PrivateKey, msg []byte) ([]byte, error){
-	decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, msg);
+	blockSize := len(privateKey.N.Bytes())
+	msgLen := len(msg)
+	decrypted := make([]byte, 0)
+
+	if msgLen % blockSize != 0{
+		return nil, errors.New("Crypt.DecryptRSA: invalid msg length")
+	}
+
+	for i := 0; i < len(msg); i += blockSize{
+		end := i + blockSize
+
+		if end > len(msg){
+			end = len(msg)
+		}
+
+		block := msg[i:end]
+
+		decryptedBlock, err := decryptRSABlock(privateKey, block)
+		if err != nil{
+			return nil, err
+		}
+		decrypted = append(decrypted, decryptedBlock...)
+	}
+	return decrypted, nil
+}
+
+func decryptRSABlock(privateKey *rsa.PrivateKey, block []byte) ([]byte, error){
+	log.Print(block)
+	decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, block);
 	if  err != nil {
-		log.Fatal(err)
+		return nil, errors.New("Crypt.DecryptRSA: " + err.Error())
 	}
 	return decryptedText, err
 }
 
 func DecryptElGamal(privateKey *elgamal.PrivateKey, msg []byte) ([]byte, error) {
 	if len(msg) != 2 * pLen{
-		return nil, errors.New("bad message length")
+		return nil, errors.New("Crypt.DecryptElGamal: bad message length")
 	}
 	c1 := new(big.Int).SetBytes(msg[0:pLen])
 	c2 := new(big.Int).SetBytes(msg[pLen:2*pLen])
@@ -212,9 +251,31 @@ func DecryptElGamal(privateKey *elgamal.PrivateKey, msg []byte) ([]byte, error) 
 }
 
 func EncryptRSA(publicKey *rsa.PublicKey, msg []byte) ([]byte, error){
-	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, msg);
+	blockSize := len(publicKey.N.Bytes()) - 11
+	encrypted := make([]byte, 0)
+
+	for i := 0; i < len(msg); i += blockSize{
+		end := i + blockSize
+
+		if end > len(msg){
+			end = len(msg)
+		}
+
+		block := msg[i:end]
+
+		encryptedBlock, err := encryptRSABlock(publicKey, block)
+		if err != nil{
+			return nil, err
+		}
+		encrypted = append(encrypted, encryptedBlock...)
+	}
+	return encrypted, nil
+}
+
+func encryptRSABlock(publicKey *rsa.PublicKey, block []byte) ([]byte, error){
+	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, block);
 	if  err != nil {
-		log.Fatal(err)
+		return nil, errors.New("Crypt.EncryptRSA: " + err.Error())
 	}
 	return encryptedText, err
 }
