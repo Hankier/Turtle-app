@@ -84,7 +84,6 @@ func (msgb *Builder)Build()(*msg.Message, error){
 
 	msgPieces := make([][]byte, len(msgb.path) + 2)
 
-
 	msgContent, err := msgb.convosMsgBuilder.BuildMessageContent(msgb.receiverServer, msgb.receiver, msgb.command, msgb.encType)
 	if err != nil{	return nil, err	}
 
@@ -99,6 +98,7 @@ func (msgb *Builder)Build()(*msg.Message, error){
 
 	srvEncrypter, err = msgb.srvList.GetEncrypter(msgb.receiverServer)
 	piece, err = msgb.createPiece(msgPieces[0], srvEncrypter)
+	if err != nil { return nil, err }
 
 	msgPieces[1] = ([]byte)(msgb.receiverServer)
 	msgPieces[1] = append(msgPieces[1], piece.ToBytes()...)
@@ -130,8 +130,6 @@ func (msgb *Builder)Build()(*msg.Message, error){
 func (msgb *Builder)createPiece(pieceContent []byte, enc crypt.Encrypter)(*msg.Message, error){
 
 	encryptedPieceContent, err := enc.Encrypt(msgb.encType, pieceContent)
-	log.Print(encryptedPieceContent)
-	log.Print(err)
 	if err != nil{	return nil, err	}
 
 	piece := msg.New(msgb.msgType, msgb.encType, encryptedPieceContent)
