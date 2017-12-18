@@ -10,11 +10,6 @@ import (
 	"convos"
 	"errors"
 	"cmdsListener"
-	"srvlist/entry"
-	"io/ioutil"
-	"crypto/rsa"
-	"golang.org/x/crypto/openpgp/elgamal"
-	"crypt"
 	"strconv"
 	"strings"
 	"reflect"
@@ -50,9 +45,7 @@ func New(name string)(*Client){
 
 	cli.srvList = srvlist.New()
 	//TODO remove debug data
-	serverListMap := cli.debugGetServers()
-
-	cli.srvList.SetList(serverListMap)
+	cli.srvList.DebugGetServers()
 
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
 	cli.convosContr = convos.New(cli.textReceiver, cli)
@@ -61,61 +54,6 @@ func New(name string)(*Client){
 	cli.commandsListener = cmdsListener.New(cli, cli.textReceiver)
 
 	return cli
-}
-
-func (cli *Client)debugGetServers()(map[string]*entry.Entry){
-	servPath := "servers/"
-	ipportString := "/ipport"
-	pubRSAString := "/publicKeyRSA"
-	pubElGamalString := "/publicKeyElGamal"
-
-	servers, err := ioutil.ReadDir(servPath)
-	if err != nil {	log.Fatal(err) }
-	var name string
-	var ipport string
-	var pubRSA *rsa.PublicKey
-	var pubElGamal *elgamal.PublicKey
-
-	currPath := servPath
-
-	srvMap := make(map[string]*entry.Entry)
-
-
-	for _, server := range servers {
-		if server.IsDir(){
-			name = server.Name()
-
-			currPath += name
-
-			ipportFile, err := ioutil.ReadFile(currPath + ipportString)
-			if err != nil {	log.Fatal(err) }
-
-			ipport = strings.TrimSpace(string(ipportFile))
-
-			currPath = servPath + name
-
-			pubRSA, err = crypt.LoadRSAPublic(currPath + pubRSAString)
-			if err != nil{
-				log.Println(err)
-				pubRSA = nil
-			}
-
-			currPath = servPath + name
-
-			privElGamal, err := crypt.LoadElGamal(currPath + pubElGamalString)
-			if err == nil{
-				pubElGamal = &privElGamal.PublicKey
-			}else {
-				pubElGamal = nil
-			}
-
-			srvMap[name] = entry.New(name, ipport, pubRSA, pubElGamal)
-
-			currPath = servPath
-		}
-	}
-
-	return srvMap
 }
 
 //Starts listening for commands
@@ -134,6 +72,7 @@ func (cli *Client)GetCurrentPath() []string{
 func (cli *Client)ChooseNewPath(length int)([]string, error){
 	var err error
 	cli.currentPath, err = cli.srvList.GetRandomPath(length)
+
 	if err != nil{
 		return nil, err
 	}

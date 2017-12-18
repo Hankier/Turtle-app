@@ -8,6 +8,11 @@ import (
 	"crypt"
 	"srvlist/entry"
 	"strconv"
+	"crypto/rsa"
+	"golang.org/x/crypto/openpgp/elgamal"
+	"io/ioutil"
+	"log"
+	"strings"
 )
 
 type ServerList struct{
@@ -117,4 +122,59 @@ func (sli *ServerList)GetServerList()[]string{
 
 func (sli *ServerList)RefreshList(){
 	//TODO
+}
+
+func (sli *ServerList)DebugGetServers(){
+	servPath := "servers/"
+	ipportString := "/ipport"
+	pubRSAString := "/publicKeyRSA"
+	pubElGamalString := "/publicKeyElGamal"
+
+	servers, err := ioutil.ReadDir(servPath)
+	if err != nil {	log.Fatal(err) }
+	var name string
+	var ipport string
+	var pubRSA *rsa.PublicKey
+	var pubElGamal *elgamal.PublicKey
+
+	currPath := servPath
+
+	srvMap := make(map[string]*entry.Entry)
+
+
+	for _, server := range servers {
+		if server.IsDir(){
+			name = server.Name()
+
+			currPath += name
+
+			ipportFile, err := ioutil.ReadFile(currPath + ipportString)
+			if err != nil {	log.Fatal(err) }
+
+			ipport = strings.TrimSpace(string(ipportFile))
+
+			currPath = servPath + name
+
+			pubRSA, err = crypt.LoadRSAPublic(currPath + pubRSAString)
+			if err != nil{
+				log.Println(err)
+				pubRSA = nil
+			}
+
+			currPath = servPath + name
+
+			privElGamal, err := crypt.LoadElGamal(currPath + pubElGamalString)
+			if err == nil{
+				pubElGamal = &privElGamal.PublicKey
+			}else {
+				pubElGamal = nil
+			}
+
+			srvMap[name] = entry.New(name, ipport, pubRSA, pubElGamal)
+
+			currPath = servPath
+		}
+	}
+
+	sli.list = srvMap
 }
