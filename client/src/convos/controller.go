@@ -54,6 +54,20 @@ func (c *Controller)GetActiveConversations()[]*struct{
 	return nil
 }
 
+func (c *Controller)SetConversationKey(server string, name string, enctype crypt.TYPE, keydata []byte)error{
+	convoname := server + name
+
+	c.conversations.Lock()
+	conv, ok := c.conversations.data[convoname]
+	c.conversations.Unlock()
+	if !ok{
+		return errors.New("conversation already exists")
+	} else {
+		return conv.SetKey(enctype, keydata)
+	}
+
+}
+
 func (c *Controller)OnReceive(from string, content []byte){
 	server := from[0:8]
 	name := from[8:16]
