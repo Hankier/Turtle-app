@@ -71,13 +71,13 @@ func (h *ReceiverMock)OnReceive(from string, bytes []byte){
 func TestReceiver(t *testing.T) {
 	sessionName := "testsess"
 	socket := &SocketMockR{0, 14}
-	recver := &ReceiverMock{}
+	reciever := &ReceiverMock{}
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
-	session := New(socket, sessionName, recver, nil)
-	if session.sessionsReceiver != recver ||
+	session := New(socket, sessionName, reciever, nil)
+	if session.sessionsReceiver != reciever ||
 		session.name != sessionName ||
 		session.socket != socket{
 
@@ -86,8 +86,8 @@ func TestReceiver(t *testing.T) {
 
 	session.ReceiveLoop()
 
-	if recver.handled[0] != socket.readconst ||
-		recver.from != sessionName{
+	if reciever.handled[0] != socket.readconst ||
+		reciever.from != sessionName{
 
 		t.Error("Bad handled data")
 	}
