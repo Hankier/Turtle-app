@@ -7,6 +7,7 @@ import (
 	"textReceiver"
 	"crypt"
 	"client/credentials"
+	"reflect"
 )
 
 type Controller struct{
@@ -36,7 +37,7 @@ func (c *Controller)CreateConversation(server string, name string)(err error){
 		conv = convo.New(server, name, c.textRecver, c.credHolder)
 		c.conversations.data[convoname] = conv
 	} else {
-		err = errors.New("conversation already exists")
+		err = errors.New(reflect.TypeOf(c).String() + ": conversation already exists")
 	}
 	c.conversations.Unlock()
 	return err

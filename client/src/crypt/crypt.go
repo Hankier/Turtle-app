@@ -51,6 +51,8 @@ func GenerateRSA() *rsa.PrivateKey {
 		log.Fatal(err)
 	}
 
+	log.Print("New RSA keys generated")
+
 	return privateKeyRSA
 }
 
@@ -63,6 +65,9 @@ func SaveRSA(privateKeyRSA *rsa.PrivateKey, filename string) (err error){
 	)
 	err = ioutil.WriteFile(filename,pemdata,0644)
 
+	if err == nil{
+		log.Print("RSA private key saved to file:" + filename)
+	}
 	return err
 }
 
@@ -78,13 +83,17 @@ func SaveRSAPublic(publicKeyRSA *rsa.PublicKey, filename string)(error){
 	})
 
 	err = ioutil.WriteFile(filename, pubBytes, 0644)
+
+	if err == nil {
+		log.Print("RSA public key saved to file:" + filename)
+	}
+
 	return err
 }
 func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
 	key, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Print("Error reading public key.")
-		return nil, errors.New("error reading public key")
+		return nil, errors.New("Crypto.LoadRSAPublic: error reading public key")
 	}
 	block, _ := pem.Decode(key)
 
@@ -99,7 +108,7 @@ func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
 	case *rsa.PublicKey:
 		return pub, nil
 	default:
-		return nil, errors.New("error reading public key")
+		return nil, errors.New("Crypto.LoadRSAPublic: error reading public key")
 	}
 }
 
@@ -108,8 +117,7 @@ func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
 func LoadRSA(filename string) (*rsa.PrivateKey, error){
 	key, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Print("Error reading private key.")
-		return nil, errors.New("error reading private key")
+		return nil, errors.New("Crypto.LoadRSA: error reading private key")
 	}
 	block, _ := pem.Decode(key)
 
@@ -138,6 +146,8 @@ func GenerateElGamal() *elgamal.PrivateKey{
 		X: x,
 	}
 	privateKeyElGamal.Y = new(big.Int).Exp(privateKeyElGamal.G, privateKeyElGamal.X, privateKeyElGamal.P)
+
+	log.Print("New ElGamal keys generated")
 
 	return privateKeyElGamal
 }
@@ -168,6 +178,10 @@ func SaveElGamal(privateKeyElGamal *elgamal.PrivateKey, filename string) (err er
 		},
 	)...)
 	err = ioutil.WriteFile(filename,pemdata,0644)
+
+	if err == nil{
+		log.Print("Private ElGamal key saved to: ", filename)
+	}
 	return err
 }
 
@@ -204,7 +218,7 @@ func DecryptRSA(privateKey *rsa.PrivateKey, msg []byte) ([]byte, error){
 
 func DecryptElGamal(privateKey *elgamal.PrivateKey, msg []byte) ([]byte, error) {
 	if len(msg) != 2 * pLen{
-		return nil, errors.New("bad message length")
+		return nil, errors.New("Crypt.DecryptElGamal: bad message length")
 	}
 	c1 := new(big.Int).SetBytes(msg[0:pLen])
 	c2 := new(big.Int).SetBytes(msg[pLen:2*pLen])

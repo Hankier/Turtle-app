@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io"
 	"log"
+	"reflect"
 )
 
 func (s *Session)ReceiveLoop(){
@@ -14,13 +15,13 @@ func (s *Session)ReceiveLoop(){
 	size := make([]byte, 2)
 	for {
 		_, err := io.ReadFull(s.socket, size)
-		if err != nil{log.Print("ReceiverImpl " + err.Error());break}
+		if err != nil{log.Print(reflect.TypeOf(s).String() + err.Error());break}
 
 		n := twoBytesToInt(size)
 
 		bytes := make([]byte, n)
 		_, err = io.ReadFull(reader, bytes)
-		if err != nil{log.Print("ReceiverImpl " + err.Error());break}
+		if err != nil{log.Print(reflect.TypeOf(s).String() + err.Error());break}
 
 		//log.Print("DEBUG Received from: " + recv.sessionName)
 		//log.Print("DEBUG Received msg: " + (string)(bytes))

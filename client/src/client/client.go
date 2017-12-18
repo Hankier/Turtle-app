@@ -17,6 +17,7 @@ import (
 	"crypt"
 	"strconv"
 	"strings"
+	"reflect"
 )
 
 /*
@@ -133,7 +134,6 @@ func (cli *Client)GetCurrentPath() []string{
 func (cli *Client)ChooseNewPath(length int)([]string, error){
 	var err error
 	cli.currentPath, err = cli.srvList.GetRandomPath(length)
-
 	if err != nil{
 		return nil, err
 	}
@@ -234,7 +234,7 @@ func (cli *Client)GetName()string{
 func (cli *Client)GetCurrentServer()(string, error){
 	sessionsNames := cli.sessionsContr.GetActiveSessions()
 	if len(sessionsNames) < 1{
-		return "", errors.New("no active session")
+		return "", errors.New(reflect.TypeOf(cli).String() + ": no active session")
 	}
 	return sessionsNames[0], nil
 }

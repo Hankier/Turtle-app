@@ -7,6 +7,7 @@ import (
 	"msgs/msg"
 	"convos/msgsBuilder"
 	"client/credentials"
+	"reflect"
 )
 
 type Builder struct{
@@ -123,7 +124,7 @@ func (msgb *Builder)Build()(*msg.Message, error){
 
 		piece = msg.New(msgb.msgType, msgb.encType, encRSA)
 	default:
-		return nil, errors.New("INVALID ENCRYPTION TYPE")
+		return nil, errors.New(reflect.TypeOf(msgb).String() + "invalid encryption type")
 	}
 
 	msgPieces[1] = ([]byte)(msgb.receiverServer)
@@ -175,7 +176,7 @@ func (msgb *Builder)createPiece(pieceContent []byte, enc crypt.Encrypter)(*msg.M
 
 		piece = msg.New(msgb.msgType, msgb.encType, encRSA)
 	default:
-		return nil, errors.New("INVALID ENCRYPTION TYPE")
+		return nil, errors.New(reflect.TypeOf(msgb).String() + ": invalid encryption type")
 	}
 
 	return piece, nil

@@ -50,7 +50,7 @@ func (msg *Message)SetMessageContent(messageContent []byte){
 func FromBytes(bytes []byte)(*Message, error){
 	//no previous name and type
 	if len(bytes) < 1{
-		return nil, errors.New("Too few bytes to construct a message")
+		return nil, errors.New( "Message.FromBytes: Too few bytes to construct a message")
 	}
 	msg := new(Message)
 

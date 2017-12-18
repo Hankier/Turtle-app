@@ -17,7 +17,7 @@ type ParserImpl struct{
 	dec 		  crypt.Decrypter
 }
 
-func New(sender sender.Sender, receiver receiver.Receiver)(Parser){
+func New(sender sender.Sender, receiver receiver.Receiver)(*ParserImpl){
 	mhi := new(ParserImpl)
 	mhi.sender = sender
 	mhi.receiver = receiver
