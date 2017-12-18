@@ -7,7 +7,8 @@ import (
 	"encoding/pem"
 	"math/big"
 	"crypto/x509"
-	"log"
+	"errors"
+	"reflect"
 )
 
 type EncrypterImpl struct{
@@ -19,34 +20,35 @@ func New()(*EncrypterImpl){
 	return new(EncrypterImpl)
 }
 
-func (recv *EncrypterImpl)SetKey(enctype crypt.TYPE, keydata []byte){
+func (recv *EncrypterImpl)SetKey(enctype crypt.TYPE, keydata []byte)error{
 	switch enctype {
 	case crypt.RSA:
-		recv.setRSA(keydata)
+		return recv.setRSA(keydata)
 		break
 	case crypt.ELGAMAL:
-		recv.setElGamal(keydata)
+		return recv.setElGamal(keydata)
 		break
 	}
+	return nil
 }
 
-func (recv *EncrypterImpl)setRSA(keydata []byte){
+func (recv *EncrypterImpl)setRSA(keydata []byte)error{
 	block, _ := pem.Decode(keydata)
 
-	pubRSA, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	pubRSA, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		log.Print("Failed to parse private key: " + err.Error())
-		return
+		return errors.New(reflect.TypeOf(recv).String() + ": " + err.Error())
 	}
-	pubRSA.Precompute()
-
-	if err = pubRSA.Validate(); err != nil {
-		log.Print(err)
-		return
+	switch pub := pubRSA.(type){
+	case *rsa.PublicKey:
+		recv.pubRSA = pub
+	default:
+		return errors.New(reflect.TypeOf(recv).String() + ": " + "error reading public key")
 	}
+	return nil
 }
 
-func (recv *EncrypterImpl)setElGamal(keyData []byte){
+func (recv *EncrypterImpl)setElGamal(keyData []byte)error{
 	publicKeyElGamal := &elgamal.PublicKey{}
 
 	block, keyData := pem.Decode(keyData)
@@ -59,6 +61,8 @@ func (recv *EncrypterImpl)setElGamal(keyData []byte){
 	publicKeyElGamal.Y = new(big.Int).SetBytes(block.Bytes)
 
 	recv.pubElGamal = publicKeyElGamal
+
+	return nil
 }
 
 func (recv *EncrypterImpl)Encrypt(encType crypt.TYPE, msg []byte)([]byte, error){

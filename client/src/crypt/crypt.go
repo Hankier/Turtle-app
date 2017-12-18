@@ -100,7 +100,6 @@ func LoadRSAPublic(filename string) (*rsa.PublicKey, error) {
 	publicKeyRSA, err := x509.ParsePKIXPublicKey(block.Bytes)
 
 	if err != nil {
-		log.Print("Failed to parse public key: " + err.Error())
 		return nil, err
 	}
 

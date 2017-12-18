@@ -12,6 +12,8 @@ import (
 	"cmdsListener"
 	"strconv"
 	"reflect"
+	"crypt"
+	"io/ioutil"
 )
 
 /*
@@ -76,7 +78,13 @@ func (cli *Client)ChooseNewPath(length int)([]string, error){
 		return nil, err
 	}
 
+	cli.msgsBuilder.SetPath(cli.currentPath)
+
 	return cli.currentPath, nil
+}
+
+func (cli *Client)SetEncryptionType(enctype crypt.TYPE){
+	cli.msgsBuilder.SetEncType(enctype)
 }
 
 //ConnectToServer tries to connect to server of a given name and writes self's name to it
@@ -131,8 +139,7 @@ func (cli *Client)GetServerDetails(name string)[]string{
 func (cli *Client)SendTo(receiverServer string, receiver string, command string)error{
 
 	cli.msgsBuilder.SetCommand(command).
-		SetReceiver(receiver).SetReceiverServer(receiverServer).
-		SetPath(cli.currentPath)
+		SetReceiver(receiver).SetReceiverServer(receiverServer)
 
 	message, err := cli.msgsBuilder.Build()
 	if err != nil {
@@ -160,6 +167,14 @@ func (cli *Client)OnReceive(from string, content []byte){
 //Returns error accordingly to that function
 func (cli *Client)CreateConversation(receiverServer string, receiver string) (err error){
 	return cli.convosContr.CreateConversation(receiverServer, receiver)
+}
+
+func (cli *Client)SetConversationKey(receiverServer string, receiver string, enctype crypt.TYPE, filename string) error{
+	key, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return errors.New("error reading public key")
+	}
+	return cli.convosContr.SetConversationKey(receiverServer, receiver, enctype, key)
 }
 
 //GetName returns client's name

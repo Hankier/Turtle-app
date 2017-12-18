@@ -1,5 +1,7 @@
 package ui
 
+import "crypt"
+
 //Interface enabling interaction with user
 //
 //GetCurrentPath returns a slice of strings representing consecutive nodes of path
@@ -21,12 +23,14 @@ type UserInterface interface{
 
 	GetCurrentPath()([]string)
 	ChooseNewPath(length int)([]string,error)
+	SetEncryptionType(enctype crypt.TYPE)
 
 	ConnectToServer(name string)error
 
 	GetServerList()([]string)
 	GetServerDetails(name string)([]string)
 
-	CreateConversation(receiver string, receiverServer string) (err error)
+	CreateConversation(receiverServer string, receiver string) (err error)
+	SetConversationKey(receiverServer string, receiver string, enctype crypt.TYPE, filename string) error
 	SendTo(receiverServer string, receiver string, message string)error
 }
