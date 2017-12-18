@@ -206,7 +206,34 @@ func LoadElGamal(filename string) (*elgamal.PrivateKey, error){
 }
 
 func DecryptRSA(privateKey *rsa.PrivateKey, msg []byte) ([]byte, error){
-	decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, msg);
+	blockSize := len(privateKey.N.Bytes())
+	msgLen := len(msg)
+	decrypted := make([]byte, 0)
+
+	if msgLen % blockSize != 0{
+		return nil, errors.New("Crypt.DecryptRSA: invalid msg length")
+	}
+
+	for i := 0; i < len(msg); i += blockSize{
+		end := i + blockSize
+
+		if end > len(msg){
+			end = len(msg)
+		}
+
+		block := msg[i:end]
+
+		decryptedBlock, err := decryptRSABlock(privateKey, block)
+		if err != nil{
+			return nil, err
+		}
+		decrypted = append(decrypted, decryptedBlock...)
+	}
+	return decrypted, nil
+}
+
+func decryptRSABlock(privateKey *rsa.PrivateKey, block []byte) ([]byte, error){
+	decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, block);
 	if  err != nil {
 		return nil, errors.New("Crypt.DecryptRSA: " + err.Error())
 	}
@@ -223,7 +250,29 @@ func DecryptElGamal(privateKey *elgamal.PrivateKey, msg []byte) ([]byte, error) 
 }
 
 func EncryptRSA(publicKey *rsa.PublicKey, msg []byte) ([]byte, error){
-	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, msg);
+	blockSize := len(publicKey.N.Bytes()) - 11
+	encrypted := make([]byte, 0)
+
+	for i := 0; i < len(msg); i += blockSize{
+		end := i + blockSize
+
+		if end > len(msg){
+			end = len(msg)
+		}
+
+		block := msg[i:end]
+
+		encryptedBlock, err := encryptRSABlock(publicKey, block)
+		if err != nil{
+			return nil, err
+		}
+		encrypted = append(encrypted, encryptedBlock...)
+	}
+	return encrypted, nil
+}
+
+func encryptRSABlock(publicKey *rsa.PublicKey, block []byte) ([]byte, error){
+	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, block);
 	if  err != nil {
 		return nil, errors.New("Crypt.EncryptRSA: " + err.Error())
 	}
