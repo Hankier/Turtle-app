@@ -210,7 +210,7 @@ func LoadElGamal(filename string) (*elgamal.PrivateKey, error){
 func DecryptRSA(privateKey *rsa.PrivateKey, msg []byte) ([]byte, error){
 	decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, msg);
 	if  err != nil {
-		log.Fatal(err)
+		return nil, errors.New("Crypt.DecryptRSA: " + err.Error())
 	}
 	return decryptedText, err
 }
@@ -227,7 +227,7 @@ func DecryptElGamal(privateKey *elgamal.PrivateKey, msg []byte) ([]byte, error) 
 func EncryptRSA(publicKey *rsa.PublicKey, msg []byte) ([]byte, error){
 	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, msg);
 	if  err != nil {
-		log.Fatal(err)
+		return nil, errors.New("Crypt.EncryptRSA: " + err.Error())
 	}
 	return encryptedText, err
 }
