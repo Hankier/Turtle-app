@@ -7,9 +7,29 @@ import (
 	"crypto/rand"
 	"bytes"
 	"os"
+	"crypto/rsa"
+	"log"
 )
 
-//TODO RSA
+func TestRSA(t *testing.T){
+	privateKeyRSA, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Error(err)
+	}
+	privateKeyRSA.Precompute()
+	message := make([]byte, 246)
+	message[3] = 'a'
+	enc, err := EncryptRSA(&privateKeyRSA.PublicKey, message)
+	log.Print(len(enc))
+	if err != nil {
+		t.Error(err)
+	}
+	message2, err := DecryptRSA(privateKeyRSA, enc)
+	log.Print(len(message2))
+	if !bytes.Equal(message2, message){
+		t.Error("Decryption failed, got: ", message2, " expected: ", message)
+	}
+}
 
 func TestElGamal(t *testing.T) {
 	x, _ := rand.Int(rand.Reader, p)

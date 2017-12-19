@@ -8,6 +8,12 @@ import (
 	"crypt"
 	"srvlist/entry"
 	"strconv"
+	"log"
+	"strings"
+	"crypto/rsa"
+	"golang.org/x/crypto/openpgp/elgamal"
+	"io/ioutil"
+	"reflect"
 )
 
 //ServerList class handling operations on server entries thread-safely
@@ -42,7 +48,7 @@ func (sli *ServerList)GetServerIpPort(name string)(string, error){
 		return ret.Ipport, nil
 	}
 
-	return "", errors.New("no such server on the list")
+	return "", errors.New(reflect.TypeOf(sli).String() + ": no such server on the list")
 }
 
 
@@ -55,7 +61,7 @@ func (sli *ServerList)GetEncrypter(name string)(crypt.Encrypter, error){
 	if ok{
 		return entr.Encrypter, nil
 	}
-	return nil, errors.New("no such server on the list")
+	return nil, errors.New(reflect.TypeOf(sli).String() +": no such server on the list")
 }
 
 //Generates a cryptographically secure random path and returnes it as a slice of strings representing names of consecutive nodes(servers)
@@ -67,7 +73,7 @@ func (sli *ServerList)GetEncrypter(name string)(crypt.Encrypter, error){
 func (sli *ServerList)GetRandomPath(length int)([]string, error){
 	if length < 1{
 		if length < 0{
-			return nil, errors.New("invalid path length")
+			return nil, errors.New(reflect.TypeOf(sli).String() + ": invalid path length")
 		}
 		return make([]string, 0), nil
 	}
@@ -77,7 +83,7 @@ func (sli *ServerList)GetRandomPath(length int)([]string, error){
 	serversLen := len(names)
 
 	if serversLen < 2 && length > 1{
-		return nil, errors.New("too few servers to create a path");
+		return nil, errors.New(reflect.TypeOf(sli).String() + ":too few servers to create a path");
 	}
 
 	path := make([]*big.Int, length)
@@ -131,4 +137,59 @@ func (sli *ServerList)GetServerList()[]string{
 
 func (sli *ServerList)RefreshList(){
 	//TODO
- }
+}
+
+func (sli *ServerList)DebugGetServers(){
+	servPath := "servers/"
+	ipportString := "/ipport"
+	pubRSAString := "/publicKeyRSA"
+	pubElGamalString := "/publicKeyElGamal"
+
+	servers, err := ioutil.ReadDir(servPath)
+	if err != nil {	log.Fatal(err) }
+	var name string
+	var ipport string
+	var pubRSA *rsa.PublicKey
+	var pubElGamal *elgamal.PublicKey
+
+	currPath := servPath
+
+	srvMap := make(map[string]*entry.Entry)
+
+
+	for _, server := range servers {
+		if server.IsDir(){
+			name = server.Name()
+
+			currPath += name
+
+			ipportFile, err := ioutil.ReadFile(currPath + ipportString)
+			if err != nil {	log.Fatal(err) }
+
+			ipport = strings.TrimSpace(string(ipportFile))
+
+			currPath = servPath + name
+
+			pubRSA, err = crypt.LoadRSAPublic(currPath + pubRSAString)
+			if err != nil{
+				log.Println(err)
+				pubRSA = nil
+			}
+
+			currPath = servPath + name
+
+			privElGamal, err := crypt.LoadElGamal(currPath + pubElGamalString)
+			if err == nil{
+				pubElGamal = &privElGamal.PublicKey
+			}else {
+				pubElGamal = nil
+			}
+
+			srvMap[name] = entry.New(name, ipport, pubRSA, pubElGamal)
+
+			currPath = servPath
+		}
+	}
+
+	sli.list = srvMap
+}

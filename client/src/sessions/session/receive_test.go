@@ -4,6 +4,8 @@ import (
 	"net"
 	"time"
 	"errors"
+	"testing"
+	"sync"
 )
 
 type SocketMockR struct{
@@ -56,35 +58,37 @@ func (s *SocketMockR)SetWriteDeadline(t time.Time) error{
 	return nil
 }
 
-type MessageHandlerMock struct{
+type ReceiverMock struct{
 	from	string
 	handled []byte
 }
 
-func (h *MessageHandlerMock)HandleBytes(from string, bytes []byte){
+func (h *ReceiverMock)OnReceive(from string, bytes []byte){
 	h.from = from
 	h.handled = bytes
 }
 
-/*func TestReceiver(t *testing.T) {
+func TestReceiver(t *testing.T) {
 	sessionName := "testsess"
 	socket := &SocketMockR{0, 14}
-	msghandler := &MessageHandlerMock{}
+	reciever := &ReceiverMock{}
+
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
-	recv := New(socket, sessionName, nil, nil)
-*//*	if recv.msghandler != msghandler ||
-		recv.sessionName != sessionName ||
-		recv.socket != socket{
+	session := New(socket, sessionName, reciever, nil)
+	if session.sessionsReceiver != reciever ||
+		session.name != sessionName ||
+		session.socket != socket{
 
 		t.Error("Constructor error")
-	}*//*
+	}
 
-	recv.ReceiveLoop()
-	if msghandler.handled[0] != socket.readconst ||
-		msghandler.from != sessionName{
+	session.ReceiveLoop()
+
+	if reciever.handled[0] != socket.readconst ||
+		reciever.from != sessionName{
 
 		t.Error("Bad handled data")
 	}
-}*///TODO
+}

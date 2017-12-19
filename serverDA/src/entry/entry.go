@@ -1,5 +1,6 @@
 package entry
 
+//TODO change it!
 type Entry struct{
 	Name string
 	Ip_port string

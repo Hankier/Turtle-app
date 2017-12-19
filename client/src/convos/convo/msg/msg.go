@@ -30,7 +30,7 @@ func New(msgtype TYPE, enctype key.TYPE, content []byte)*ConversationMessage{
 func FromBytes(content []byte)(*ConversationMessage, error){
 	//no previous name and type
 	if len(content) < 1{
-		return nil, errors.New("Too few bytes to create a ConversationMessage")
+		return nil, errors.New("Convo.Msg.FromBytes: Too few bytes to create a ConversationMessage")
 	}
 	msg := new(ConversationMessage)
 

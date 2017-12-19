@@ -33,19 +33,23 @@ func NewMCH(name, serv string)(*MockCredsHandler){
 
 
 type MockConvMsgBuilder struct{
+	holder credentials.CredentialsHolder
 }
 
-func NewMCMB()(*MockConvMsgBuilder){
+func NewMCMB(holder credentials.CredentialsHolder)(*MockConvMsgBuilder){
 	mcmb := new(MockConvMsgBuilder)
+	mcmb.holder = holder
 	return mcmb
 }
 
-func (mcmb *MockConvMsgBuilder)BuildMessageContent(server string, name string, command string, encType crypt.TYPE)([]byte, error){
-	ret := []byte(server + name)
-	ret = append(ret, 0)
-	ret = append(ret, 0)
-	ret = append(ret, []byte(command)...)
-	return ret, nil
+func (mcmb *MockConvMsgBuilder)BuildMessageContent(receiverServer string, receiver string, command string, encType crypt.TYPE)([]byte, error){
+	server, _ := mcmb.holder.GetCurrentServer()
+	name := mcmb.holder.GetName()
+	content := ([]byte)(server + name)
+	content = append(content, 0, 0)
+	content = append(content, command...)
+	//TODO error handling
+	return content, nil
 }
 
 func TestMessageBuilder_Build(t *testing.T) {
@@ -53,12 +57,13 @@ func TestMessageBuilder_Build(t *testing.T) {
 	mch = NewMCH("10000000", "00000000")
 
 	var mcmb msgsBuilder.MessageBuilder
-	mcmb = NewMCMB()
+	mcmb = NewMCMB(mch)
 
 	serverListMap := make(map[string]*entry.Entry)
 	serverListMap["00000000"] = entry.New("00000000", "127.0.0.1:8080", nil, nil)
 	serverListMap["00000001"] = entry.New("00000001", "127.0.0.1:8082", nil, nil)
 	serverListMap["00000002"] = entry.New("00000002", "127.0.0.1:8084", nil, nil)
+	serverListMap["recvserv"] = entry.New("recvserv", "127.0.0.1:8086", nil, nil)
 	serverlist := srvlist.New()
 	serverlist.SetList(serverListMap)
 	msgb := New(serverlist, mcmb, mch)
@@ -83,19 +88,18 @@ func TestMessageBuilder_Build(t *testing.T) {
 
 	//convoBuilder := builder.New(&commonKeyProtocol.CommonKeyProtocolImpl{})
 
-	msg,_ :=
-		msgb.SetMsgContent([]byte(msgString)).
-		SetReceiver("recvrecv").
-		SetReceiverServer("recvserv").
-		SetEncType(crypt.PLAIN).
-		SetMsgType(msg.DEFAULT).
-		SetPath(path).
-		SetCommand(msgString).
-		Build()
-	fmt.Println(string(msg.ToBytes()))
+	message,_ :=
+		msgb.SetReceiver("recvrecv").
+			SetReceiverServer("recvserv").
+			SetEncType(crypt.PLAIN).
+			SetMsgType(msg.DEFAULT).
+			SetPath(path).
+			SetCommand(msgString).
+			Build()
+	fmt.Println(string(message.ToBytes()))
 	fmt.Println(string(expected))
 
-	if !bytes.Equal(msg.ToBytes(), ([]byte)(expected)){
+	if !bytes.Equal(message.ToBytes(), ([]byte)(expected)){
 		t.Error("Unexpected message")
 	}
 }
@@ -106,7 +110,7 @@ func TestMessageBuilder_BuildNoPath(t *testing.T) {
 	mch = NewMCH("myclient", "myserver")
 
 	var mcmb msgsBuilder.MessageBuilder
-	mcmb = NewMCMB()
+	mcmb = NewMCMB(mch)
 
 	serverListMap := make(map[string]*entry.Entry)
 	serverListMap["myserver"] = entry.New("myserver", "0.0.0.0:0000", nil, nil)
@@ -131,8 +135,7 @@ func TestMessageBuilder_BuildNoPath(t *testing.T) {
 	//convoBuilder := builder.New(&commonKeyProtocol.CommonKeyProtocolImpl{})
 
 	message, err :=
-		msgb.SetMsgContent([]byte(msgString)).
-			SetReceiver("myclient").
+		msgb.SetReceiver("myclient").
 			SetReceiverServer("myserver").
 			SetEncType(crypt.PLAIN).
 			SetMsgType(msg.DEFAULT).
