@@ -38,6 +38,10 @@ func (convo *Conversation)Receive(msg []byte){
 	convo.msgHandler.HandleBytes(convo.name + " " + convo.server, msg)
 }
 
+func (convo *Conversation)SetKey(enctype crypt.TYPE, keydata []byte)error{
+	return convo.encrypter.SetKey(enctype, keydata)
+}
+
 func (convo *Conversation)BuildMessageContent(command string, encType crypt.TYPE)[]byte{
 	convo.msgBuilder.ParseCommand(command)
 	//TODO error handlign

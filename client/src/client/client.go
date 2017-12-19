@@ -10,7 +10,10 @@ import (
 	"convos"
 	"errors"
 	"cmdsListener"
-	"srvlist/entry"
+	"strconv"
+	"reflect"
+	"crypt"
+	"io/ioutil"
 )
 
 /*
@@ -43,11 +46,7 @@ func New(name string)(*Client){
 
 	cli.srvList = srvlist.New()
 	//TODO remove debug data
-	serverListMap := make(map[string]*entry.Entry)
-	serverListMap["00000000"] = entry.New("00000000", "127.0.0.1:8080", nil, nil)
-	serverListMap["00000001"] = entry.New("00000001", "127.0.0.1:8082", nil, nil)
-	serverListMap["00000002"] = entry.New("00000002", "127.0.0.1:8084", nil, nil)
-	cli.srvList.SetList(serverListMap)
+	cli.srvList.DebugGetServers()
 
 	cli.textReceiver = &textReceiver.TextReceiverImpl{}
 	cli.convosContr = convos.New(cli.textReceiver, cli)
@@ -56,10 +55,6 @@ func New(name string)(*Client){
 	cli.commandsListener = cmdsListener.New(cli, cli.textReceiver)
 
 	return cli
-}
-
-func (cli *Client)debugGetServers()(map[string]*entry.Entry){
-	return nil
 }
 
 //Starts listening for commands
@@ -83,7 +78,13 @@ func (cli *Client)ChooseNewPath(length int)([]string, error){
 		return nil, err
 	}
 
+	cli.msgsBuilder.SetPath(cli.currentPath)
+
 	return cli.currentPath, nil
+}
+
+func (cli *Client)SetEncryptionType(enctype crypt.TYPE){
+	cli.msgsBuilder.SetEncType(enctype)
 }
 
 //ConnectToServer tries to connect to server of a given name and writes self's name to it
@@ -114,6 +115,21 @@ func (cli *Client)GetServerList()[]string{
 	return cli.srvList.GetServerList()
 }
 
+func (cli *Client)GetServerDetails(name string)[]string{
+	details := make([]string, 1)
+	details[0], _ = cli.srvList.GetServerIpPort(name)
+	encrypter, _ := cli.srvList.GetEncrypter(name)
+	rsaKey := encrypter.GetPublicKeyRSA()
+	elg := encrypter.GetPublicKeyElGamal()
+	if rsaKey != nil{
+		details = append(details, "rsa: " + strconv.Itoa(rsaKey.E))
+	}
+	if elg != nil{
+		details = append(details, "elgamal: " + elg.Y.String())
+	}
+	return details
+}
+
 //SendTo tries to send a message specified in a command to a receiver which should be connected to given receiverServer
 //Returns error in case:
 // -builder object encountered a problem creating a ready-to-send message from given parameters
@@ -123,8 +139,7 @@ func (cli *Client)GetServerList()[]string{
 func (cli *Client)SendTo(receiverServer string, receiver string, command string)error{
 
 	cli.msgsBuilder.SetCommand(command).
-		SetReceiver(receiver).SetReceiverServer(receiverServer).
-		SetPath(cli.currentPath)
+		SetReceiver(receiver).SetReceiverServer(receiverServer)
 
 	message, err := cli.msgsBuilder.Build()
 	if err != nil {
@@ -154,6 +169,14 @@ func (cli *Client)CreateConversation(receiverServer string, receiver string) (er
 	return cli.convosContr.CreateConversation(receiverServer, receiver)
 }
 
+func (cli *Client)SetConversationKey(receiverServer string, receiver string, enctype crypt.TYPE, filename string) error{
+	key, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return errors.New("error reading public key")
+	}
+	return cli.convosContr.SetConversationKey(receiverServer, receiver, enctype, key)
+}
+
 //GetName returns client's name
 func (cli *Client)GetName()string{
 	return cli.myName
@@ -164,7 +187,7 @@ func (cli *Client)GetName()string{
 func (cli *Client)GetCurrentServer()(string, error){
 	sessionsNames := cli.sessionsContr.GetActiveSessions()
 	if len(sessionsNames) < 1{
-		return "", errors.New("no active session")
+		return "", errors.New(reflect.TypeOf(cli).String() + ": no active session")
 	}
 	return sessionsNames[0], nil
 }

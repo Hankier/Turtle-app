@@ -8,6 +8,7 @@ import (
 	"convos/receiver"
 	"sync"
 	"log"
+	"reflect"
 )
 
 type Controller struct{
@@ -70,7 +71,7 @@ func (c *Controller)Send(name string, content []byte)error{
 	if ok {
 		sess.Send(content)
 	}else{
-		return errors.New("wrong session name")
+		return errors.New(reflect.TypeOf(c).String() + " wrong session name")
 	}
 
 
@@ -85,7 +86,7 @@ func (c *Controller)SendInstant(name string, content []byte)error{
 	if  ok {
 		sess.SendInstant(content)
 	}else{
-		return errors.New("wrong session name")
+		return errors.New(reflect.TypeOf(c).String() + " wrong session name")
 	}
 
 	return nil
@@ -99,7 +100,7 @@ func (c *Controller)UnlockSending(name string)error{
 	if  ok {
 		sess.UnlockSending()
 	}else{
-		return errors.New("wrong session name")
+		return errors.New(reflect.TypeOf(c).String() +" wrong session name")
 	}
 
 	return nil

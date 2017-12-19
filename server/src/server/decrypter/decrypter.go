@@ -12,7 +12,7 @@ type DecrypterImpl struct{
 }
 
 func New()(*DecrypterImpl){
-	nc := new(DecrypterImpl)
+	dec := new(DecrypterImpl)
 
 	var privRSA *rsa.PrivateKey
 
@@ -20,8 +20,9 @@ func New()(*DecrypterImpl){
 	if err != nil{
 		privRSA = crypt.GenerateRSA()
 		crypt.SaveRSA(privRSA, "privateKeyRSA")
+		crypt.SaveRSAPublic(&privRSA.PublicKey, "publicKeyRSA")
 	}
-	nc.privRSA = privRSA
+	dec.privRSA = privRSA
 
 
 	var privElGamal *elgamal.PrivateKey
@@ -30,20 +31,25 @@ func New()(*DecrypterImpl){
 	if err != nil{
 		privElGamal = crypt.GenerateElGamal()
 		crypt.SaveElGamal(privElGamal, "privateKeyElGamal")
+		//TODO saving public key
 	}
-	nc.privElGamal = privElGamal
+	dec.privElGamal = privElGamal
 
-	return nc
+	return dec
 }
 
-func (nc *DecrypterImpl)Decrypt(encType crypt.TYPE, bytes []byte) ([]byte, error){
+func (dec *DecrypterImpl)Decrypt(encType crypt.TYPE, bytes []byte) ([]byte, error){
 	switch encType {
 	case crypt.PLAIN:
 		return bytes, nil
 	case crypt.RSA:
-		return crypt.DecryptRSA(nc.privRSA, bytes)
+		return crypt.DecryptRSA(dec.privRSA, bytes)
 	case crypt.ELGAMAL:
-		return crypt.DecryptElGamal(nc.privElGamal, bytes)
+		return crypt.DecryptElGamal(dec.privElGamal, bytes)
 	}
 	return bytes, nil
+}
+
+func (dec *DecrypterImpl)GetPublicKey()(*rsa.PublicKey){
+	return &dec.privRSA.PublicKey
 }

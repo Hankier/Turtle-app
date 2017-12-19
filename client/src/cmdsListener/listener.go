@@ -7,6 +7,8 @@ import (
 	"strings"
 	"strconv"
 	"client/ui"
+	"log"
+	"crypt"
 )
 
 type Listener struct{
@@ -31,8 +33,11 @@ func (cmdl *Listener)Listen(){
 
 	for cmdl.run{
 		text, err := reader.ReadString('\n')
-		text = text[:len(text) - 1] //cut newline
+		if len(text) > 0 {
+			text = text[:len(text) - 1] //cut newline
+		}
 		if err != nil{
+			log.Println(err)
 			cmdl.run = false
 		} else {
 			cmdl.execCmd(text)
@@ -51,22 +56,52 @@ func (cmdl *Listener)execCmd(cmd string){
 	cmds := strings.Fields(cmd)
 	cmdl.textrecv.Print("command", cmd)
 
-	if len(cmds) > 0 {
+	cmdnum := len(cmds)
+
+	if cmdnum > 0 {
 		switch cmds[0] {
+		//todo remove debug
+		case "d":
+			cmdl.execCmd("connect 00000000")
+			cmdl.execCmd("new convo 00000000 10000000")
+			cmdl.execCmd("set pathenc RSA")
+			cmdl.execCmd("set convokey 00000000 10000000 RSA publicKeyRSA")
+			cmdl.execCmd("new path 5")
+			cmdl.execCmd("send 00000000 10000000 asdf")
+			break
 		case "get":
-			if len(cmds) > 1 {
+			if cmdnum > 1 {
 				switch cmds[1] {
 				case "path":
 					cmdl.textrecv.Print("path", strings.Join(cmdl.ui.GetCurrentPath(), " "))
 				case "servers":
-					cmdl.textrecv.Print("servers", strings.Join(cmdl.ui.GetServerList(), " "))
+					if cmdnum > 2{
+						if cmds[2] == "details"{
+							details := "\n"
+							serverList := cmdl.ui.GetServerList()
+							for _, server := range serverList {
+								srvDetails := cmdl.ui.GetServerDetails(server)
+								details += server + "\n"
+								for _, srvDetail := range srvDetails{
+									details += srvDetail + "\n"
+								}
+								details += "\n"
+							}
+							cmdl.textrecv.Print("servers details", details)
+						} else {
+							cmdl.textrecv.Print("error", "usage: get servers details")
+						}
+
+					} else {
+						cmdl.textrecv.Print("servers", strings.Join(cmdl.ui.GetServerList(), " "))
+					}
 				}
 			} else {
 				cmdl.textrecv.Print("error", "usage: get path, get servers")
 			}
 			break
 		case "connect":
-			if len(cmds) > 1 {
+			if cmdnum > 1 {
 				err := cmdl.ui.ConnectToServer(cmds[1])
 				if err != nil {
 					cmdl.textrecv.Print("Error: ", "Wrong server")
@@ -78,10 +113,10 @@ func (cmdl *Listener)execCmd(cmd string){
 			}
 			break
 		case "new":
-			if len(cmds) > 1 {
+			if cmdnum > 1 {
 				switch cmds[1] {
 				case "convo":
-					if len(cmds) > 3 {
+					if cmdnum > 3 {
 						err := cmdl.ui.CreateConversation(cmds[2], cmds[3])
 						if err != nil {
 							cmdl.textrecv.Print("Error: ", err.Error())
@@ -89,10 +124,10 @@ func (cmdl *Listener)execCmd(cmd string){
 							cmdl.textrecv.Print("Created conversation ", cmds[2]+" "+cmds[3])
 						}
 					} else {
-						cmdl.textrecv.Print("error", "usage: new convo clientName serverName")
+						cmdl.textrecv.Print("error", "usage: new convo receiverServer receiver")
 					}
 				case "path":
-					if len(cmds) > 2 {
+					if cmdnum > 2 {
 						length, err := strconv.Atoi(cmds[2])
 						if err != nil {
 							cmdl.textrecv.Print("Error: ", err.Error())
@@ -109,19 +144,79 @@ func (cmdl *Listener)execCmd(cmd string){
 					}
 				}
 			} else {
-				cmdl.textrecv.Print("error", "usage: new convo clientName serverName, new path length")
+				cmdl.textrecv.Print("error", "usage: new convo receiverServer receiver, new path length")
 			}
 			break
+		case "set":
+			if cmdnum > 1 {
+				switch cmds[1] {
+				case "pathenc":
+					if cmdnum > 2 {
+						enctype := cmds[2]
+						switch enctype {
+						case "PLAIN":
+							cmdl.ui.SetEncryptionType(crypt.PLAIN)
+							cmdl.textrecv.Print("set pathenc", "PLAIN")
+							break
+						case "RSA":
+							cmdl.ui.SetEncryptionType(crypt.RSA)
+							cmdl.textrecv.Print("set pathenc", "RSA")
+							break
+						case "ELGAMAL":
+							cmdl.ui.SetEncryptionType(crypt.ELGAMAL)
+							cmdl.textrecv.Print("set pathenc", "ELGAMAL")
+							break
+						default:
+							cmdl.textrecv.Print("error", "use [PLAIN|RSA|ELGAMAL]")
+						}
+					} else {
+						cmdl.textrecv.Print("error", "usage: set pathenc [PLAIN|RSA|ELGAMAL]")
+					}
+					break
+				case "convokey":
+					if cmdnum > 5 {
+						recServer := cmds[2]
+						rec := cmds[3]
+						enctype := cmds[4]
+						convokeyfn := cmds[5]
+						switch enctype {
+						case "RSA":
+							err := cmdl.ui.SetConversationKey(recServer, rec, crypt.RSA, convokeyfn)
+							if err != nil{
+								cmdl.textrecv.Print("error", err.Error())
+							} else {
+								cmdl.textrecv.Print("set convokey", "RSA succesful")
+							}
+							break
+						case "ELGAMAL":
+							err := cmdl.ui.SetConversationKey(recServer, rec, crypt.ELGAMAL, convokeyfn)
+							if err != nil{
+								cmdl.textrecv.Print("error", err.Error())
+							} else {
+								cmdl.textrecv.Print("set convokey", "ELGAMAL succesful")
+							}
+							break
+						default:
+							cmdl.textrecv.Print("error", "use [RSA|ELGAMAL]")
+							break
+						}
+					} else {
+						cmdl.textrecv.Print("error", "usage: set convokey receiverServer receiver[RSA|ELGAMAL] filename")
+					}
+				}
+			} else {
+				cmdl.textrecv.Print("error", "usage: set [pathenc|convokey]")
+			}
 		case "send":
-			if len(cmds) > 2 {
+			if cmdnum > 2 {
 				receiverServer := cmds[1]
 				receiver := cmds[2]
 				message := strings.Join(cmds[3:], " ")
 				err := cmdl.ui.SendTo(receiverServer, receiver, message)
 				if err != nil {
-					cmdl.textrecv.Print("Error: ", err.Error())
+					cmdl.textrecv.Print("error", err.Error())
 				} else {
-					cmdl.textrecv.Print("Message sent to ", cmds[1]+" "+cmds[2])
+					cmdl.textrecv.Print("sent", cmds[1]+" "+cmds[2])
 				}
 			} else {
 				cmdl.textrecv.Print("error", "usage: send receiverServer receiver message")
@@ -130,8 +225,31 @@ func (cmdl *Listener)execCmd(cmd string){
 		case "exit":
 			cmdl.run = false
 			break
+		case "help":
+			if cmdnum > 1 {
+				switch cmds[2]{
+				case "get":
+					cmdl.textrecv.Print("help", "usage: get path, get servers")
+					break
+				case "set":
+					cmdl.textrecv.Print("help", "usage: set [pathenc|convokey]")
+					break
+				case "connect":
+					cmdl.textrecv.Print("help", "usage: connect serverName")
+					break
+				case "new":
+					cmdl.textrecv.Print("help", "usage: new [convo|path]")
+					break
+				case "send":
+					cmdl.textrecv.Print("help", "usage: send receiverServer receiver message")
+					break
+				}
+			} else {
+				cmdl.textrecv.Print("help", "avaiable cmds: get set connect new send exit")
+			}
+			break
 		default:
-			cmdl.textrecv.Print("error", "avaiable cmds: get connect new send exit")
+			cmdl.textrecv.Print("error", "avaiable cmds: get set connect new send exit")
 		}
 	}
 }
