@@ -10,9 +10,8 @@ func main() {
 
 	name := args[0]
 	clientsPort := args[1]
-	serversPort := args[2]
 
 	srv := server.NewServer(name)
-	srv.Start(clientsPort, serversPort)
+	srv.Start(clientsPort)
 
 }

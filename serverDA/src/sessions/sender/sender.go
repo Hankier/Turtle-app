@@ -1,6 +1,0 @@
-package sender
-
-type Sender interface{
-	Send(name string, content []byte)error
-	SendInstant(name string, content []byte)error
-}
