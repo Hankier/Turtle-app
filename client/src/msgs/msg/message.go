@@ -13,6 +13,10 @@ const (
 	PING
 )
 
+const (
+	MINIMUM_MESSAGE_LENGTH = 3 //TYPE ENCTYPE CONTENT_MIN
+)
+
 type Message struct{
 	messageType    TYPE
 	encType        crypt.TYPE
@@ -49,7 +53,7 @@ func (msg *Message)SetMessageContent(messageContent []byte){
 
 func FromBytes(bytes []byte)(*Message, error){
 	//no previous name and type
-	if len(bytes) < 1{
+	if len(bytes) < MINIMUM_MESSAGE_LENGTH{
 		return nil, errors.New( "Message.FromBytes: Too few bytes to construct a message")
 	}
 	msg := new(Message)
