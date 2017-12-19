@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"errors"
-	"io/ioutil"
+	//"io/ioutil"
 )
 
 type ServerList struct{
@@ -45,6 +45,12 @@ func (sli *ServerList)GetServerList()[]string{
 	return names
 }
 
+
+//func (sli *ServerList)GetServerListJSON()[]string{
+	//TODO
+
+//}
+
 func (sli *ServerList)AddServerToList(ip_port string, pk []byte)(*ServerList){
 	next_free := int(len(sli.list))
 	next_free_str := strconv.Itoa(next_free)
@@ -66,16 +72,16 @@ func (sli *ServerList)RemoveServerFromList(name string)(*ServerList){
 	return sli
 }
 
-func SaveListToFile(sli *ServerList, filename string) (err error) {
+//func (sli *ServerList)SaveListToFile(filename string) (err error) {
 
 	//TODO write list to file
-	//ioutil.WriteFile()
-}
+//}
 
-func GetListFromFile(filename string) (sli *ServerList,error) {
+//func GetListFromFile(filename string) (sli *ServerList,err error) {
 
 	//TODO get list from file
-}
+
+//}
 
 func NewList()(*ServerList)  {
 	sli := new(ServerList)
