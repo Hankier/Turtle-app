@@ -126,18 +126,19 @@ func (sli *ServerList)RefreshList(){
 
 func (sli *ServerList)DebugGetServers(){
 	servPath := "servers/"
-	ipportString := "/ipport"
-	pubRSAString := "/publicKeyRSA"
-	pubElGamalString := "/publicKeyElGamal"
+	ipPath := "/ip"
+	portPath := "/serverPort"
+	pubRSAPath := "/publicKeyRSA"
+	pubElGamalPath := "/publicKeyElGamal"
 
 	servers, err := ioutil.ReadDir(servPath)
-	if err != nil {	log.Fatal(err) }
+	if err != nil {	log.Print(err); return }
 	var name string
-	var ipport string
+	var ip string
+	var port string
 	var pubRSA *rsa.PublicKey
 	var pubElGamal *elgamal.PublicKey
 
-	currPath := servPath
 
 	srvMap := make(map[string]*entry.Entry)
 
@@ -146,33 +147,32 @@ func (sli *ServerList)DebugGetServers(){
 		if server.IsDir(){
 			name = server.Name()
 
-			currPath += name
+			currPath := servPath + name
 
-			ipportFile, err := ioutil.ReadFile(currPath + ipportString)
+			ipFile, err := ioutil.ReadFile(currPath + ipPath)
 			if err != nil {	log.Fatal(err) }
 
-			ipport = strings.TrimSpace(string(ipportFile))
+			ip = strings.TrimSpace(string(ipFile))
 
-			currPath = servPath + name
+			portFile, err := ioutil.ReadFile(currPath + portPath)
+			if err != nil {	log.Fatal(err) }
 
-			pubRSA, err = crypt.LoadRSAPublic(currPath + pubRSAString)
+			port = strings.TrimSpace(string(portFile))
+
+			pubRSA, err = crypt.LoadRSAPublic(currPath + pubRSAPath)
 			if err != nil{
 				log.Println(err)
 				pubRSA = nil
 			}
 
-			currPath = servPath + name
-
-			privElGamal, err := crypt.LoadElGamal(currPath + pubElGamalString)
+			privElGamal, err := crypt.LoadElGamal(currPath + pubElGamalPath)
 			if err == nil{
 				pubElGamal = &privElGamal.PublicKey
 			}else {
 				pubElGamal = nil
 			}
 
-			srvMap[name] = entry.New(name, ipport, pubRSA, pubElGamal)
-
-			currPath = servPath
+			srvMap[name] = entry.New(name, ip + ":" + port, pubRSA, pubElGamal)
 		}
 	}
 
