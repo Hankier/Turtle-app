@@ -295,6 +295,33 @@ func decryptRSABlock(privateKey *rsa.PrivateKey, block []byte) ([]byte, error){
 }
 
 func DecryptElGamal(privateKey *elgamal.PrivateKey, msg []byte) ([]byte, error) {
+	blockSize := pLen * 2
+	msgLen := len(msg)
+	decrypted := make([]byte, 0)
+
+	if msgLen % blockSize != 0{
+		return nil, errors.New("Crypt.DecryptElGamal: invalid msg length")
+	}
+
+	for i := 0; i < len(msg); i += blockSize{
+		end := i + blockSize
+
+		if end > len(msg){
+			end = len(msg)
+		}
+
+		block := msg[i:end]
+
+		decryptedBlock, err := decryptElGamalBlock(privateKey, block)
+		if err != nil{
+			return nil, err
+		}
+		decrypted = append(decrypted, decryptedBlock...)
+	}
+	return decrypted, nil
+}
+
+func decryptElGamalBlock(privateKey *elgamal.PrivateKey, msg []byte) ([]byte, error) {
 	if len(msg) != 2 * pLen{
 		return nil, errors.New("Crypt.DecryptElGamal: bad message length")
 	}
@@ -334,6 +361,28 @@ func encryptRSABlock(publicKey *rsa.PublicKey, block []byte) ([]byte, error){
 }
 
 func EncryptElGamal(publicKey *elgamal.PublicKey, msg []byte) ([]byte, error) {
+	blockSize := len(publicKey.P.Bytes()) - ENCRYPTION_BLOCK_SIZE_LIMITER
+	encrypted := make([]byte, 0)
+
+	for i := 0; i < len(msg); i += blockSize{
+		end := i + blockSize
+
+		if end > len(msg){
+			end = len(msg)
+		}
+
+		block := msg[i:end]
+
+		encryptedBlock, err := encryptElGamalBlock(publicKey, block)
+		if err != nil{
+			return nil, err
+		}
+		encrypted = append(encrypted, encryptedBlock...)
+	}
+	return encrypted, nil
+}
+
+func encryptElGamalBlock(publicKey *elgamal.PublicKey, msg []byte) ([]byte, error){
 	c1, c2, err := elgamal.Encrypt(rand.Reader, publicKey, msg)
 	if err != nil{
 		return nil, err
