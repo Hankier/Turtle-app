@@ -44,7 +44,7 @@ func (sli *ServerList)GetServerIpPort(name string)(string, error){
 	ret, ok := sli.list[name];
 	sli.listmutex.Unlock()
 
-	if  ok{
+	if ok {
 		return ret.Ipport, nil
 	}
 
@@ -182,11 +182,10 @@ func (sli *ServerList)DebugGetServers(client bool){
 				pubRSA = nil
 			}
 
-			privElGamal, err := crypt.LoadElGamal(currPath + pubElGamalPath)
-			if err == nil{
-				pubElGamal = &privElGamal.PublicKey
-			}else {
-				pubElGamal = nil
+			pubElGamal, err = crypt.LoadElGamalPublic(currPath + pubElGamalPath)
+			if err != nil{
+				log.Println(err)
+				pubRSA = nil
 			}
 
 			srvMap[name] = entry.New(name, ip + ":" + port, pubRSA, pubElGamal)
