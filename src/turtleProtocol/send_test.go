@@ -154,3 +154,18 @@ func TestSenderImpl_SendInstant(t *testing.T) {
 		t.Error("test message not sent")
 	}
 }
+
+func Test_IntToFourBytes(t *testing.T){
+	number := 123456789
+
+	expected := []byte{21, 205, 91, 7}
+
+	result := intToFourBytes(number)
+
+	fmt.Println(expected)
+	fmt.Println(result)
+
+	if !bytes.Equal(expected, result){
+		t.Fail()
+	}
+}
