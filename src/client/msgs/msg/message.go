@@ -3,6 +3,7 @@ package msg
 import (
 	"crypt"
 	"errors"
+	"log"
 )
 
 type TYPE byte
@@ -14,7 +15,7 @@ const (
 )
 
 const (
-	MINIMUM_MESSAGE_LENGTH = 3 //TYPE ENCTYPE CONTENT_MIN
+	MINIMUM_MESSAGE_LENGTH = 2 //TYPE ENCTYPE
 )
 
 type Message struct{
@@ -52,6 +53,7 @@ func (msg *Message)SetMessageContent(messageContent []byte){
 }
 
 func FromBytes(bytes []byte)(*Message, error){
+	log.Print(bytes)
 	//no previous name and type
 	if len(bytes) < MINIMUM_MESSAGE_LENGTH{
 		return nil, errors.New( "Message.FromBytes: Too few bytes to construct a message")

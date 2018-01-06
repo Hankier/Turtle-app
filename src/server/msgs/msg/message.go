@@ -14,7 +14,7 @@ const (
 )
 
 const (
-	MINIMUM_MESSAGE_LENGTH = 3 //TYPE ENCTYPE CONTENT_MIN
+	MINIMUM_MESSAGE_LENGTH = 2 //TYPE ENCTYPE
 )
 
 type Message struct{
