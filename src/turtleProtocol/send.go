@@ -4,9 +4,10 @@ import (
 	"time"
 	"bufio"
 	"log"
+	_"fmt"
 )
 
-const LOOP_TIME = time.Second
+const LOOP_TIME = time.Second*3
 
 func (s *Session)SendLoop(){
 	defer s.wgSender.Done()
@@ -27,7 +28,6 @@ func (s *Session)SendLoop(){
 				s.msgsMutex.Unlock()
 
 				packet := messagesToSingle(messagesCopy)
-
 				_, err := writer.Write(packet)
 				if err != nil{s.stopped = true; break}
 				err = writer.Flush()
@@ -64,7 +64,6 @@ func (s *Session)Send(content []byte){
 
 func (s *Session)SendInstant(content []byte){
 	log.Print("Sending instant to: " + s.name)
-
 	content = addSizeToBytes(content)
 	s.socket.Write(content)
 }

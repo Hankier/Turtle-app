@@ -14,7 +14,7 @@ func (s *Session)ReceiveLoop(){
 
 	size := make([]byte, 2)
 	for {
-		_, err := io.ReadFull(s.socket, size)
+		_, err := io.ReadFull(reader, size)
 		if err != nil{log.Print(reflect.TypeOf(s).String() + err.Error());break}
 
 		n := twoBytesToInt(size)
@@ -24,7 +24,7 @@ func (s *Session)ReceiveLoop(){
 		if err != nil{log.Print(reflect.TypeOf(s).String() + err.Error());break}
 
 		//log.Print("DEBUG Received from: " + recv.sessionName)
-		//log.Print("DEBUG Received msg: " + (string)(bytes))
+		//log.Print("DEBUG Received msg: ", bytes, " - size:", len(bytes))
 
 		s.recv.OnReceive(bytes)
 	}
