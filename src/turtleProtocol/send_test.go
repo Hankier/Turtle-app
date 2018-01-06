@@ -2,11 +2,11 @@ package turtleProtocol
 
 import (
 	"testing"
-	"msgs/msg"
 	"net"
 	"time"
 	"bytes"
 	_"log"
+	"fmt"
 )
 
 type SocketMock struct{
@@ -62,14 +62,15 @@ func TestSenderImpl_messagesToSingle(t *testing.T) {
 
 func TestSenderImpl_Send(t *testing.T) {
 	socket := &SocketMock{}
-	sender := New(socket, "", nil, nil)
+	sender := NewSession(socket, "", nil)
 
 
-	msg := msg.NewMessageOK()
-	sender.Send(msg.ToBytes())
+	msg := []byte{1, 0, 20, 123}
+	sender.Send(msg)
+
 
 	hasmsg := false
-	msgbytes := addSizeToBytes(msg.ToBytes())
+	msgbytes := addSizeToBytes(msg)
 
 	for i := 0; i < len(sender.msgsSent); i++{
 		if bytes.Compare(sender.msgsSent[i], msgbytes) == 0{
@@ -83,14 +84,71 @@ func TestSenderImpl_Send(t *testing.T) {
 	}
 }
 
+func TestSenderImpl_Send_Multiple_Msgs(t *testing.T) {
+	socket := &SocketMock{}
+	sender := NewSession(socket, "", nil)
+
+
+	msg := []byte{1, 0, 20, 123}
+	msg2 := []byte{1, 0, 20, 123, 50}
+	sender.Send(msg)
+	sender.Send(msg2)
+
+	hasmsg := 0
+	msgbytes := addSizeToBytes(msg)
+	msgbytes2 := addSizeToBytes(msg2)
+
+	for i := 0; i < len(sender.msgsSent); i++{
+		if bytes.Compare(sender.msgsSent[i], msgbytes) == 0{
+			hasmsg++
+			fmt.Println(sender.msgsSent[i])
+		}
+		if bytes.Compare(sender.msgsSent[i], msgbytes2) == 0{
+			hasmsg++
+			fmt.Println(sender.msgsSent[i])
+
+		}
+	}
+	fmt.Println(hasmsg)
+	if hasmsg != 2{
+		t.Error("sender doesnt have test message")
+	}
+}
+
+
+func TestSenderImpl_Send_Multiple_Msgs2(t *testing.T) {
+	socket := &SocketMock{}
+	sender := NewSession(socket, "", nil)
+
+
+	msg := []byte{1, 0, 20, 123}
+	msg2 := []byte{1, 0, 20, 123, 50}
+	sender.Send(msg)
+	sender.Send(msg2)
+
+	msgbytes := addSizeToBytes(msg)
+	msgbytes2 := addSizeToBytes(msg2)
+
+	finalMessage := messagesToSingle(sender.msgsSent)
+
+	var expectedMessage []byte
+	expectedMessage = append(expectedMessage, msgbytes ...)
+	expectedMessage = append(expectedMessage, msgbytes2 ...)
+	fmt.Println(expectedMessage)
+	fmt.Println(finalMessage)
+	if bytes.Compare(finalMessage, expectedMessage) != 0{
+		t.Error("sender doesnt have test message")
+	}
+}
+
 func TestSenderImpl_SendInstant(t *testing.T) {
 	socket := &SocketMock{}
-	sender := New(socket, "", nil, nil)
+	sender := NewSession(socket, "",nil)
 
-	msg := msg.NewMessageOK()
-	sender.SendInstant(msg.ToBytes())
+	msg := []byte{1, 0}
+	sender.SendInstant(msg)
 
-	msgbytes := addSizeToBytes(msg.ToBytes())
+	msgbytes := addSizeToBytes(msg)
 
 	if bytes.Compare(socket.writedata, msgbytes) != 0{
 		t.Error("test message not sent")
