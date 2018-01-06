@@ -2,7 +2,7 @@ package parser
 
 import (
 	"log"
-	"msgs/msg"
+	"server/msgs/msg"
 )
 
 func (pars *ParserImpl)handleDEFAULT(from string, message *msg.Message){

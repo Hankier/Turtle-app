@@ -19,3 +19,4 @@ func New(name string, ip_port string, pubRSA *rsa.PublicKey, pubElGamal *elgamal
 	srvEntry.Encrypter = encrypter.New(pubRSA, pubElGamal)
 	return srvEntry
 }
+

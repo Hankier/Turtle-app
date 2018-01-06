@@ -5,9 +5,9 @@ import (
 	"time"
 	"crypt"
 	"log"
-	"msgs/msg"
-	"server/decrypter"
-	"sessions/sender"
+	"server/msgs/msg"
+	"server/server/decrypter"
+	"server/sessions/sender"
 )
 
 type ParserImpl struct{

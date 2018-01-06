@@ -5,9 +5,9 @@ import (
 	"log"
 	"net"
 	"srvlist"
-	"sessions"
+	"server/sessions"
 	"errors"
-	"server/listener"
+	"server/server/listener"
 )
 
 type Server struct{

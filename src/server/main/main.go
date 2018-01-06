@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	"server"
+	"server/server"
 )
 
 func main() {

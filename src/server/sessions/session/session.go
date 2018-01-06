@@ -4,8 +4,8 @@ import (
 	"net"
 	"sync"
 	"log"
-	"sessions/receiver"
-	"sessions/handler"
+	"server/sessions/receiver"
+	"server/sessions/handler"
 )
 
 type Session struct{

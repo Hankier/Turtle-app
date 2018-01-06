@@ -1,14 +1,14 @@
 package sessions
 
 import (
-	"sessions/session"
-	"msgs/parser"
+	"server/sessions/session"
+	"server/msgs/parser"
 	"net"
 	"errors"
 	"sync"
 	"log"
-	"server/dialer"
-	"server/credentials"
+	"server/server/dialer"
+	"server/server/credentials"
 )
 
 type Controller struct{

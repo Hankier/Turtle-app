@@ -139,10 +139,12 @@ func (sli *ServerList)RefreshList(){
 	//TODO
 }
 
-func (sli *ServerList)DebugGetServers(){
+func (sli *ServerList)DebugGetServers(client bool){
 	servPath := "servers/"
 	ipPath := "/ip"
-	portPath := "/clientPort"
+	var portPath string
+	if client {	portPath = "/clientPort"
+	}else {portPath = "/serverPort"}
 	pubRSAPath := "/publicKeyRSA"
 	pubElGamalPath := "/publicKeyElGamal"
 
