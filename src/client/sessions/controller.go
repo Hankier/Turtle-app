@@ -31,12 +31,13 @@ func (c *Controller)CreateSession(name string, socket net.Conn){
 	recv := NewSessionReceiver(name, c, c.convosRecv)
 	sess := turtleProtocol.NewSession(socket, name, recv)
 
-	go c.startSession(sess)
-
 	c.sessions.Lock()
 	c.sessions.sess[name] = sess
 	c.sessions.recv[name] = recv
 	c.sessions.Unlock()
+
+	go c.startSession(sess)
+
 	log.Print("Creating session with: " + name)
 }
 
@@ -47,9 +48,13 @@ func (c* Controller)startSession(session* turtleProtocol.Session){
 
 func (c *Controller)RemoveSession(name string){
 	c.sessions.Lock()
-	c.sessions.sess[name].DeleteSession()
-	delete(c.sessions.sess, name)
-	delete(c.sessions.recv, name)
+	sess, ok := c.sessions.sess[name]
+	//session not already deleted
+	if ok {
+		sess.DeleteSession()
+		delete(c.sessions.sess, name)
+		delete(c.sessions.recv, name)
+	}
 	c.sessions.Unlock()
 	log.Print("Removing session with: " + name)
 }
@@ -75,10 +80,9 @@ func (c *Controller)Send(name string, content []byte)error{
 
 	if ok {
 		sess.Send(content)
-	}else{
+	} else {
 		return errors.New(reflect.TypeOf(c).String() + " wrong session name")
 	}
-
 
 	return nil
 }
