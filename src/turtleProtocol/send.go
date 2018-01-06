@@ -7,7 +7,7 @@ import (
 	_"fmt"
 )
 
-const LOOP_TIME = time.Second*3
+const LOOP_TIME = time.Second
 
 func (s *Session)SendLoop(){
 	defer s.wgSender.Done()
@@ -27,7 +27,10 @@ func (s *Session)SendLoop(){
 				s.msgsSent = s.msgsSent[:0]
 				s.msgsMutex.Unlock()
 
-				packet := messagesToSingle(messagesCopy)
+				messagesInSingle := messagesToSingle(messagesCopy)
+				packet := intToFourBytes(len(messagesInSingle))
+
+				packet = append(packet, messagesInSingle...)
 				_, err := writer.Write(packet)
 				if err != nil{s.stopped = true; break}
 				err = writer.Flush()
@@ -89,5 +92,16 @@ func intToTwobytes(len int)[]byte{
 
 	return size
 }
+func intToFourBytes(num int)[]byte{
+	bytes := make([]byte, 4)
+	bytes[0] = (byte)(num % 256)
+	num /= 256
+	bytes[1] = (byte)(num % 256)
+	num /= 256
+	bytes[2] = (byte)(num % 256)
+	num /= 256
+	bytes[3] = (byte)(num % 256)
 
+	return bytes
+}
 
