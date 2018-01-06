@@ -97,6 +97,7 @@ func (msgb *Builder)Build()(*msg.Message, error){
 	var srvEncrypter crypt.Encrypter
 
 	srvEncrypter, err = msgb.srvList.GetEncrypter(msgb.receiverServer)
+	if err != nil { return nil, err }
 	piece, err = msgb.createPiece(msgPieces[0], srvEncrypter)
 	if err != nil { return nil, err }
 
