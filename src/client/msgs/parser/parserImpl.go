@@ -1,7 +1,6 @@
 package parser
 
 import (
-	_"log"
 	"time"
 	"crypt"
 	"log"

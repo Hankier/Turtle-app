@@ -6,7 +6,7 @@ import (
 	"client/msgs/msg"
 	"client/convos/msgsBuilder"
 	"client/client/credentials"
-	"log"
+	_"log"
 )
 
 type Builder struct{
@@ -133,7 +133,7 @@ func (msgb *Builder)createPiece(pieceContent []byte, enc crypt.Encrypter)(*msg.M
 	if err != nil{	return nil, err	}
 
 	piece := msg.New(msgb.msgType, msgb.encType, encryptedPieceContent)
-	log.Print(piece.GetMessageContent())
+	//log.Print(piece.GetMessageContent())
 
 	return piece, nil
 }
