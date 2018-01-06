@@ -31,6 +31,7 @@ func (s *Session)SendLoop(){
 				packet := intToFourBytes(len(messagesInSingle))
 
 				packet = append(packet, messagesInSingle...)
+
 				_, err := writer.Write(packet)
 				if err != nil{s.stopped = true; break}
 				err = writer.Flush()
@@ -68,7 +69,11 @@ func (s *Session)Send(content []byte){
 func (s *Session)SendInstant(content []byte){
 	log.Print("Sending instant to: " + s.name)
 	content = addSizeToBytes(content)
-	s.socket.Write(content)
+
+	message := intToFourBytes(len(content))
+	message = append(message, content...)
+
+	s.socket.Write(message)
 }
 
 func (s *Session)UnlockSending(){

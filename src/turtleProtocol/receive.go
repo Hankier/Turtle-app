@@ -34,7 +34,7 @@ func (s *Session)ReceiveLoop(){
 			if msgSize == 2{
 				content := packet[0:msgSize]
 				message, err := msg.FromBytes(content)
-				if err != nil && message.GetMessageType() == msg.OK{
+				if err == nil && message.GetMessageType() == msg.OK{
 					s.UnlockSending()
 				}
 			}
@@ -63,8 +63,8 @@ func fourBytesToInt(size []byte)int{
 
 	num += (int)(size[0])
 	num += (int)(size[1]) * 256
-	num += (int)(size[1]) * 256 * 256
-	num += (int)(size[1]) * 256 * 256 * 256
+	num += (int)(size[2]) * 256 * 256
+	num += (int)(size[3]) * 256 * 256 * 256
 
 	return num
 }
