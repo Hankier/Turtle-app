@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"reflect"
+	"turtleProtocol/msg"
 )
 
 func (s *Session)ReceiveLoop(){
@@ -12,22 +13,60 @@ func (s *Session)ReceiveLoop(){
 
 	reader := bufio.NewReader(s.socket)
 
-	size := make([]byte, 2)
+	packetSizeBytes := make([]byte, 4)
+
 	for {
-		_, err := io.ReadFull(reader, size)
+		_, err := io.ReadFull(reader, packetSizeBytes)
 		if err != nil{log.Print(reflect.TypeOf(s).String() + err.Error());break}
 
-		n := twoBytesToInt(size)
+		packetSize := fourBytesToInt(packetSizeBytes)
+		packet := make([]byte, packetSize)
 
-		bytes := make([]byte, n)
-		_, err = io.ReadFull(reader, bytes)
+		_, err = io.ReadFull(reader, packet)
 		if err != nil{log.Print(reflect.TypeOf(s).String() + err.Error());break}
 
-		//log.Print("DEBUG Received from: " + recv.sessionName)
-		//log.Print("DEBUG Received msg: ", bytes, " - size:", len(bytes))
+		//msgOK
+		if packetSize == 4{
+			msgSizeBytes := packet[0:2]
+			packet = packet[2:]
 
-		s.recv.OnReceive(bytes)
+			msgSize := twoBytesToInt(msgSizeBytes)
+			if msgSize == 2{
+				content := packet[0:msgSize]
+				message, err := msg.FromBytes(content)
+				if err != nil && message.GetMessageType() == msg.OK{
+					s.UnlockSending()
+				}
+			}
+		} else {
+			bytesLeft := packetSize
+
+			for bytesLeft > 0{
+				msgSizeBytes := packet[0:2]
+				packet = packet[2:]
+
+				msgSize := twoBytesToInt(msgSizeBytes)
+
+				bytesLeft -= msgSize + len(msgSizeBytes)
+
+				message := packet[0:msgSize]
+				packet = packet[msgSize:]
+
+				s.recv.OnReceive(message)
+			}
+		}
 	}
+}
+
+func fourBytesToInt(size []byte)int{
+	num := 0
+
+	num += (int)(size[0])
+	num += (int)(size[1]) * 256
+	num += (int)(size[1]) * 256 * 256
+	num += (int)(size[1]) * 256 * 256 * 256
+
+	return num
 }
 
 func twoBytesToInt(size []byte)int{

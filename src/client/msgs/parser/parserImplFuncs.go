@@ -2,7 +2,7 @@ package parser
 
 import (
 	"log"
-	"client/msgs/msg"
+	"turtleProtocol/msg"
 )
 
 func (pars *ParserImpl)handleDEFAULT(from string, message *msg.Message){

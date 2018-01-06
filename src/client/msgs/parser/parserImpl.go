@@ -4,7 +4,7 @@ import (
 	"time"
 	"crypt"
 	"log"
-	"client/msgs/msg"
+	"turtleProtocol/msg"
 	"client/client/decrypter"
 	"client/sessions/sender"
 	"client/convos/receiver"

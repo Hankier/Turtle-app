@@ -3,7 +3,7 @@ package builder
 import (
 	"crypt"
 	"srvlist"
-	"client/msgs/msg"
+	"turtleProtocol/msg"
 	"client/convos/msgsBuilder"
 	"client/client/credentials"
 	_"log"
