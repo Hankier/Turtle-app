@@ -229,12 +229,11 @@ func (cmdl *Listener)execCmd(cmd string){
 		switch cmds[0] {
 		//todo remove debug
 		case "d":
-			cmdl.execCmd("connect 00000000")
-			cmdl.execCmd("new convo 00000000 10000000")
-			cmdl.execCmd("set pathenc RSA")
-			cmdl.execCmd("set convokey 00000000 10000000 RSA publicKeyRSA")
-			cmdl.execCmd("new path 5")
-			cmdl.execCmd("send 00000000 10000000 asdf")
+			cmdl.execCmd("connect server01")
+			cmdl.execCmd("new convo server01 client01")
+			cmdl.execCmd("set pathenc ELGAMAL")
+			cmdl.execCmd("set convokey server01 client01 publicKeyElGamal ELGAMAL")
+			cmdl.execCmd("send server01 client01 a")
 			break
 		case "get":
 			cmdl.execGet(cmds)
