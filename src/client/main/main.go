@@ -11,7 +11,7 @@ func main(){
 	name := args[0]
 
 	cli := client.New(name)
-	if args[1] != "" {
+	if len(args) > 1 && args[1] != "" {
 		cli.ConnectToServer(args[1])
 	}
 	cli.Start()
