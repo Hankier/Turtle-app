@@ -15,6 +15,7 @@ type SessionReceiver struct{
 func NewSessionReceiver(name string, sessionsSender sender.Sender, convosRecv receiver.Receiver) *SessionReceiver{
 	r := new(SessionReceiver)
 	r.msgsParser = parser.New(sessionsSender, convosRecv)
+	r.name = name
 
 	return r
 }

@@ -26,7 +26,7 @@ func NewServer(name string)(*Server){
 	//TODO Downloading server list from DA
 	srv.serverList = srvlist.New()
 	//TODO remove debug data
-	srv.serverList.DebugGetServers()
+	srv.serverList.DebugGetServers(false)
 
 	srv.sessionsContr = sessions.New(srv, srv)
 	srv.wg.Add(2)
