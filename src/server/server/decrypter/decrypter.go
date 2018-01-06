@@ -31,7 +31,7 @@ func New()(*DecrypterImpl){
 	if err != nil{
 		privElGamal = crypt.GenerateElGamal()
 		crypt.SaveElGamal(privElGamal, "privateKeyElGamal")
-		//TODO saving public key
+		crypt.SaveElGamalPublic(&privElGamal.PublicKey, "publicKeyElGamal")
 	}
 	dec.privElGamal = privElGamal
 
