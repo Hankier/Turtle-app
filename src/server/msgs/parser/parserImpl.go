@@ -5,7 +5,7 @@ import (
 	"time"
 	"crypt"
 	"log"
-	"server/msgs/msg"
+	"turtleProtocol/msg"
 	"server/server/decrypter"
 	"server/sessions/sender"
 )
