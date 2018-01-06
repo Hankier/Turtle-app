@@ -55,9 +55,13 @@ func (c* Controller)startSession(session* turtleProtocol.Session){
 
 func (c *Controller)RemoveSession(name string){
 	c.sessions.Lock()
-	c.sessions.sess[name].DeleteSession()
-	delete(c.sessions.sess, name)
-	delete(c.sessions.recv, name)
+	sess, ok := c.sessions.sess[name]
+	//not already removed
+	if ok{
+		sess.DeleteSession()
+		delete(c.sessions.sess, name)
+		delete(c.sessions.recv, name)
+	}
 	c.sessions.Unlock()
 	log.Print("Removing session with: " + name)
 }
