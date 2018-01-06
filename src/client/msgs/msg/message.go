@@ -3,7 +3,7 @@ package msg
 import (
 	"crypt"
 	"errors"
-	"log"
+	_"log"
 )
 
 type TYPE byte
@@ -53,7 +53,6 @@ func (msg *Message)SetMessageContent(messageContent []byte){
 }
 
 func FromBytes(bytes []byte)(*Message, error){
-	log.Print(bytes)
 	//no previous name and type
 	if len(bytes) < MINIMUM_MESSAGE_LENGTH{
 		return nil, errors.New( "Message.FromBytes: Too few bytes to construct a message")
