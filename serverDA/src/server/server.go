@@ -1,12 +1,13 @@
 package server
 
 import (
-	_ "listener"
 	_ "sync"
 	"log"
 	"net"
 	"serverlist"
 	_ "errors"
+	"encoding/json"
+
 )
 
 type Server struct{
@@ -15,6 +16,13 @@ type Server struct{
 	//clientListener *listener.Listener
 	//serverListener *listener.Listener
 	//wg sync.WaitGroup
+}
+
+
+type msgMessage struct{
+	Type    string
+	Content string
+	Content2 string
 }
 
 func NewServer(name string)(*Server){
@@ -50,21 +58,33 @@ func handleConnection(c net.Conn) {
 
     log.Printf("Client %v connected.", c.RemoteAddr())
 
-    messageBuffer := make([]byte, 2048)
-    for {
-      n, err := c.Read(messageBuffer)
-      log.Println(err)
-      if err != nil {
-          c.Close()
-          break
-      }
-      msg := string(messageBuffer)
+	//to read json from stream
+	d := json.NewDecoder(c)
+
+    var msg msgMessage
+
+    err := d.Decode(&msg)
+    log.Println("Type: ",msg.Type)
+    log.Println("Ip: ", msg.Content)
+	log.Println("Key: ", msg.Content2)
+	log.Println("Errors: ",err)
+
+    c.Close()
+
+    //messageBuffer := make([]byte, 2048)
+    //for {
+    //  n, err := c.Read(messageBuffer)
+    //  log.Println(err)
+    //  if err != nil {
+    //      c.Close()
+    //      break
+    //  }
+    //  msg := string(messageBuffer)
       //sendTo(ip, msg)
 
-      log.Printf("%v", msg[0:])
-      log.Printf("Data: %v , %v", n, messageBuffer[0:n])
+      //log.Printf("%v", )
+      //log.Printf("Data: %v , %v", n, messageBuffer[0:n])
 
-    }
     log.Printf("Connection from %v closed.", c.RemoteAddr())
  }
 
