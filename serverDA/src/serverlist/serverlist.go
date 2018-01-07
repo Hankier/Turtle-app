@@ -28,7 +28,7 @@ func (sli *ServerList)GetServerIpPort(name string)(string, error){
 	return "", errors.New("no such server on the list")
 }
 
-func (sli *ServerList)GetServerKey(name string)([]byte){
+func (sli *ServerList)GetServerKey(name string)(string){
 	sli.listmutex.Lock()
 	ret := sli.list[name].PublicKey
 	sli.listmutex.Unlock()
@@ -51,7 +51,7 @@ func (sli *ServerList)GetServerList()[]string{
 
 //}
 
-func (sli *ServerList)AddServerToList(ip_port string, pk []byte)(*ServerList){
+func (sli *ServerList)AddServerToList(ip_port string, pk string)(*ServerList){
 	next_free := int(len(sli.list))
 	next_free_str := strconv.Itoa(next_free)
 	zeros_number := 8 - len(next_free_str)

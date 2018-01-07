@@ -44,17 +44,18 @@ func (srv *Server)Start(port string){
 
     log.Println("Server up and listening on port ", port)
 
+
     for {
         conn, err := ln.Accept()
         if err != nil {
             log.Println(err)
             continue
         }
-        go handleConnection(conn)
+        go handleConnection(conn, srv.serverList)
 	}
 }
 
-func handleConnection(c net.Conn) {
+func handleConnection(c net.Conn, list *serverlist.ServerList) {
 
     log.Printf("Client %v connected.", c.RemoteAddr())
 
@@ -64,10 +65,19 @@ func handleConnection(c net.Conn) {
     var msg msgMessage
 
     err := d.Decode(&msg)
-    log.Println("Type: ",msg.Type)
-    log.Println("Ip: ", msg.Content)
-	log.Println("Key: ", msg.Content2)
+    message_type := msg.Type
+    message_content := msg.Content
+	message_content2 := msg.Content2
 	log.Println("Errors: ",err)
+
+	if message_type == "ADD" {
+		list.AddServerToList(message_content, message_content2)
+	} else {
+		log.Println("Not know type: ",message_type)
+	}
+
+	aa, _ := list.GetServerIpPort(list.GetServerList()[0])
+	log.Printf("Serverlist added in handler: %s", aa)
 
     c.Close()
 
