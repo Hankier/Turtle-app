@@ -151,7 +151,7 @@ func (cli *Client)SendTo(receiverServer string, receiver string, command string)
 		return err
 	}
 
-	err = cli.sessionsContr.Send(currentServer, message.ToBytes())
+	err = cli.sessionsContr.Send(currentServer, message)
 	if err != nil {
 		return err
 	}
