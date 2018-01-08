@@ -8,6 +8,7 @@ import (
 	"log"
 	"reflect"
 	"turtleProtocol"
+	"turtleProtocol/msg"
 )
 
 type Controller struct{
@@ -73,43 +74,15 @@ func (c *Controller)GetActiveSessions()[]string{
 	return activeSessions
 }
 
-func (c *Controller)Send(name string, content []byte)error{
+func (c *Controller)Send(name string, message *msg.Message)error{
 	c.sessions.Lock()
 	sess, ok := c.sessions.sess[name]
 	c.sessions.Unlock()
 
 	if ok {
-		sess.Send(content)
+		sess.Send(message)
 	} else {
 		return errors.New(reflect.TypeOf(c).String() + " wrong session name")
-	}
-
-	return nil
-}
-
-func (c *Controller)SendInstant(name string, content []byte)error{
-	c.sessions.Lock()
-	sess, ok := c.sessions.sess[name]
-	c.sessions.Unlock()
-
-	if  ok {
-		sess.SendInstant(content)
-	}else{
-		return errors.New(reflect.TypeOf(c).String() + " wrong session name")
-	}
-
-	return nil
-}
-
-func (c *Controller)UnlockSending(name string)error{
-	c.sessions.Lock()
-	sess, ok := c.sessions.sess[name];
-	c.sessions.Unlock()
-
-	if  ok {
-		sess.UnlockSending()
-	}else{
-		return errors.New(reflect.TypeOf(c).String() +" wrong session name")
 	}
 
 	return nil

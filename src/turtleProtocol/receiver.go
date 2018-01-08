@@ -1,5 +1,7 @@
 package turtleProtocol
 
+import "turtleProtocol/msg"
+
 type Receiver interface{
-	OnReceive(content []byte)
+	OnReceive(message *msg.Message)
 }
