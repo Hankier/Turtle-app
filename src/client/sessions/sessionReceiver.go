@@ -4,6 +4,7 @@ import (
 	"client/msgs/parser"
 	"client/sessions/sender"
 	"client/convos/receiver"
+	"turtleProtocol/msg"
 )
 
 type SessionReceiver struct{
@@ -20,6 +21,6 @@ func NewSessionReceiver(name string, sessionsSender sender.Sender, convosRecv re
 	return r
 }
 
-func (r* SessionReceiver)OnReceive(content []byte){
-	r.msgsParser.ParseBytes(r.name, content)
+func (r* SessionReceiver)OnReceive(message *msg.Message){
+	r.msgsParser.ParseMessage(r.name, message)
 }
