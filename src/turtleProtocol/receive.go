@@ -25,35 +25,35 @@ func (s *Session)ReceiveLoop(){
 		_, err = io.ReadFull(reader, packet)
 		if err != nil{log.Print(reflect.TypeOf(s).String() + err.Error());break}
 
-		//msgOK
-		if packetSize == 4{
+		bytesLeft := packetSize
+
+		numOfNonConfirmationMessages := 0
+
+		for bytesLeft > 0{
 			msgSizeBytes := packet[0:2]
 			packet = packet[2:]
 
 			msgSize := twoBytesToInt(msgSizeBytes)
-			if msgSize == 2{
-				content := packet[0:msgSize]
-				message, err := msg.FromBytes(content)
-				if err == nil && message.GetMessageType() == msg.OK{
-					s.UnlockSending()
-				}
-			}
-		} else {
-			bytesLeft := packetSize
 
-			for bytesLeft > 0{
-				msgSizeBytes := packet[0:2]
-				packet = packet[2:]
+			bytesLeft -= msgSize + len(msgSizeBytes)
 
-				msgSize := twoBytesToInt(msgSizeBytes)
+			messageBytes := packet[0:msgSize]
+			packet = packet[msgSize:]
 
-				bytesLeft -= msgSize + len(msgSizeBytes)
+			message, err := msg.FromBytes(messageBytes)
 
-				message := packet[0:msgSize]
-				packet = packet[msgSize:]
-
+			if err != nil{
+				log.Print("Receiver \"", s.name, "\" err ", err)
+			} else if message.GetMessageType() == msg.OK {
+				s.UnlockSending()
+			} else {
+				numOfNonConfirmationMessages++
 				s.recv.OnReceive(message)
 			}
+		}
+
+		if numOfNonConfirmationMessages > 0 {
+			s.SendConfirmation()
 		}
 	}
 }

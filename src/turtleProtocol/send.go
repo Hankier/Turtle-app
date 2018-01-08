@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"log"
 	_"fmt"
+	"turtleProtocol/msg"
 )
 
 const LOOP_TIME = time.Second
@@ -28,9 +29,8 @@ func (s *Session)SendLoop(){
 				s.msgsMutex.Unlock()
 
 				messagesInSingle := messagesToSingle(messagesCopy)
-				packet := intToFourBytes(len(messagesInSingle))
 
-				packet = append(packet, messagesInSingle...)
+				packet := addSizeToPacket(messagesInSingle)
 
 				_, err := writer.Write(packet)
 				if err != nil{s.stopped = true; break}
@@ -44,10 +44,11 @@ func (s *Session)SendLoop(){
 	}
 }
 
-func messagesToSingle(bytes [][]byte)([]byte){
+func messagesToSingle(content [][]byte)([]byte){
+	log.Print("Compressing ", len(content), " messages")
 	result := make([]byte, 0)
-	for i := 0; i < len(bytes); i++{
-		result = append(result, bytes[i]...)
+	for i := 0; i < len(content); i++{
+		result = append(result, content[i]...)
 	}
 	return result
 }
@@ -56,24 +57,27 @@ func (s *Session)Stop(){
 	s.stopped = true
 }
 
-func (s *Session)Send(content []byte){
+func (s *Session)Send(message *msg.Message){
 	log.Print("Sending to: " + s.name)
 
-	content = addSizeToBytes(content)
+	content := message.ToBytes()
+
+	content = addSizeToMessage(content)
 
 	s.msgsMutex.Lock()
 	s.msgsSent = append(s.msgsSent, content)
 	s.msgsMutex.Unlock()
 }
 
-func (s *Session)SendInstant(content []byte){
-	log.Print("Sending instant to: " + s.name)
-	content = addSizeToBytes(content)
+func (s *Session) SendConfirmation(){
+	log.Print("Sending response to: " + s.name)
 
-	message := intToFourBytes(len(content))
-	message = append(message, content...)
+	content := msg.NewMessageOK().ToBytes()
+	content = addSizeToMessage(content)
 
-	s.socket.Write(message)
+	packet := addSizeToPacket(content)
+
+	s.socket.Write(packet)
 }
 
 func (s *Session)UnlockSending(){
@@ -82,12 +86,20 @@ func (s *Session)UnlockSending(){
 	s.canSend = true
 }
 
-func addSizeToBytes(bytes []byte)([]byte){
-	size := intToTwobytes(len(bytes))
+func addSizeToMessage(content []byte)([]byte){
+	size := intToTwobytes(len(content))
 
-	bytes = append(size, bytes...)
+	content = append(size, content...)
 
-	return bytes
+	return content
+}
+
+func addSizeToPacket(content []byte)([]byte){
+	size := intToFourBytes(len(content))
+
+	content = append(size, content...)
+
+	return content
 }
 
 func intToTwobytes(len int)[]byte{
@@ -97,6 +109,7 @@ func intToTwobytes(len int)[]byte{
 
 	return size
 }
+
 func intToFourBytes(num int)[]byte{
 	bytes := make([]byte, 4)
 	bytes[0] = (byte)(num % 256)
