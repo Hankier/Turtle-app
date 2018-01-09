@@ -16,6 +16,11 @@ type ServerList struct{
 	list      map[string]*entry.Entry
 }
 
+type test_ll struct{
+	Status string
+	Servers []*entry.Entry
+}
+
 
 func (sli *ServerList)GetServerIpPort(name string)(string, error){
 
@@ -49,7 +54,18 @@ func (sli *ServerList)GetServerList()[]string{
 
 
 func (sli *ServerList)GetServerListJSON()[]byte{
-	json_list, _ := json.Marshal(sli.list)
+	tt := new(test_ll)
+	tt.Status = "OK"
+	//tt.Servers =  []*entry.Entry{entry.NewEntry("002", "12.12.12","aaa"), entry.NewEntry("003", "12.12.12","aaa")}
+	//append(sli.list["00000000"])
+	//tt.Servers = make([]*entry.Entry, 2)
+	names := sli.GetServerList()
+	for _, v := range names {
+		tt.Servers = append(tt.Servers, sli.list[v])
+	}
+
+
+	json_list, _ := json.Marshal(tt)
 
 	ioutil.WriteFile("list_of_servers.json",json_list,0644)
 
