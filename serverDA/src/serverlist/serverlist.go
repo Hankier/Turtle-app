@@ -6,12 +6,19 @@ import (
 	"strconv"
 	"strings"
 	"errors"
-	//"io/ioutil"
+	"encoding/json"
+	"io/ioutil"
+	"log"
 )
 
 type ServerList struct{
 	listmutex sync.Mutex
 	list      map[string]*entry.Entry
+}
+
+type test_ll struct{
+	Status string
+	Servers []*entry.Entry
 }
 
 
@@ -28,7 +35,7 @@ func (sli *ServerList)GetServerIpPort(name string)(string, error){
 	return "", errors.New("no such server on the list")
 }
 
-func (sli *ServerList)GetServerKey(name string)([]byte){
+func (sli *ServerList)GetServerKey(name string)(string){
 	sli.listmutex.Lock()
 	ret := sli.list[name].PublicKey
 	sli.listmutex.Unlock()
@@ -46,12 +53,26 @@ func (sli *ServerList)GetServerList()[]string{
 }
 
 
-//func (sli *ServerList)GetServerListJSON()[]string{
-	//TODO
+func (sli *ServerList)GetServerListJSON()[]byte{
+	tt := new(test_ll)
+	tt.Status = "OK"
+	//tt.Servers =  []*entry.Entry{entry.NewEntry("002", "12.12.12","aaa"), entry.NewEntry("003", "12.12.12","aaa")}
+	//append(sli.list["00000000"])
+	//tt.Servers = make([]*entry.Entry, 2)
+	names := sli.GetServerList()
+	for _, v := range names {
+		tt.Servers = append(tt.Servers, sli.list[v])
+	}
 
-//}
 
-func (sli *ServerList)AddServerToList(ip_port string, pk []byte)(*ServerList){
+	json_list, _ := json.Marshal(tt)
+
+	ioutil.WriteFile("list_of_servers.json",json_list,0644)
+
+	return json_list
+}
+
+func (sli *ServerList)AddServerToList(ip_port string, pk string)string{
 	next_free := int(len(sli.list))
 	next_free_str := strconv.Itoa(next_free)
 	zeros_number := 8 - len(next_free_str)
@@ -61,7 +82,7 @@ func (sli *ServerList)AddServerToList(ip_port string, pk []byte)(*ServerList){
 	sli.list[next_name] = entry.NewEntry(next_name, ip_port, pk)
 	sli.listmutex.Unlock()
 
-	return sli
+	return next_name
 }
 
 
@@ -72,10 +93,16 @@ func (sli *ServerList)RemoveServerFromList(name string)(*ServerList){
 	return sli
 }
 
-//func (sli *ServerList)SaveListToFile(filename string) (err error) {
+func (sli *ServerList)SaveListToFile(filename string) (err error) {
 
-	//TODO write list to file
-//}
+	json_list, _ := json.Marshal(sli.list)
+
+	ioutil.WriteFile(filename,json_list,0644)
+	if err == nil{
+		log.Print("List saved to: ", filename)
+	}
+	return err
+}
 
 //func GetListFromFile(filename string) (sli *ServerList,err error) {
 

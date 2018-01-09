@@ -4,10 +4,10 @@ package entry
 type Entry struct{
 	Name string
 	Ip_port string
-	PublicKey []byte
+	PublicKey string
 }
 
-func NewEntry(name string, ip_port string, publicKey []byte)(*Entry){
+func NewEntry(name string, ip_port string, publicKey string)(*Entry){
 	srvEntry := new(Entry)
 	srvEntry.Ip_port = ip_port
 	srvEntry.Name = name
