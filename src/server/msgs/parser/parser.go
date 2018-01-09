@@ -1,6 +1,7 @@
 package parser
 
-type Parser interface{
-	ParseBytes(from string, bytes []byte)
-}
+import "turtleProtocol/msg"
 
+type Parser interface{
+	ParseMessage(from string, message *msg.Message)
+}

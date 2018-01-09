@@ -9,6 +9,7 @@ import (
 	"server/server/dialer"
 	"server/server/credentials"
 	"turtleProtocol"
+	"turtleProtocol/msg"
 )
 
 type Controller struct{
@@ -80,14 +81,14 @@ func (c *Controller)GetActiveSessions()[]string{
 	return activeSessions
 }
 
-func (c *Controller)OnReceive(from string, content []byte){
-	c.msgsParser.ParseBytes(from, content)
+func (c *Controller)OnReceive(from string, message *msg.Message){
+	c.msgsParser.ParseMessage(from, message)
 }
 
-func (c *Controller)Send(name string, content []byte)error{
+func (c *Controller)Send(name string, message *msg.Message)error{
 	//sending to myself
 	if name == c.credHolder.GetName(){
-		c.OnReceive(name, content)
+		c.OnReceive(name, message)
 		return nil
 	}
 
@@ -96,7 +97,7 @@ func (c *Controller)Send(name string, content []byte)error{
 	c.sessions.Unlock()
 
 	if ok {
-		sess.Send(content)
+		sess.Send(message)
 	}else{
 		err := c.serverDialer.ConnectToServer(name)
 		if err != nil {
@@ -106,39 +107,11 @@ func (c *Controller)Send(name string, content []byte)error{
 			sess, ok = c.sessions.sess[name]
 			c.sessions.Unlock()
 			if ok {
-				sess.Send(content)
+				sess.Send(message)
 			} else {
 				return errors.New("wrong session name")
 			}
 		}
-	}
-
-	return nil
-}
-
-func (c *Controller)SendInstant(name string, content []byte)error{
-	c.sessions.Lock()
-	sess, ok := c.sessions.sess[name]
-	c.sessions.Unlock()
-
-	if  ok {
-		sess.SendInstant(content)
-	}else{
-		return errors.New("wrong session name")
-	}
-
-	return nil
-}
-
-func (c *Controller)UnlockSending(name string)error{
-	c.sessions.Lock()
-	sess, ok := c.sessions.sess[name];
-	c.sessions.Unlock()
-
-	if  ok {
-		sess.UnlockSending()
-	}else{
-		return errors.New("wrong session name")
 	}
 
 	return nil

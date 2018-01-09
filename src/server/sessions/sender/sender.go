@@ -1,7 +1,7 @@
 package sender
 
+import "turtleProtocol/msg"
+
 type Sender interface{
-	Send(name string, content []byte)error
-	SendInstant(name string, content []byte)error
-	UnlockSending(name string)error
+	Send(name string, message *msg.Message)error
 }

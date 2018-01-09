@@ -8,8 +8,6 @@ import (
 func (pars *ParserImpl)handleDEFAULT(from string, message *msg.Message){
 	//log.Print("DEBUG Received DEFAULT from: " + from)
 
-	pars.sender.SendInstant(from, msg.NewMessageOK().ToBytes())
-
 	if len(message.GetMessageContent()) < 8{
 		log.Print("Unexpected message end")
 		return
@@ -24,12 +22,7 @@ func (pars *ParserImpl)handleDEFAULT(from string, message *msg.Message){
 	//log.Print("handleMSG, nextName: " + nextName + " msg " + string(bytes))
 }
 
-func (pars *ParserImpl)handleOK(from string, message *msg.Message){
-	pars.sender.UnlockSending(from)
-}
-
 func (pars *ParserImpl)handlePING(from string, message *msg.Message){
-	pars.sender.SendInstant(from, msg.NewMessageOK().ToBytes())
 	//TODO real PING
 	log.Print("RECEIVED PING")
 }

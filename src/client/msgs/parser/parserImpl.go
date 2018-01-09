@@ -24,15 +24,7 @@ func New(sender sender.Sender, receiver receiver.Receiver)(*ParserImpl){
 	return mhi
 }
 
-func (pars *ParserImpl)ParseBytes(from string, bytes []byte){
-	//log.Print("Handling bytes " + string(bytes))
-
-	message, err := msg.FromBytes(bytes)
-
-	if err != nil{
-		log.Print(err)
-		return
-	}
+func (pars *ParserImpl)ParseMessage(from string, message *msg.Message){
 	//TODO remove debug delay
 	time.Sleep(time.Second)
 	pars.handle(from, message)
@@ -49,9 +41,6 @@ func (pars *ParserImpl)handle(from string, message *msg.Message){
 	switch message.GetMessageType(){
 	case msg.DEFAULT:
 		pars.handleDEFAULT(from, message)
-		break
-	case msg.OK:
-		pars.handleOK(from, message)
 		break
 	case msg.PING:
 		pars.handlePING(from, message)

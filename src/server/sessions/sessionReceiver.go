@@ -3,6 +3,7 @@ package sessions
 import (
 	"server/msgs/parser"
 	"server/sessions/sender"
+	"turtleProtocol/msg"
 )
 
 type SessionReceiver struct{
@@ -19,6 +20,6 @@ func NewSessionReceiver(name string, sessionsSender sender.Sender) *SessionRecei
 	return r
 }
 
-func (r* SessionReceiver)OnReceive(content []byte){
-	r.msgsParser.ParseBytes(r.name, content)
+func (r* SessionReceiver)OnReceive(message *msg.Message){
+	r.msgsParser.ParseMessage(r.name, message)
 }
