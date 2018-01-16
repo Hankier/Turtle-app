@@ -374,6 +374,7 @@ func EncryptElGamal(publicKey *elgamal.PublicKey, msg []byte) ([]byte, error) {
 		block := msg[i:end]
 
 		encryptedBlock, err := encryptElGamalBlock(publicKey, block)
+		log.Println(len(encryptedBlock))
 		if err != nil{
 			return nil, err
 		}
@@ -390,23 +391,5 @@ func encryptElGamalBlock(publicKey *elgamal.PublicKey, msg []byte) ([]byte, erro
 	encmsg := c1.Bytes()
 	encmsg = append(encmsg, c2.Bytes()...)
 	return encmsg, nil
-}
-
-func nonZeroRandomBytes(s []byte, rand io.Reader) (err error) {
-	_, err = io.ReadFull(rand, s)
-	if err != nil {
-		return
-	}
-
-	for i := 0; i < len(s); i++ {
-		for s[i] == 0 {
-			_, err = io.ReadFull(rand, s[i:i+1])
-			if err != nil {
-				return
-			}
-		}
-	}
-
-	return
 }
 

@@ -71,11 +71,12 @@ func TestElGamalLongerThanOneBlock(t *testing.T) {
 
 	privKey.Y = new(big.Int).Exp(privKey.G, privKey.X, privKey.P)
 
-	message := make([]byte, 287)
+	message := make([]byte, 12287)
 	enc, err := EncryptElGamal(&privKey.PublicKey, message)
 	if err != nil {
 		t.Error(err)
 	}
+	log.Println("message len: ", len(enc))
 	message2, err := DecryptElGamal(privKey, enc)
 	if err != nil {
 		t.Error(err)
